@@ -1,0 +1,77 @@
+name: proptalk
+description: Proptalk - 음성 채팅방 STT 플랫폼
+
+publish_to: 'none'
+version: 1.0.1+4
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # 상태관리
+  provider: ^6.1.2
+  
+  # 네트워크
+  http: ^1.2.0
+  socket_io_client: ^3.0.2
+  
+  # Google 로그인
+  google_sign_in: ^6.2.2
+  
+  # 로컬 저장
+  shared_preferences: ^2.3.4
+  
+  # 파일 처리
+  file_picker: ^8.1.6
+  path_provider: ^2.1.5
+  path: ^1.9.0
+  
+  # 녹음
+  record: ^6.0.0
+
+  # 권한 처리
+  permission_handler: ^11.3.1
+
+  # 광고
+  google_mobile_ads: ^5.3.0
+
+  # UI
+  cupertino_icons: ^1.0.8
+  flutter_markdown: ^0.7.6
+  url_launcher: ^6.2.5
+  flutter_linkify: ^6.0.0
+  linkify: ^5.0.0
+  package_info_plus: ^9.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "../images/Proptalk_icon_half size.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "../images/Proptalk_icon_half size.png"
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+  
+  fonts:
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/Pretendard-Regular.otf
+        - asset: assets/fonts/Pretendard-Medium.otf
+          weight: 500
+        - asset: assets/fonts/Pretendard-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/Pretendard-Bold.otf
+          weight: 700

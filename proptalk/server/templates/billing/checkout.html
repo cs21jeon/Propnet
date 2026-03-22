@@ -1,0 +1,93 @@
+{% extends "billing/base.html" %}
+{% block title %}Proptalk 결제{% endblock %}
+
+{% block head %}
+<script src="https://js.tosspayments.com/v2/standard"></script>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2 style="font-size:18px; font-weight:700; margin-bottom:16px;">결제 정보</h2>
+    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+        <span style="color:#666;">상품</span>
+        <span id="order-name" style="font-weight:600;">--</span>
+    </div>
+    <div style="display:flex; justify-content:space-between; padding:8px 0; margin-bottom:16px;">
+        <span style="color:#666;">결제 금액</span>
+        <span id="order-amount" style="font-size:20px; font-weight:700; color:#1A73E8;">--</span>
+    </div>
+
+    <div id="payment-method"></div>
+
+    <div id="error-msg" class="error" style="display:none;"></div>
+
+    <button id="pay-btn" class="btn btn-primary" style="margin-top:16px;" onclick="requestPayment()">
+        결제하기
+    </button>
+</div>
+
+<div class="legal-notice">
+    결제하기 버튼을 누르면 <a href="/proptalk/payment-terms" target="_blank">결제 약관</a>에 동의하는 것으로 간주됩니다.<br>
+    💳 결제는 토스페이먼츠를 통해 안전하게 처리됩니다.
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const params = new URLSearchParams(window.location.search);
+const orderId = params.get('order_id');
+const amount = parseInt(params.get('amount'));
+const orderName = params.get('order_name');
+const billingType = params.get('billing_type');
+const customerKey = params.get('customer_key');
+const planCode = params.get('plan_code');
+const TOSS_CLIENT_KEY = '{{ toss_client_key }}';
+
+// 표시
+document.getElementById('order-name').textContent = orderName || '--';
+document.getElementById('order-amount').textContent = amount ? `${amount.toLocaleString()}원` : '--';
+
+const tossPayments = TossPayments(TOSS_CLIENT_KEY);
+
+async function requestPayment() {
+    const btn = document.getElementById('pay-btn');
+    const errEl = document.getElementById('error-msg');
+    btn.disabled = true;
+    btn.textContent = '처리 중...';
+    errEl.style.display = 'none';
+
+    try {
+        const t = sessionStorage.getItem('billing_token');
+        const baseUrl = window.location.origin;
+
+        if (billingType === 'subscription') {
+            // 구독: 빌링키 발급
+            const payment = tossPayments.payment({ customerKey: customerKey });
+            await payment.requestBillingAuth({
+                method: 'CARD',
+                successUrl: `${baseUrl}/proptalk/billing/success?type=subscription&order_id=${orderId}&plan_code=${planCode}&token=${t}`,
+                failUrl: `${baseUrl}/proptalk/billing/fail?token=${t}`,
+                customerEmail: '',
+                customerName: '',
+            });
+        } else {
+            // 일반 결제: 시간팩
+            const payment = tossPayments.payment({ customerKey: customerKey });
+            await payment.requestPayment({
+                method: 'CARD',
+                amount: { currency: 'KRW', value: amount },
+                orderId: orderId,
+                orderName: orderName,
+                successUrl: `${baseUrl}/proptalk/billing/success?type=one_time&token=${t}`,
+                failUrl: `${baseUrl}/proptalk/billing/fail?token=${t}`,
+            });
+        }
+    } catch (e) {
+        errEl.textContent = e.message || '결제 요청 실패';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = '결제하기';
+    }
+}
+</script>
+{% endblock %}

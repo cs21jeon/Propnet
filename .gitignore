@@ -1,12 +1,14 @@
-# 서비스별 독립 Git 제외 (nested repos)
-propedia/
-proptalk/
-
 # Flutter/Dart 빌드
 **/build/
 **/.dart_tool/
 **/.flutter-plugins
 **/.flutter-plugins-dependencies
+**/.packages
+
+# Android 빌드
+**/.gradle/
+**/android/app/build/
+**/android/.cxx/
 
 # IDE
 **/.idea/
@@ -18,7 +20,19 @@ proptalk/
 **/key.properties
 **/local.properties
 **/*.jks
+**/*.keystore
+**/*.pem
 .mcp.json
+
+# 개인정보/사업 문서
+**/임대차계약서*
+**/사업자등록증*
+**/구매안전서비스*
+**/등록증*
+
+# 임시 파일
+propsheet/temp/
+propsheet/tmp/
 
 # OS
 **/photothumb.db
@@ -32,3 +46,7 @@ proptalk/
 # Python
 **/__pycache__/
 **/*.pyc
+**/venv/
+
+# Claude 로컬 설정
+.claude/settings.local.json

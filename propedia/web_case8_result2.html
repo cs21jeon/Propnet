@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html class="light" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#136dec">
+    <title>조회 결과 - 부동산 정보 조회</title>
+    <link rel="manifest" href="/app/manifest.json">
+    <link rel="icon" type="image/x-icon" href="/app/favicon.ico">
+    <link rel="icon" type="image/png" sizes="192x192" href="/app/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/app/icon-192x192.png">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=1a41388ca117958d172c6ba8e71c7c75&libraries=services"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#136dec",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#0f172a",
+                    },
+                    fontFamily: {
+                        "sans": ["Pretendard", "-apple-system", "BlinkMacSystemFont", "system-ui", "Roboto", "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.375rem", "lg": "0.75rem", "xl": "1rem", "2xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        body {
+            font-family: 'Pretendard', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            letter-spacing: -0.01em;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-nav-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+        /* 카카오맵 말풍선 스타일 */
+        .custom-marker {
+            background: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            font-weight: 600;
+            font-size: 14px;
+            color: #136dec;
+            border: 2px solid #136dec;
+            position: relative;
+            white-space: nowrap;
+        }
+        .custom-marker::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid #136dec;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+    <!-- 헤더 -->
+    <header class="sticky top-0 z-50 bg-white/90 dark:bg-background-dark/90 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60">
+        <div class="flex items-center justify-between px-5 h-16 max-w-md mx-auto w-full">
+            <button class="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors" onclick="history.back()">
+                <span class="material-symbols-outlined text-slate-700 dark:text-slate-300">arrow_back</span>
+            </button>
+            <h1 class="text-[28px] font-bold tracking-tight text-slate-900 dark:text-white">조회 결과</h1>
+            <button class="p-2 -mr-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors" onclick="window.location.href='/app/'">
+                <span class="material-symbols-outlined text-slate-700 dark:text-slate-300">home</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="flex-1 w-full max-w-md mx-auto px-5 py-6 pb-36">
+        <!-- 로딩 -->
+        <div id="loadingSpinner" class="text-center py-16">
+            <div class="inline-block size-12 border-4 border-slate-200 dark:border-slate-800 border-t-primary rounded-full animate-spin mb-4"></div>
+            <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">정보를 불러오는 중...</p>
+        </div>
+
+        <!-- 결과 -->
+        <div id="resultContainer" style="display: none;" class="space-y-4">
+            <!-- 주소 헤더 -->
+            <div id="resultHeader" class="bg-gradient-to-br from-primary to-blue-600 text-white rounded-2xl p-6 shadow-lg shadow-primary/20"></div>
+
+            <!-- 기본정보 -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-xl">description</span>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">기본정보</h3>
+                    </div>
+                    <button onclick="toggleSection('basic')" class="flex items-center justify-center size-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <span id="basicToggle" class="material-symbols-outlined text-slate-500">expand_more</span>
+                    </button>
+                </div>
+                <div id="basicContent" class="divide-y divide-slate-100 dark:divide-slate-800"></div>
+            </div>
+
+            <!-- 토지 정보 -->
+            <div id="landSection" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-green-600 text-xl">landscape</span>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">토지정보</h3>
+                    </div>
+                    <button onclick="toggleSection('land')" class="flex items-center justify-center size-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <span id="landToggle" class="material-symbols-outlined text-slate-500">expand_more</span>
+                    </button>
+                </div>
+                <div id="landContent" class="divide-y divide-slate-100 dark:divide-slate-800"></div>
+            </div>
+
+            <!-- 주택공시가격 (단독주택만) -->
+            <div id="housePriceSection" style="display: none;" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-amber-600 text-xl">payments</span>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">주택공시가격</h3>
+                    </div>
+                    <button onclick="toggleSection('housePrice')" class="flex items-center justify-center size-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <span id="housePriceToggle" class="material-symbols-outlined text-slate-500">expand_more</span>
+                    </button>
+                </div>
+                <div id="housePriceContent" class="divide-y divide-slate-100 dark:divide-slate-800"></div>
+            </div>
+
+            <!-- 건물 정보 -->
+            <div id="buildingSection" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-blue-600 text-xl">apartment</span>
+                        <h3 id="buildingTitle" class="text-base font-bold text-slate-900 dark:text-white">건물정보</h3>
+                    </div>
+                    <button onclick="toggleSection('building')" class="flex items-center justify-center size-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <span id="buildingToggle" class="material-symbols-outlined text-slate-500">expand_more</span>
+                    </button>
+                </div>
+                <div id="buildingContent" class="divide-y divide-slate-100 dark:divide-slate-800"></div>
+            </div>
+
+            <!-- 일반건축물: 층별정보 -->
+            <div id="floorInfoSection" style="display: none;" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-teal-600 text-xl">layers</span>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">층별 정보</h3>
+                    </div>
+                    <button onclick="toggleSection('floorInfo')" class="flex items-center justify-center size-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <span id="floorInfoToggle" class="material-symbols-outlined text-slate-500">expand_more</span>
+                    </button>
+                </div>
+                <div id="floorInfoContent"></div>
+            </div>
+
+            <!-- 공동주택: 동/호 선택 -->
+            <div id="dongHoSection" style="display: none;" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="material-symbols-outlined text-primary text-xl">domain</span>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">동/호 선택</h3>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label for="dongSelect" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">동 선택</label>
+                        <select id="dongSelect" class="w-full h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+                            <option value="">선택하세요</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="hoSelect" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">호 선택</label>
+                        <select id="hoSelect" class="w-full h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+                            <option value="">먼저 동을 선택하세요</option>
+                        </select>
+                    </div>
+                    <button id="selectButton" style="display: none;" class="w-full h-12 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-[0.98]">
+                        상세 정보 조회
+                    </button>
+                    <div id="areaLoadingMessage" style="display: none;" class="text-center py-4">
+                        <div class="inline-block size-8 border-4 border-slate-200 dark:border-slate-800 border-t-primary rounded-full animate-spin mb-2"></div>
+                        <p class="text-sm font-semibold text-primary">조회중...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 공동주택: 해당동 정보 -->
+            <div id="dongInfoSection" style="display: none;" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-indigo-600 text-xl">business</span>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">해당동 정보</h3>
+                    </div>
+                    <button onclick="toggleSection('dongInfo')" class="flex items-center justify-center size-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <span id="dongInfoToggle" class="material-symbols-outlined text-slate-500">expand_more</span>
+                    </button>
+                </div>
+                <div id="dongInfoContent" class="divide-y divide-slate-100 dark:divide-slate-800"></div>
+            </div>
+
+            <!-- 공동주택: 전유부 정보 -->
+            <div id="areaSection" style="display: none;" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-purple-600 text-xl">square_foot</span>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">전유부 정보</h3>
+                    </div>
+                    <button onclick="toggleSection('area')" class="flex items-center justify-center size-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <span id="areaToggle" class="material-symbols-outlined text-slate-500">expand_more</span>
+                    </button>
+                </div>
+                <div id="areaContent" class="divide-y divide-slate-100 dark:divide-slate-800"></div>
+            </div>
+
+            <!-- 지도 섹션 -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-red-600 text-xl">location_on</span>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">위치정보</h3>
+                    </div>
+                </div>
+                <div id="resultMap" class="w-full h-[300px] bg-slate-100 dark:bg-slate-800"></div>
+            </div>
+
+            <!-- AdMob 배너 광고 영역 -->
+            <div class="mt-8">
+                <div class="w-full h-[50px] bg-slate-100 dark:bg-slate-800/50 rounded-xl flex items-center justify-center border border-slate-200 dark:border-slate-800">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Advertisement</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- PDF 미리보기 모달 -->
+    <div id="pdfPreviewModal" style="display: none;" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            <!-- 모달 헤더 -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-2xl text-primary">picture_as_pdf</span>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">PDF 미리보기</h3>
+                </div>
+                <button onclick="closePDFPreviewModal()" class="flex items-center justify-center size-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <span class="material-symbols-outlined text-2xl text-slate-600 dark:text-slate-400">close</span>
+                </button>
+            </div>
+
+            <!-- 미리보기 영역 -->
+            <div class="flex-1 overflow-auto p-6 bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
+                <div id="pdfPreviewContent" class="bg-white rounded-xl shadow-lg" style="width: 1190px; height: 842px; flex-shrink: 0;">
+                    <!-- PDF 내용이 여기 표시됩니다 -->
+                </div>
+            </div>
+
+            <!-- 모달 푸터 -->
+            <div class="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+                <div class="text-sm text-slate-600 dark:text-slate-400">
+                    <span id="pdfUsageInfo"></span>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="closePDFPreviewModal()" class="px-6 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                        취소
+                    </button>
+                    <button onclick="downloadPDFFromPreview()" class="px-6 py-2.5 rounded-xl bg-primary text-white font-semibold text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-[0.98] flex items-center gap-2">
+                        <span class="material-symbols-outlined text-lg">download</span>
+                        다운로드
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 하단 액션 버튼 -->
+    <div class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-background-dark/95 backdrop-blur-xl border-t border-slate-200/60 dark:border-slate-800/60 pb-6 pt-4">
+        <div class="max-w-md mx-auto px-5">
+            <div class="grid grid-cols-2 gap-3">
+                <button id="favoriteButton" class="flex items-center justify-center gap-2 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] transition-all">
+                    <span class="material-symbols-outlined text-xl text-slate-500">star</span>
+                    <span class="text-sm">즐겨찾기 추가</span>
+                </button>
+                <button id="pdfButton" class="flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 active:scale-[0.98] transition-all">
+                    <span class="material-symbols-outlined text-xl">picture_as_pdf</span>
+                    <span class="text-sm">PDF 다운로드</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/app/js/pdf.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchType = urlParams.get('type');
+        const bdMgtSn = urlParams.get('bdMgtSn');
+        const bjdongCode = urlParams.get('bjdong_code');
+        const bun = urlParams.get('bun');
+        const ji = urlParams.get('ji');
+        const landType = urlParams.get('land_type') || '1';  // 토지구분 (기본값: 1=대지)
+        const urlLat = urlParams.get('lat');  // 지도 검색에서 전달된 좌표
+        const urlLng = urlParams.get('lng');
+
+        let currentData = null;
+        let selectedAreaInfo = null;
+        let mapCoordinates = null; // 지도 좌표 저장
+        let kakaoMapInstance = null; // 카카오맵 인스턴스
+
+        // 즐겨찾기 및 검색 기록용 변수
+        let currentPNU = null;
+        let currentAddressText = null;
+        let currentBuildingName = null;
+        let latitude = null;
+        let longitude = null;
+
+        // URL 파라미터에 좌표가 있으면 바로 저장
+        if (urlLat && urlLng) {
+            mapCoordinates = {
+                lat: parseFloat(urlLat),
+                lng: parseFloat(urlLng)
+            };
+        }
+
+        // 데이터 로드
+        async function loadData() {
+            try {
+                let response;
+
+                if (bdMgtSn) {
+                    response = await fetch('/app/api/search/bdmgtsn', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ bdMgtSn })
+                    });
+                } else if (bjdongCode && bun) {
+                    response = await fetch('/app/api/search/jibun', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ bjdong_code: bjdongCode, bun, ji: ji || '0', land_type: landType })
+                    });
+                } else {
+                    throw new Error('검색 파라미터가 없습니다');
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentData = data;
+                    displayResult(data);
+                } else {
+                    alert('데이터를 불러오지 못했습니다');
+                    history.back();
+                }
+            } catch (error) {
+                console.error('데이터 로드 오류:', error);
+                alert('데이터를 불러오는 중 오류가 발생했습니다');
+                history.back();
+            }
+        }
+
+        // 지번 표시 형식 생성 (산 포함)
+        function formatJibun(bunVal, jiVal, landTypeVal) {
+            const bunNum = parseInt(bunVal);
+            const jiNum = parseInt(jiVal);
+            const prefix = landTypeVal === '2' ? '산 ' : '';
+            return `${prefix}${bunNum}-${jiNum}`;
+        }
+
+        // 결과 표시
+        function displayResult(data) {
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.getElementById('resultContainer').style.display = 'block';
+
+            // 주소 헤더
+            const fullAddress = data.address?.full_address || '';
+            const jibunBun = data.codes?.bun || bun || '';
+            const jibunJi = data.codes?.ji || ji || '0000';
+            const landTypeVal = data.codes?.land_type || landType || '1';
+            const jibunDisplay = formatJibun(jibunBun, jibunJi, landTypeVal);
+
+            let roadAddr = '';
+            if (data.building?.has_data) {
+                if (data.building.type === 'multi_unit' && data.building.recap_title_info) {
+                    roadAddr = data.building.recap_title_info.new_plat_plc || '';
+                } else if (data.building.building_info) {
+                    roadAddr = data.building.building_info.new_plat_plc || '';
+                }
+            }
+
+            document.getElementById('resultHeader').innerHTML = `
+                <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-3xl flex-shrink-0 mt-0.5">location_on</span>
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-lg font-bold leading-tight">${fullAddress} ${jibunDisplay}</h2>
+                        ${roadAddr ? `<p class="text-sm opacity-90 mt-2">${roadAddr}</p>` : ''}
+                    </div>
+                </div>
+            `;
+
+            // 기본정보
+            displayBasicInfo(data);
+
+            // 토지 정보
+            const hasBuilding = data.building && data.building.has_data;
+            if (data.land) {
+                displayLandInfo(data.land, hasBuilding);
+            }
+
+            // 건물 정보
+            if (data.building && data.building.has_data) {
+                if (data.building.type === 'multi_unit') {
+                    displayMultiUnitBuilding(data.building, data.codes);
+                } else {
+                    displayGeneralBuilding(data.building);
+                }
+            } else {
+                document.getElementById('buildingContent').innerHTML =
+                    '<p class="text-center py-8 text-sm text-slate-500 dark:text-slate-400">건물 정보가 없습니다</p>';
+            }
+
+            saveSearchHistory(data);
+
+            // 즐겨찾기 및 검색 기록용 변수 설정
+            currentPNU = data.codes?.pnu || null;
+            currentAddressText = (data.address?.full_address || '') + ' ' + formatJibun(data.codes?.bun || bun || '', data.codes?.ji || ji || '0000', data.codes?.land_type || landType || '1');
+            currentBuildingName = null;
+            if (data.building?.has_data) {
+                if (data.building.type === 'multi_unit' && data.building.recap_title_info) {
+                    currentBuildingName = data.building.recap_title_info.building_name || null;
+                } else if (data.building.building_info) {
+                    currentBuildingName = data.building.building_info.building_name || null;
+                }
+            }
+
+            // 좌표 설정
+            if (mapCoordinates) {
+                latitude = mapCoordinates.lat;
+                longitude = mapCoordinates.lng;
+            }
+
+            // 즐겨찾기 상태 확인
+            checkFavoriteStatus();
+
+            // 검색 기록 추가
+            addToHistory();
+
+            // 지도 표시
+            displayMap(data);
+        }
+
+        // 기본정보 표시
+        function displayBasicInfo(data) {
+            const basicContent = document.getElementById('basicContent');
+            const jibunBun = data.codes?.bun || bun || '';
+            const jibunJi = data.codes?.ji || ji || '0000';
+            const landTypeVal = data.codes?.land_type || landType || '1';
+            const jibunDisplay = formatJibun(jibunBun, jibunJi, landTypeVal);
+
+            let roadAddr = '';
+            let hoFamilyHhld = '-/-/-';
+
+            if (data.building?.has_data) {
+                if (data.building.type === 'multi_unit' && data.building.recap_title_info) {
+                    roadAddr = data.building.recap_title_info.new_plat_plc || '';
+                    const ho = data.building.recap_title_info.total_ho_cnt || 0;
+                    const family = data.building.recap_title_info.total_fmly_cnt || 0;
+                    const hhld = data.building.recap_title_info.total_hhld_cnt || 0;
+                    hoFamilyHhld = `${hhld}/${fmly}/${ho}`;
+                } else if (data.building.building_info) {
+                    roadAddr = data.building.building_info.new_plat_plc || '';
+                    const ho = data.building.building_info.ho_cnt || 0;
+                    const family = data.building.building_info.family_cnt || 0;
+                    const hhld = data.building.building_info.hhld_cnt || 0;
+                    hoFamilyHhld = `${hhld}/${fmly}/${ho}`;
+                }
+            }
+
+            let basicHTML = `
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">지번주소</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${data.address?.full_address || ''} ${jibunDisplay}</span>
+                </div>
+            `;
+            if (data.building?.has_data) {
+                basicHTML += `
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">도로명주소</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${roadAddr || '-'}</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">세대/가구/호</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${hoFamilyHhld}</span>
+                </div>
+                `;
+            }
+            basicContent.innerHTML = basicHTML;
+        }
+
+        // 토지 정보 표시
+        function displayLandInfo(land, hasBuilding) {
+            const landContent = document.getElementById('landContent');
+            const isMultiParcel = land.parcel_count && land.parcel_count > 1;
+            const areaLabel = isMultiParcel ? `${formatArea(land.land_area)} (약 ${formatPyeong(land.land_area)} 평) (합계)` : `${formatArea(land.land_area)} (약 ${formatPyeong(land.land_area)} 평)`;
+
+            if (hasBuilding) {
+                // 건물이 있는 경우: 기존 간략 표시
+                landContent.innerHTML = `
+                    <div class="px-5 py-3 flex items-center justify-between">
+                        <span class="text-sm text-slate-600 dark:text-slate-400">토지면적</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${areaLabel}</span>
+                    </div>
+                    <div class="px-5 py-3 flex items-center justify-between">
+                        <span class="text-sm text-slate-600 dark:text-slate-400">지목</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white">${land.land_category_name || '-'}</span>
+                    </div>
+                    <div class="px-5 py-3 flex items-center justify-between">
+                        <span class="text-sm text-slate-600 dark:text-slate-400">공시지가</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white">${formatPrice(land.public_land_price)} 원/㎡</span>
+                    </div>
+                    <div class="px-5 py-3 flex items-center justify-between">
+                        <span class="text-sm text-slate-600 dark:text-slate-400">기준년도</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white">${land.price_year || '-'}년</span>
+                    </div>
+                    <div class="px-5 py-3 flex items-center justify-between">
+                        <span class="text-sm text-slate-600 dark:text-slate-400">용도지역</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${land.zone_classification || '-'}</span>
+                    </div>
+                `;
+            } else {
+                // 건물이 없는 경우: 상세 표시
+                const topoDisplay = [land.topography_form_name, land.topography_height_name].filter(v => v && v !== '-').join(' ') || '-';
+                const priceDisplay = land.public_land_price ? `${formatPrice(land.public_land_price)}원/㎡ (${land.price_year || '-'}년 기준)` : '-';
+
+                landContent.innerHTML = `
+                    <div class="px-5 py-3 flex items-center justify-between">
+                        <span class="text-sm text-slate-600 dark:text-slate-400">지목</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white">${land.land_category_name || '-'}</span>
+                    </div>
+                    <div class="px-5 py-3 flex items-center justify-between">
+                        <span class="text-sm text-slate-600 dark:text-slate-400">토지면적</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${areaLabel}</span>
+                    </div>
+                    <div class="px-5 py-3 flex items-center justify-between">
+                        <span class="text-sm text-slate-600 dark:text-slate-400">용도지역</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${land.zone_classification || '-'}</span>
+                    </div>
+                    <div class="px-5 py-3 flex items-center justify-between">
+                        <span class="text-sm text-slate-600 dark:text-slate-400">이용현황</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white">${land.land_use_situation_name || '-'}</span>
+                    </div>
+                    <div class="px-5 py-3 flex items-center justify-between">
+                        <span class="text-sm text-slate-600 dark:text-slate-400">지형</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white">${topoDisplay}</span>
+                    </div>
+                    <div class="px-5 py-3 flex items-center justify-between">
+                        <span class="text-sm text-slate-600 dark:text-slate-400">도로접면</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white">${land.road_side_name || '-'}</span>
+                    </div>
+                    <div class="px-5 py-3 flex items-center justify-between">
+                        <span class="text-sm text-slate-600 dark:text-slate-400">공시지가</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${priceDisplay}</span>
+                    </div>
+                `;
+            }
+        }
+
+        // 일반건축물 표시
+        function displayGeneralBuilding(building) {
+            const info = building.building_info || {};
+            const buildingContent = document.getElementById('buildingContent');
+
+            buildingContent.innerHTML = `
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">건물명</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${info.building_name || '-'}</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">주용도</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.main_purpose || '-'}</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">주구조</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.main_structure || '-'}</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">지붕</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.roof || '-'}</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">대지면적</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${formatArea(info.land_area)} (약 ${formatPyeong(info.land_area)} 평)</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">연면적</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${formatArea(info.total_area)} (약 ${formatPyeong(info.total_area)} 평)</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">건축면적</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${formatArea(info.building_area)} (약 ${formatPyeong(info.building_area)} 평)</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">용적률산정연면적</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${formatArea(info.vl_rat_estm_tot_area)} (약 ${formatPyeong(info.vl_rat_estm_tot_area)} 평)</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">건폐율</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.building_coverage || '-'}%</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">용적률</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.floor_area_ratio || '-'}%</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">높이</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.height || '-'}m</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">층수</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">지상 ${info.total_floors || 0}층 / 지하 ${info.basement_floors || 0}층</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">주차대수</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.total_parking || '-'}대</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">승강기</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.elevator_count || '-'}대</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">사용승인일</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.use_approval_date || '-'}</span>
+                </div>
+            `;
+
+            // 층별 정보 표시 (일반건축물)
+            if (building.floor_info && building.floor_info.length > 0) {
+                displayFloorInfo(building.floor_info);
+            }
+
+            // 주택공시가격 표시 (있는 경우)
+            if (info.house_price) {
+                const housePriceSection = document.getElementById('housePriceSection');
+                const housePriceContent = document.getElementById('housePriceContent');
+                housePriceSection.style.display = 'block';
+
+                housePriceContent.innerHTML = `
+                    <div class="px-5 py-3 bg-blue-50 dark:bg-blue-900/20 flex items-center justify-between">
+                        <span class="text-sm text-slate-700 dark:text-slate-300 font-semibold">주택공시가격</span>
+                        <span class="text-sm font-bold text-primary">${formatPrice(info.house_price)} 원</span>
+                    </div>
+                    <div class="px-5 py-3 flex items-center justify-between">
+                        <span class="text-sm text-slate-600 dark:text-slate-400">기준년월</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.house_price_year || ''}년 ${info.house_price_month || ''}월</span>
+                    </div>
+                `;
+            }
+        }
+
+        // 층별 정보 표시 (일반건축물)
+        function displayFloorInfo(floorInfo) {
+            const section = document.getElementById('floorInfoSection');
+            const content = document.getElementById('floorInfoContent');
+            section.style.display = 'block';
+
+            content.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-800/50">
+                                <th class="px-5 py-3 text-left text-slate-600 dark:text-slate-400 font-semibold">층</th>
+                                <th class="px-5 py-3 text-left text-slate-600 dark:text-slate-400 font-semibold">구조</th>
+                                <th class="px-5 py-3 text-left text-slate-600 dark:text-slate-400 font-semibold">용도</th>
+                                <th class="px-5 py-3 text-right text-slate-600 dark:text-slate-400 font-semibold">면적</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                            ${floorInfo.map(floor => `
+                                <tr>
+                                    <td class="px-5 py-3 text-slate-900 dark:text-white font-medium">${floor.floor_name || '-'}</td>
+                                    <td class="px-5 py-3 text-slate-600 dark:text-slate-400">${floor.structure || '-'}</td>
+                                    <td class="px-5 py-3 text-slate-600 dark:text-slate-400">${floor.purpose || '-'}</td>
+                                    <td class="px-5 py-3 text-right text-slate-900 dark:text-white font-semibold">${formatArea(floor.area)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // 공동주택 표시
+        function displayMultiUnitBuilding(building, codes) {
+            const info = building.recap_title_info || building.building_info || {};
+            const buildingContent = document.getElementById('buildingContent');
+
+            buildingContent.innerHTML = `
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">건물명</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${info.building_name || '-'}</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">주용도</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.main_purpose || '-'}</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">주구조</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.main_structure || '-'}</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">지붕</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.roof || '-'}</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">대지면적</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${formatArea(info.land_area)} (약 ${formatPyeong(info.land_area)} 평)</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">연면적</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${formatArea(info.total_area)} (약 ${formatPyeong(info.total_area)} 평)</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">건축면적</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${formatArea(info.building_area)} (약 ${formatPyeong(info.building_area)} 평)</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">용적률산정연면적</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${formatArea(info.vl_rat_estm_tot_area)} (약 ${formatPyeong(info.vl_rat_estm_tot_area)} 평)</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">건폐율</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.building_coverage || '-'}%</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">용적률</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.floor_area_ratio || '-'}%</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">높이</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.height || '-'}m</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">층수</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">지상 ${info.total_floors || 0}층 / 지하 ${info.basement_floors || 0}층</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">주차대수</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.total_parking || '-'}대</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">승강기</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.elevator_count || '-'}대</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">사용승인일</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${info.use_approval_date || '-'}</span>
+                </div>
+            `;
+
+            // 동/호 선택 UI 표시
+            displayDongHoSelector(building.dong_ho_dict, codes);
+        }
+
+        // 동/호 선택 UI
+        function displayDongHoSelector(dongHoDict, codes) {
+            if (!dongHoDict || Object.keys(dongHoDict).length === 0) return;
+
+            const section = document.getElementById('dongHoSection');
+            section.style.display = 'block';
+
+            const dongSelect = document.getElementById('dongSelect');
+            const hoSelect = document.getElementById('hoSelect');
+            const selectButton = document.getElementById('selectButton');
+
+            // 동 목록 채우기
+            dongSelect.innerHTML = '<option value="">선택하세요</option>';
+            Object.keys(dongHoDict).forEach(dong => {
+                const option = document.createElement('option');
+                option.value = dong;
+                option.textContent = dong;
+                dongSelect.appendChild(option);
+            });
+
+            // 동 선택 시 호 목록 업데이트
+            dongSelect.addEventListener('change', function() {
+                const selectedDong = this.value;
+                hoSelect.innerHTML = '<option value="">선택하세요</option>';
+                selectButton.style.display = 'none';
+
+                if (selectedDong && dongHoDict[selectedDong]) {
+                    dongHoDict[selectedDong].forEach(hoInfo => {
+                        const option = document.createElement('option');
+                        option.value = hoInfo.ho_nm;
+                        option.textContent = hoInfo.ho_nm;
+                        hoSelect.appendChild(option);
+                    });
+                    hoSelect.disabled = false;
+                }
+            });
+
+            // 호 선택 시 버튼 표시
+            hoSelect.addEventListener('change', function() {
+                if (this.value) {
+                    selectButton.style.display = 'block';
+                }
+            });
+
+            // 상세 정보 조회 버튼
+            selectButton.addEventListener('click', async function() {
+                const dong = dongSelect.value;
+                const ho = hoSelect.value;
+
+                if (!dong || !ho) {
+                    alert('동과 호를 모두 선택해주세요');
+                    return;
+                }
+
+                await loadAreaInfo(codes.bjdong_code, codes.bun, codes.ji, dong, ho);
+            });
+        }
+
+        // 동/호별 상세 정보 조회
+        async function loadAreaInfo(bjdongCode, bun, ji, dong, ho) {
+            const loadingMessage = document.getElementById('areaLoadingMessage');
+            const selectButton = document.getElementById('selectButton');
+
+            try {
+                // 로딩 표시
+                loadingMessage.style.display = 'block';
+                selectButton.disabled = true;
+
+                const response = await fetch('/app/api/area', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        bjdong_code: bjdongCode,
+                        bun: bun,
+                        ji: ji,
+                        dong_nm: dong,
+                        ho_nm: ho
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    selectedAreaInfo = data.area_info;
+                    displayDongInfo(data.area_info);
+                    displayAreaInfo(data.area_info);
+                } else {
+                    alert('상세 정보를 불러오지 못했습니다: ' + (data.error || ''));
+                }
+            } catch (error) {
+                console.error('상세 정보 조회 오류:', error);
+                alert('상세 정보를 불러오는 중 오류가 발생했습니다');
+            } finally {
+                // 로딩 숨김
+                loadingMessage.style.display = 'none';
+                selectButton.disabled = false;
+            }
+        }
+
+        // 해당동 정보 표시
+        function displayDongInfo(areaInfo) {
+            const dongInfoSection = document.getElementById('dongInfoSection');
+            const dongInfoContent = document.getElementById('dongInfoContent');
+            const dongTitle = areaInfo.dong_title_info;
+
+            if (!dongTitle) return;
+
+            dongInfoSection.style.display = 'block';
+
+            dongInfoContent.innerHTML = `
+                <div class="px-5 py-3 bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-between">
+                    <span class="text-sm text-slate-700 dark:text-slate-300 font-semibold">동명</span>
+                    <span class="text-sm font-bold text-primary">${areaInfo.dong_nm}</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">주구조</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${dongTitle.main_structure || '-'}</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">지붕</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${dongTitle.roof || '-'}</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">건축면적</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${formatArea(dongTitle.building_area)} (약 ${formatPyeong(dongTitle.building_area)} 평)</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">연면적</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${formatArea(dongTitle.total_area)} (약 ${formatPyeong(dongTitle.total_area)} 평)</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">층수</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">지상 ${dongTitle.total_floors || 0}층 / 지하 ${dongTitle.basement_floors || 0}층</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">승강기</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${dongTitle.elevator_count || 0}대</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">높이</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${dongTitle.height || '-'}m</span>
+                </div>
+            `;
+        }
+
+        // 전유부 정보 표시
+        function displayAreaInfo(areaInfo) {
+            const areaSection = document.getElementById('areaSection');
+            const areaContent = document.getElementById('areaContent');
+            areaSection.style.display = 'block';
+
+            areaContent.innerHTML = `
+                <div class="px-5 py-3 bg-purple-50 dark:bg-purple-900/20 flex items-center justify-between">
+                    <span class="text-sm text-slate-700 dark:text-slate-300 font-semibold">호명</span>
+                    <span class="text-sm font-bold text-primary">${areaInfo.dong_nm} ${areaInfo.ho_nm}</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">층구분/층수</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white">${areaInfo.floor_gb || '-'} ${areaInfo.floor_no || ''}층</span>
+                </div>
+                <div class="px-5 py-3 bg-blue-50 dark:bg-blue-900/20 flex items-center justify-between">
+                    <span class="text-sm text-slate-700 dark:text-slate-300 font-semibold">전용면적</span>
+                    <span class="text-sm font-bold text-slate-900 dark:text-white text-right">${formatArea(areaInfo.exclusive_area)} (약 ${formatPyeong(areaInfo.exclusive_area)} 평)</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">주공용면적</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${formatArea(areaInfo.main_public_area)} (약 ${formatPyeong(areaInfo.main_public_area)} 평)</span>
+                </div>
+                <div class="px-5 py-3 bg-blue-50 dark:bg-blue-900/20 flex items-center justify-between">
+                    <span class="text-sm text-slate-700 dark:text-slate-300 font-semibold">공급면적</span>
+                    <span class="text-sm font-bold text-slate-900 dark:text-white text-right">${formatArea(areaInfo.supply_area)} (약 ${formatPyeong(areaInfo.supply_area)} 평)</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">부공용면적</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${formatArea(areaInfo.sub_public_area)} (약 ${formatPyeong(areaInfo.sub_public_area)} 평)</span>
+                </div>
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">분양면적</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${formatArea(areaInfo.sale_area)} (약 ${formatPyeong(areaInfo.sale_area)} 평)</span>
+                </div>
+                <div class="px-5 py-3 bg-green-50 dark:bg-green-900/20 flex items-center justify-between">
+                    <span class="text-sm text-slate-700 dark:text-slate-300 font-semibold">대지지분</span>
+                    <span class="text-sm font-bold text-slate-900 dark:text-white text-right">${formatArea(areaInfo.land_share)} (약 ${formatPyeong(areaInfo.land_share)} 평)</span>
+                </div>
+                ${areaInfo.house_price ? `
+                <div class="px-5 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">공동주택가격</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-white text-right">${formatPrice(areaInfo.house_price)} 원 (${areaInfo.house_price_year || ''}년 ${areaInfo.house_price_month || ''}월)</span>
+                </div>
+                ` : ''}
+            `;
+
+            // 스크롤 이동
+            areaSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // 섹션 토글
+        window.toggleSection = function(section) {
+            const content = document.getElementById(`${section}Content`);
+            const toggle = document.getElementById(`${section}Toggle`);
+
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                toggle.textContent = 'expand_more';
+            } else {
+                content.style.display = 'none';
+                toggle.textContent = 'chevron_right';
+            }
+        };
+
+        // 유틸리티 함수
+        function formatArea(area) {
+            if (!area) return '-';
+            return Number(area).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + ' ㎡';
+        }
+
+        function formatPyeong(area) {
+            if (!area) return '-';
+            return Number(area / 3.3).toLocaleString('ko-KR', { maximumFractionDigits: 1 });
+        }
+
+        function formatPrice(price) {
+            if (!price) return '-';
+            return Number(price).toLocaleString('ko-KR');
+        }
+
+        // 지도 표시
+        function displayMap(data) {
+            const fullAddress = data.address?.full_address || '';
+            const jibunBun = data.codes?.bun || bun || '';
+            const jibunJi = data.codes?.ji || ji || '0000';
+            const landTypeVal = data.codes?.land_type || landType || '1';
+            const dongName = data.address?.eupmyeondong_name || '';
+            const jibunFormatted = formatJibun(jibunBun, jibunJi, landTypeVal);
+            const jibunDisplay = `${dongName} ${jibunFormatted}`;
+
+            if (!window.kakao || !window.kakao.maps) {
+                console.error('카카오맵 SDK가 로드되지 않았습니다');
+                return;
+            }
+
+            // 지도 컨테이너
+            const mapContainer = document.getElementById('resultMap');
+
+            // 지도 표시 함수
+            function showMapWithCoords(lat, lng) {
+                const coords = new kakao.maps.LatLng(lat, lng);
+
+                // 지도 생성
+                const map = new kakao.maps.Map(mapContainer, {
+                    center: coords,
+                    level: 3
+                });
+
+                // 말풍선 마커 생성 (CustomOverlay)
+                const markerContent = `
+                    <div class="custom-marker">
+                        ${jibunDisplay}
+                    </div>
+                `;
+
+                const customOverlay = new kakao.maps.CustomOverlay({
+                    position: coords,
+                    content: markerContent,
+                    yAnchor: 2.2
+                });
+
+                customOverlay.setMap(map);
+
+                // 기본 마커도 추가 (빨간 핀)
+                const marker = new kakao.maps.Marker({
+                    position: coords,
+                    map: map
+                });
+            }
+
+            // URL 파라미터에 좌표가 있으면 바로 표시
+            if (mapCoordinates && mapCoordinates.lat && mapCoordinates.lng) {
+                console.log('URL 파라미터 좌표 사용:', mapCoordinates);
+                showMapWithCoords(mapCoordinates.lat, mapCoordinates.lng);
+            } else {
+                // 주소-좌표 변환 객체 생성
+                const geocoder = new kakao.maps.services.Geocoder();
+
+                // 주소로 좌표 검색 (산 포함)
+                const searchAddress = `${fullAddress} ${jibunFormatted}`;
+                console.log('주소로 좌표 검색:', searchAddress);
+
+                geocoder.addressSearch(searchAddress, function(result, status) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        // 좌표 저장 (PDF용)
+                        mapCoordinates = {
+                            lat: result[0].y,
+                            lng: result[0].x
+                        };
+
+                        showMapWithCoords(mapCoordinates.lat, mapCoordinates.lng);
+                    } else {
+                        // 좌표 검색 실패 시 지도 숨김
+                        console.error('주소 검색 실패:', status);
+                        mapContainer.innerHTML = '<div class="flex items-center justify-center h-full text-sm text-slate-500">위치 정보를 불러올 수 없습니다</div>';
+                    }
+                });
+            }
+        }
+
+        // 검색 기록 저장
+        function saveSearchHistory(data) {
+            const history = JSON.parse(localStorage.getItem('recent_searches') || '[]');
+            history.unshift({
+                address: data.address?.full_address || '',
+                pnu: data.codes?.pnu || '',
+                date: new Date().toISOString(),
+                type: searchType
+            });
+            localStorage.setItem('recent_searches', JSON.stringify(history.slice(0, 20)));
+        }
+
+        // PDF 다운로드 (서버 사이드)
+        document.getElementById('pdfButton').addEventListener('click', async () => {
+            if (!currentData) {
+                alert('데이터를 불러오는 중입니다');
+                return;
+            }
+
+            // 서버 사이드 PDF 생성으로 변경
+            await downloadPDFFromServer();
+        });
+
+        // 즐겨찾기 상태 및 기능
+        let isFavorited = false;
+        let favoriteId = null;
+
+        // 토큰 가져오기
+        function getAccessToken() {
+            return localStorage.getItem('access_token');
+        }
+
+        // 즐겨찾기 여부 확인
+        async function checkFavoriteStatus() {
+            const token = getAccessToken();
+            if (!token || !currentPNU) return;
+
+            try {
+                const response = await fetch(`/app/api/user/favorites/check/${currentPNU}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    isFavorited = data.is_favorited;
+                    updateFavoriteButton();
+                }
+            } catch (error) {
+                console.error('Error checking favorite status:', error);
+            }
+        }
+
+        // 즐겨찾기 버튼 아이콘 및 텍스트 업데이트
+        function updateFavoriteButton() {
+            const button = document.getElementById('favoriteButton');
+            const icon = button.querySelector('.material-symbols-outlined');
+            const text = button.querySelector('span:last-child');
+
+            if (isFavorited) {
+                // 즐겨찾기 추가됨
+                icon.style.fontVariationSettings = "'FILL' 1";
+                icon.className = 'material-symbols-outlined text-xl text-primary';
+                text.textContent = '즐겨찾기 삭제';
+                button.className = 'flex items-center justify-center gap-2 py-3 bg-primary/10 dark:bg-primary/20 text-primary border border-primary/30 rounded-xl font-bold hover:bg-primary/15 dark:hover:bg-primary/30 active:scale-[0.98] transition-all';
+            } else {
+                // 즐겨찾기 안 됨
+                icon.style.fontVariationSettings = "'FILL' 0";
+                icon.className = 'material-symbols-outlined text-xl text-slate-500';
+                text.textContent = '즐겨찾기 추가';
+                button.className = 'flex items-center justify-center gap-2 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] transition-all';
+            }
+        }
+
+        // 즐겨찾기 추가
+        async function addToFavorites() {
+            const token = getAccessToken();
+            if (!token) {
+                alert('로그인이 필요합니다');
+                window.location.href = '/app/login.html';
+                return;
+            }
+
+            if (!currentPNU || !currentAddressText) {
+                alert('주소 정보를 불러올 수 없습니다');
+                return;
+            }
+
+            try {
+                const response = await fetch('/app/api/user/favorites', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        pnu: currentPNU,
+                        address_text: currentAddressText,
+                        building_name: currentBuildingName || null
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    isFavorited = true;
+                    favoriteId = data.favorite_id;
+                    updateFavoriteButton();
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                console.error('Error adding favorite:', error);
+                alert('즐겨찾기 추가 중 오류가 발생했습니다');
+            }
+        }
+
+        // 즐겨찾기 삭제
+        async function removeFromFavorites() {
+            const token = getAccessToken();
+            if (!token) return;
+
+            try {
+                const response = await fetch(`/app/api/user/favorites/${currentPNU}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                // PNU로 삭제하는 API가 없으므로 목록을 조회해서 ID를 찾아야 함
+                // 간단하게 하기 위해 페이지 새로고침
+                const data = await response.json();
+                if (data.success) {
+                    isFavorited = false;
+                    updateFavoriteButton();
+                }
+            } catch (error) {
+                console.error('Error removing favorite:', error);
+                alert('즐겨찾기 삭제 중 오류가 발생했습니다');
+            }
+        }
+
+        // 검색 기록 추가
+        async function addToHistory() {
+            const token = getAccessToken();
+            if (!token || !currentPNU || !currentAddressText) return;
+
+            try {
+                await fetch('/app/api/user/history', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        search_type: searchType || 'jibun',
+                        address_text: currentAddressText,
+                        pnu: currentPNU,
+                        building_name: currentBuildingName || null,
+                        latitude: latitude || null,
+                        longitude: longitude || null
+                    })
+                });
+            } catch (error) {
+                console.error('Error adding history:', error);
+            }
+        }
+
+        // 즐겨찾기 버튼 클릭
+        document.getElementById('favoriteButton').addEventListener('click', async () => {
+            if (isFavorited) {
+                if (confirm('즐겨찾기에서 삭제하시겠습니까?')) {
+                    await removeFromFavorites();
+                }
+            } else {
+                await addToFavorites();
+            }
+        });
+
+        // 하단 네비게이션
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const page = item.dataset.page;
+                switch(page) {
+                    case 'home': window.location.href = '/app/'; break;
+                    case 'history': window.location.href = '/app/history.html'; break;
+                    case 'favorites': window.location.href = '/app/favorites.html'; break;
+                    case 'profile': window.location.href = '/app/profile.html'; break;
+                }
+            });
+        });
+
+        // PDF 미리보기 모달
+        function showPDFPreviewModal() {
+            const modal = document.getElementById('pdfPreviewModal');
+            const previewContent = document.getElementById('pdfPreviewContent');
+
+            // 사용 횟수 표시 (현재 비활성화)
+            document.getElementById('pdfUsageInfo').textContent = '';
+
+            // PDF 템플릿 렌더링
+            const pdfHTML = createPDFPreviewHTML();
+            previewContent.innerHTML = pdfHTML;
+
+            // 지도 이미지 로드
+            setTimeout(() => {
+                loadMapImage();
+            }, 500);
+
+            // 모달 표시
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 현재 화면의 카카오맵을 캡처해서 PDF용 이미지로 변환
+        async function loadMapImage() {
+            const pdfMapContainer = document.getElementById('pdfMapContainer');
+            const resultMapContainer = document.getElementById('resultMap');
+
+            if (!pdfMapContainer) {
+                console.log('PDF 지도 컨테이너를 찾을 수 없습니다');
+                return;
+            }
+
+            if (!resultMapContainer) {
+                console.log('결과 화면 지도를 찾을 수 없습니다');
+                return;
+            }
+
+            try {
+                console.log('지도 캡처 시작...');
+
+                // html2canvas가 이미 로드되어 있는지 확인
+                if (!window.html2canvas) {
+                    await loadPDFLibraries();
+                }
+
+                // 잠시 대기 (지도 렌더링 완료 보장)
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                // 현재 화면의 카카오맵을 캡처
+                const canvas = await html2canvas(resultMapContainer, {
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: true,
+                    backgroundColor: '#f1f5f9',
+                    scale: 1.5,
+                    width: resultMapContainer.offsetWidth,
+                    height: resultMapContainer.offsetHeight
+                });
+
+                console.log('지도 캡처 완료:', canvas.width, 'x', canvas.height);
+
+                // Canvas를 이미지로 변환
+                const imageData = canvas.toDataURL('image/png');
+
+                // PDF 템플릿의 지도 영역에 이미지 삽입
+                pdfMapContainer.innerHTML = `
+                    <img src="${imageData}"
+                         alt="위치 지도"
+                         style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;" />
+                `;
+
+                console.log('지도 이미지 삽입 완료');
+            } catch (error) {
+                console.error('지도 캡처 실패:', error);
+                pdfMapContainer.innerHTML = `
+                    <div style="text-align: center; color: #94a3b8; font-size: 12px; padding: 20px;">
+                        <div style="font-size: 32px; margin-bottom: 8px;">📍</div>
+                        <div>지도를 불러올 수 없습니다</div>
+                    </div>
+                `;
+            }
+        }
+
+        function closePDFPreviewModal() {
+            const modal = document.getElementById('pdfPreviewModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        function createPDFPreviewHTML() {
+            const address = currentData.address?.full_address || '';
+            const jibunBun = currentData.codes?.bun || bun || '';
+            const jibunJi = currentData.codes?.ji || ji || '0000';
+            const landTypeVal = currentData.codes?.land_type || landType || '1';
+            const jibunDisplay = formatJibun(jibunBun, jibunJi, landTypeVal);
+            const dongName = currentData.address?.eupmyeondong_name || '';
+
+            let roadAddr = '';
+            let hoFamilyHhld = '0/0/0';
+            if (currentData.building?.has_data) {
+                if (currentData.building.type === 'multi_unit' && currentData.building.recap_title_info) {
+                    roadAddr = currentData.building.recap_title_info.new_plat_plc || '';
+                    const ho = currentData.building.recap_title_info.total_ho_cnt || 0;
+                    const family = currentData.building.recap_title_info.total_fmly_cnt || 0;
+                    const hhld = currentData.building.recap_title_info.total_hhld_cnt || 0;
+                    hoFamilyHhld = `${hhld}/${fmly}/${ho}`;
+                } else if (currentData.building.building_info) {
+                    roadAddr = currentData.building.building_info.new_plat_plc || '';
+                    const ho = currentData.building.building_info.ho_cnt || 0;
+                    const family = currentData.building.building_info.family_cnt || 0;
+                    const hhld = currentData.building.building_info.hhld_cnt || 0;
+                    hoFamilyHhld = `${hhld}/${fmly}/${ho}`;
+                }
+            }
+
+            const land = currentData.land || {};
+            const building = currentData.building || {};
+            const buildingInfo = building.type === 'multi_unit' ? building.recap_title_info : building.building_info;
+            const isMultiUnit = building.type === 'multi_unit';
+
+            // 층별 정보 (단독주택용, 최대 5층까지만)
+            let floorInfoHTML = '';
+            if (!isMultiUnit && building.has_data && building.floor_info && building.floor_info.length > 0) {
+                const floors = building.floor_info.slice(0, 5);
+                const hasMore = building.floor_info.length > 5;
+
+                floorInfoHTML = `
+                    <div style="border: 2px solid #e2e8f0; border-radius: 8px; overflow: hidden; margin-bottom: 16px;">
+                        <div style="background: #f8fafc; padding: 10px 12px; border-bottom: 2px solid #e2e8f0;">
+                            <h3 style="font-size: 14px; font-weight: 700; color: #136dec; margin: 0;">층별 정보</h3>
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                            <thead>
+                                <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                                    <th style="padding: 10px; text-align: left; color: #64748b; font-weight: 600; width: 25%;">층</th>
+                                    <th style="padding: 10px; text-align: left; color: #64748b; font-weight: 600; width: 35%;">용도</th>
+                                    <th style="padding: 10px; text-align: right; color: #64748b; font-weight: 600; width: 40%;">면적</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${floors.map(floor => `
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px; color: #334155;">${floor.floor_name || '-'}</td>
+                                        <td style="padding: 10px; color: #334155;">${floor.purpose || '-'}</td>
+                                        <td style="padding: 10px; text-align: right; color: #334155; font-weight: 600;">${formatArea(floor.area)}</td>
+                                    </tr>
+                                `).join('')}
+                                ${hasMore ? `
+                                    <tr>
+                                        <td colspan="3" style="padding: 10px; text-align: center; color: #94a3b8; font-size: 10px; font-style: italic;">
+                                            ... 외 ${building.floor_info.length - 5}개 층 생략
+                                        </td>
+                                    </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            // 전유부 정보 (공동주택용)
+            let exclusiveInfoHTML = '';
+            if (isMultiUnit && selectedAreaInfo) {
+                exclusiveInfoHTML = `
+                    <div style="border: 2px solid #e2e8f0; border-radius: 8px; overflow: hidden; margin-bottom: 16px;">
+                        <div style="background: #f8fafc; padding: 10px 12px; border-bottom: 2px solid #e2e8f0;">
+                            <h3 style="font-size: 14px; font-weight: 700; color: #136dec; margin: 0;">전유부 정보</h3>
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 10px; color: #64748b; font-weight: 600; width: 40%;">호명</td>
+                                <td style="padding: 10px; color: #334155; font-weight: 700; text-align: right;">${selectedAreaInfo.dong_nm} ${selectedAreaInfo.ho_nm}</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 10px; color: #64748b; font-weight: 600;">층구분/층수</td>
+                                <td style="padding: 10px; color: #334155; text-align: right;">${selectedAreaInfo.floor_gb || '-'} ${selectedAreaInfo.floor_no || ''}층</td>
+                            </tr>
+                            <tr style="background: #eff6ff; border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 10px; color: #136dec; font-weight: 700;">전용면적</td>
+                                <td style="padding: 10px; color: #136dec; font-weight: 700; text-align: right;">${formatArea(selectedAreaInfo.exclusive_area)}<br/>(${formatPyeong(selectedAreaInfo.exclusive_area)} 평)</td>
+                            </tr>
+                            <tr style="background: #eff6ff; border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 10px; color: #136dec; font-weight: 700;">공급면적</td>
+                                <td style="padding: 10px; color: #136dec; font-weight: 700; text-align: right;">${formatArea(selectedAreaInfo.supply_area)}<br/>(${formatPyeong(selectedAreaInfo.supply_area)} 평)</td>
+                            </tr>
+                            <tr style="background: #f0fdf4; border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 10px; color: #22c55e; font-weight: 700;">대지지분</td>
+                                <td style="padding: 10px; color: #22c55e; font-weight: 700; text-align: right;">${formatArea(selectedAreaInfo.land_share)}<br/>(${formatPyeong(selectedAreaInfo.land_share)} 평)</td>
+                            </tr>
+                            ${selectedAreaInfo.house_price ? `
+                            <tr>
+                                <td style="padding: 10px; color: #64748b; font-weight: 600;">공동주택가격</td>
+                                <td style="padding: 10px; color: #334155; text-align: right;">${formatPrice(selectedAreaInfo.house_price)} 원</td>
+                            </tr>
+                            ` : ''}
+                        </table>
+                    </div>
+                `;
+            }
+
+            return `
+                <div style="font-family: 'Pretendard', 'Malgun Gothic', sans-serif; width: 1190px; height: 842px; padding: 35px; box-sizing: border-box; display: flex; flex-direction: column;">
+                    <!-- 헤더 -->
+                    <div style="border-bottom: 3px solid #136dec; padding-bottom: 14px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end;">
+                        <div>
+                            <h1 style="color: #136dec; font-size: 26px; font-weight: 700; margin: 0 0 8px 0;">부동산 정보 조회 결과</h1>
+                            <p style="color: #64748b; font-size: 12px; margin: 0;">Building & Land Information Report</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <p style="color: #64748b; font-size: 12px; margin: 0;">생성일시</p>
+                            <p style="color: #334155; font-size: 12px; font-weight: 600; margin: 2px 0 0 0;">${new Date().toLocaleString('ko-KR')}</p>
+                        </div>
+                    </div>
+
+                    <!-- 메인 콘텐츠: 좌우 분할 -->
+                    <div style="display: flex; gap: 24px; flex: 1;">
+                        <!-- 좌측 60% -->
+                        <div style="flex: 0 0 58%; display: flex; flex-direction: column; gap: 16px;">
+                            <!-- 기본정보 -->
+                            <div style="border: 2px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                                <div style="background: #f8fafc; padding: 10px 14px; border-bottom: 2px solid #e2e8f0;">
+                                    <h3 style="font-size: 14px; font-weight: 700; color: #136dec; margin: 0;">● 기본정보</h3>
+                                </div>
+                                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                                    <tr style="${building.has_data ? 'border-bottom: 1px solid #f1f5f9;' : ''}">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600; width: 30%;">지번</td>
+                                        <td style="padding: 10px 14px; color: #334155; font-weight: 600;">${dongName} ${jibunDisplay}</td>
+                                    </tr>
+                                    ${building.has_data ? `
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">도로명주소</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${roadAddr || '-'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">세대/가구/호</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${hoFamilyHhld}</td>
+                                    </tr>
+                                    ` : ''}
+                                </table>
+                            </div>
+
+                            <!-- 토지정보 -->
+                            ${land && land.land_area ? (() => {
+                                if (building.has_data) {
+                                    // 건물이 있는 경우: 간략 표시
+                                    return `
+                            <div style="border: 2px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                                <div style="background: #f8fafc; padding: 10px 14px; border-bottom: 2px solid #e2e8f0;">
+                                    <h3 style="font-size: 14px; font-weight: 700; color: #136dec; margin: 0;">● 토지정보</h3>
+                                </div>
+                                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600; width: 30%;">토지면적</td>
+                                        <td style="padding: 10px 14px; color: #334155; font-weight: 600;">${formatArea(land.land_area)} (약 ${formatPyeong(land.land_area)} 평)${land.parcel_count > 1 ? ' (합계)' : ''}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">공시지가</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${formatPrice(land.public_land_price)} 원/㎡</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">기준년도</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${land.price_year || '-'}년</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">용도지역</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${land.zone_classification || '-'}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                                    `;
+                                } else {
+                                    // 건물이 없는 경우: 상세 표시
+                                    const pdfTopoDisplay = [land.topography_form_name, land.topography_height_name].filter(v => v && v !== '-').join(' ') || '-';
+                                    const pdfPriceDisplay = land.public_land_price ? `${formatPrice(land.public_land_price)}원/㎡ (${land.price_year || '-'}년 기준)` : '-';
+                                    return `
+                            <div style="border: 2px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                                <div style="background: #f8fafc; padding: 10px 14px; border-bottom: 2px solid #e2e8f0;">
+                                    <h3 style="font-size: 14px; font-weight: 700; color: #136dec; margin: 0;">● 토지정보</h3>
+                                </div>
+                                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600; width: 30%;">지목</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${land.land_category_name || '-'}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">토지면적</td>
+                                        <td style="padding: 10px 14px; color: #334155; font-weight: 600;">${formatArea(land.land_area)} (약 ${formatPyeong(land.land_area)} 평)${land.parcel_count > 1 ? ' (합계)' : ''}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">용도지역</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${land.zone_classification || '-'}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">이용현황</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${land.land_use_situation_name || '-'}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">지형</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${pdfTopoDisplay}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">도로접면</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${land.road_side_name || '-'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">공시지가</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${pdfPriceDisplay}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                                    `;
+                                }
+                            })() : ''}
+
+                            <!-- 건물정보 -->
+                            ${building.has_data && buildingInfo ? `
+                            <div style="border: 2px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                                <div style="background: #f8fafc; padding: 10px 14px; border-bottom: 2px solid #e2e8f0;">
+                                    <h3 style="font-size: 14px; font-weight: 700; color: #136dec; margin: 0;">● 건물정보</h3>
+                                </div>
+                                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600; width: 30%;">건물명</td>
+                                        <td style="padding: 10px 14px; color: #334155; font-weight: 600;">${buildingInfo.building_name || '-'}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">대지면적</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${formatArea(buildingInfo.land_area)} (약 ${formatPyeong(buildingInfo.land_area)} 평)</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">연면적</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${formatArea(buildingInfo.total_area)} (약 ${formatPyeong(buildingInfo.total_area)} 평)</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">건축면적</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${formatArea(buildingInfo.building_area)} (약 ${formatPyeong(buildingInfo.building_area)} 평)</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">건폐율</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${buildingInfo.building_coverage || '-'}%</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">용적률</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${buildingInfo.floor_area_ratio || '-'}%</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">층수</td>
+                                        <td style="padding: 10px 14px; color: #334155;">지상 ${buildingInfo.total_floors || 0}층 / 지하 ${buildingInfo.basement_floors || 0}층</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">사용승인일</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${buildingInfo.use_approval_date || '-'}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            ` : ''}
+
+                            <!-- 해당동 정보 (공동주택만) -->
+                            ${isMultiUnit && selectedAreaInfo && selectedAreaInfo.dong_title_info ? `
+                            <div style="border: 2px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                                <div style="background: #f8fafc; padding: 10px 14px; border-bottom: 2px solid #e2e8f0;">
+                                    <h3 style="font-size: 14px; font-weight: 700; color: #136dec; margin: 0;">● 해당동 정보</h3>
+                                </div>
+                                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600; width: 30%;">동명</td>
+                                        <td style="padding: 10px 14px; color: #334155; font-weight: 600;">${selectedAreaInfo.dong_nm}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">건축면적</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${formatArea(selectedAreaInfo.dong_title_info.building_area)} (약 ${formatPyeong(selectedAreaInfo.dong_title_info.building_area)} 평)</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">연면적</td>
+                                        <td style="padding: 10px 14px; color: #334155;">${formatArea(selectedAreaInfo.dong_title_info.total_area)} (약 ${formatPyeong(selectedAreaInfo.dong_title_info.total_area)} 평)</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 14px; background: #f8fafc; color: #64748b; font-weight: 600;">층수</td>
+                                        <td style="padding: 10px 14px; color: #334155;">지상 ${selectedAreaInfo.dong_title_info.total_floors || 0}층 / 지하 ${selectedAreaInfo.dong_title_info.basement_floors || 0}층</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- 우측 40% -->
+                        <div style="flex: 0 0 38%; display: flex; flex-direction: column;">
+                            <!-- 상단 50%: 층별정보 또는 전유부정보 -->
+                            <div style="flex: 0 0 50%; overflow-y: auto; padding-right: 4px;">
+                                ${floorInfoHTML || exclusiveInfoHTML || ''}
+                            </div>
+
+                            <!-- 하단 50%: 지도 + 푸터 -->
+                            <div style="flex: 0 0 50%; display: flex; flex-direction: column; justify-content: flex-end;">
+                                <!-- 지도 -->
+                                <div style="border: 2px solid #e2e8f0; border-radius: 8px; overflow: hidden; margin-bottom: 12px; flex: 1; display: flex; flex-direction: column;">
+                                    <div style="background: #f8fafc; padding: 10px 14px; border-bottom: 2px solid #e2e8f0;">
+                                        <h3 style="font-size: 14px; font-weight: 700; color: #136dec; margin: 0;">● 위치정보</h3>
+                                    </div>
+                                    <div id="pdfMapContainer" style="flex: 1; background: #f1f5f9; display: flex; align-items: center; justify-content: center; position: relative;">
+                                        <div style="text-align: center; color: #94a3b8; font-size: 12px;">
+                                            <div style="font-size: 32px; margin-bottom: 8px;">📍</div>
+                                            <div style="font-weight: 600; color: #136dec;">${dongName} ${jibunDisplay}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 푸터 -->
+                                <div style="text-align: center; padding: 12px 0;">
+                                    <p style="color: #94a3b8; font-size: 10px; margin: 0 0 5px 0;">본 자료는 공공데이터포털 및 VWorld API를 기반으로 생성되었습니다.</p>
+                                    <p style="color: #64748b; font-size: 11px; font-weight: 600; margin: 0;">부동산 정보 조회 앱 - goldenrabbit.biz</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * 서버 사이드 PDF 다운로드
+         * 클라이언트 사이드 html2canvas 대신 서버에서 PDF 생성
+         */
+        async function downloadPDFFromServer() {
+            try {
+                // 로딩 표시
+                const loadingDiv = document.createElement('div');
+                loadingDiv.id = 'pdf-loading';
+                loadingDiv.innerHTML = `
+                    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; align-items: center; justify-center;">
+                        <div style="background: white; padding: 30px; border-radius: 16px; text-align: center;">
+                            <div style="border: 4px solid #e1e8ed; border-top: 4px solid #136dec; border-radius: 50%; width: 48px; height: 48px; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+                            <p style="font-size: 16px; color: #2c3e50; margin: 0;">PDF 생성 중...</p>
+                        </div>
+                    </div>
+                    <style>
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                    </style>
+                `;
+                document.body.appendChild(loadingDiv);
+
+                // 저장된 좌표 가져오기
+                let lat = mapCoordinates?.lat;
+                let lng = mapCoordinates?.lng;
+
+                console.log('PDF 생성 좌표:', { lat, lng });
+
+                // API 호출
+                const response = await fetch('/app/api/pdf/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        address: currentData.address,
+                        codes: currentData.codes,
+                        land: currentData.land,
+                        building: currentData.building,
+                        area_info: selectedAreaInfo,
+                        lat: lat,
+                        lng: lng
+                    })
+                });
+
+                // 로딩 제거
+                document.body.removeChild(loadingDiv);
+
+                if (!response.ok) {
+                    throw new Error('PDF 생성 실패');
+                }
+
+                // PDF 다운로드
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+
+                // 파일명 생성
+                const address = currentData.address?.full_address || '부동산정보';
+                const jibunBun = currentData.codes?.bun || bun || '';
+                const jibunJi = currentData.codes?.ji || ji || '0000';
+                const today = new Date().toISOString().split('T')[0];
+                a.download = `${address}_${parseInt(jibunBun)}-${parseInt(jibunJi)}_${today}.pdf`;
+
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                // 사용 통계 업데이트
+                const usageKey = `usage_pdf_${today}`;
+                const count = parseInt(localStorage.getItem(usageKey) || '0');
+                localStorage.setItem(usageKey, (count + 1).toString());
+
+                console.log('PDF 다운로드 완료');
+
+            } catch (error) {
+                // 로딩 제거
+                const loadingDiv = document.getElementById('pdf-loading');
+                if (loadingDiv) {
+                    document.body.removeChild(loadingDiv);
+                }
+
+                console.error('PDF 생성 오류:', error);
+                alert('PDF 생성 중 오류가 발생했습니다');
+            }
+        }
+
+        // 레거시 함수 (호환성 유지)
+        async function downloadPDFFromPreview() {
+            await downloadPDFFromServer();
+        }
+
+        async function loadPDFLibraries() {
+            if (window.html2canvas && window.jspdf) return;
+
+            return new Promise((resolve, reject) => {
+                if (!window.html2canvas) {
+                    const html2canvasScript = document.createElement('script');
+                    html2canvasScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                    html2canvasScript.onload = () => {
+                        if (!window.jspdf) {
+                            const jspdfScript = document.createElement('script');
+                            jspdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                            jspdfScript.onload = resolve;
+                            jspdfScript.onerror = reject;
+                            document.head.appendChild(jspdfScript);
+                        } else {
+                            resolve();
+                        }
+                    };
+                    html2canvasScript.onerror = reject;
+                    document.head.appendChild(html2canvasScript);
+                } else if (!window.jspdf) {
+                    const jspdfScript = document.createElement('script');
+                    jspdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                    jspdfScript.onload = resolve;
+                    jspdfScript.onerror = reject;
+                    document.head.appendChild(jspdfScript);
+                } else {
+                    resolve();
+                }
+            });
+        }
+
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        // ESC 키로 모달 닫기
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('pdfPreviewModal');
+                if (modal.style.display === 'flex') {
+                    closePDFPreviewModal();
+                }
+            }
+        });
+
+        // 초기화
+        loadData();
+    </script>
+    <script src="/app/ad-consent.js"></script>
+</body>
+</html>

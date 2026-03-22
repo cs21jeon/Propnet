@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proptalk 결제 UI 미리보기</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+            background: #e0e0e0;
+            color: #1a1a1a;
+        }
+        .preview-nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: #333; color: white; padding: 8px 16px;
+            display: flex; gap: 8px; align-items: center;
+            font-size: 14px;
+        }
+        .preview-nav button {
+            background: #555; color: white; border: none; padding: 6px 12px;
+            border-radius: 4px; cursor: pointer; font-size: 13px;
+        }
+        .preview-nav button.active { background: #1A73E8; }
+        .preview-nav button:hover { background: #666; }
+        .phone-frame {
+            max-width: 390px; margin: 60px auto 40px;
+            background: #f5f5f5; min-height: 700px;
+            border-radius: 24px; overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* billing base styles */
+        .container { max-width: 480px; margin: 0 auto; padding: 16px; }
+        .header { text-align: center; padding: 24px 0 16px; }
+        .header h1 { font-size: 20px; font-weight: 700; color: #1A73E8; }
+        .header p { font-size: 13px; color: #666; margin-top: 4px; }
+        .card {
+            background: white; border-radius: 12px; padding: 20px;
+            margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .btn {
+            display: block; width: 100%; padding: 14px; border: none; border-radius: 8px;
+            font-size: 16px; font-weight: 600; cursor: pointer; text-align: center;
+            text-decoration: none; transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary { background: #1A73E8; color: white; }
+        .btn-secondary { background: #e8e8e8; color: #333; }
+        .btn-danger { background: #dc3545; color: white; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+        .badge-primary { background: #E8F0FE; color: #1A73E8; }
+        .badge-success { background: #E6F4EA; color: #137333; }
+        .badge-warning { background: #FEF7E0; color: #B06000; }
+        .loading { text-align: center; padding: 40px; color: #999; }
+        .spinner {
+            display: inline-block; width: 24px; height: 24px;
+            border: 3px solid #e8e8e8; border-top-color: #1A73E8;
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error { color: #dc3545; font-size: 14px; margin-top: 8px; }
+        .legal-notice {
+            font-size: 12px; color: #999; line-height: 1.6;
+            margin-top: 16px; padding: 12px; background: #fafafa; border-radius: 8px;
+        }
+        .legal-notice a { color: #1A73E8; }
+    </style>
+</head>
+<body>
+
+<div class="preview-nav">
+    <span>UI Preview:</span>
+    <button class="active" onclick="showPage('plans')">요금제 선택</button>
+    <button onclick="showPage('checkout')">결제</button>
+    <button onclick="showPage('success')">결제 성공</button>
+    <button onclick="showPage('fail')">결제 실패</button>
+    <button onclick="showPage('manage')">구독 관리</button>
+</div>
+
+<div class="phone-frame">
+
+<!-- ========== 요금제 선택 페이지 ========== -->
+<div id="page-plans" class="page active">
+    <div class="container">
+        <div class="header">
+            <h1>Proptalk</h1>
+            <p>세상 쉬운 업무 공유</p>
+        </div>
+
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <span style="font-size:13px; color:#666;">잔여 시간</span>
+                    <div style="font-size:24px; font-weight:700; color:#1A73E8;">8분</div>
+                </div>
+                <span class="badge badge-primary">무료 체험</span>
+            </div>
+        </div>
+
+        <h2 style="font-size:16px; font-weight:700; margin:16px 0 8px; padding-left:4px;">시간 충전</h2>
+
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                <div>
+                    <div style="font-size:16px; font-weight:700;">1시간 팩</div>
+                    <div style="font-size:13px; color:#666; margin-top:2px;">1시간 · 일회성 · 만료 없음 · 시간당 9,900원</div>
+                </div>
+                <div style="font-size:18px; font-weight:700; white-space:nowrap;">9,900원</div>
+            </div>
+            <button class="btn btn-primary" onclick="alert('결제 페이지로 이동')">구매하기</button>
+        </div>
+
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                <div>
+                    <div style="font-size:16px; font-weight:700;">10시간 팩</div>
+                    <div style="font-size:13px; color:#666; margin-top:2px;">10시간 · 일회성 · 만료 없음 · 시간당 7,900원</div>
+                </div>
+                <div style="font-size:18px; font-weight:700; white-space:nowrap;">79,000원</div>
+            </div>
+            <button class="btn btn-primary" onclick="alert('결제 페이지로 이동')">구매하기</button>
+        </div>
+
+        <h2 style="font-size:16px; font-weight:700; margin:16px 0 8px; padding-left:4px;">월 정기구독</h2>
+
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                <div>
+                    <div style="font-size:16px; font-weight:700;">Basic 30시간</div>
+                    <div style="font-size:13px; color:#666; margin-top:2px;">30시간 · 월 정기결제 · 시간당 967원 · 초과 시 12원/분</div>
+                </div>
+                <div style="font-size:18px; font-weight:700; white-space:nowrap;">29,000원<span style="font-size:12px; font-weight:400;">/월</span></div>
+            </div>
+            <button class="btn btn-primary" onclick="alert('구독 페이지로 이동')">구독하기</button>
+        </div>
+
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                <div>
+                    <div style="font-size:16px; font-weight:700;">Pro 90시간</div>
+                    <div style="font-size:13px; color:#666; margin-top:2px;">90시간 · 월 정기결제 · 시간당 878원 · 초과 시 12원/분</div>
+                </div>
+                <div style="font-size:18px; font-weight:700; white-space:nowrap;">79,000원<span style="font-size:12px; font-weight:400;">/월</span></div>
+            </div>
+            <button class="btn btn-primary" onclick="alert('구독 페이지로 이동')">구독하기</button>
+        </div>
+
+        <div class="legal-notice">
+            결제는 토스페이먼츠를 통해 안전하게 처리됩니다.<br>
+            표시 가격은 VAT 포함입니다.<br>
+            결제 후 7일 이내 미이용 시 전액 환불 가능합니다.<br>
+            문의: cs21.jeon@gmail.com<br><br>
+            <a href="#">이용약관</a> · <a href="#">개인정보 처리방침</a> · <a href="#">결제 약관</a>
+        </div>
+    </div>
+</div>
+
+<!-- ========== 결제 페이지 ========== -->
+<div id="page-checkout" class="page">
+    <div class="container">
+        <div class="header">
+            <h1>Proptalk</h1>
+            <p>세상 쉬운 업무 공유</p>
+        </div>
+
+        <div class="card">
+            <h2 style="font-size:18px; font-weight:700; margin-bottom:16px;">결제 정보</h2>
+            <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+                <span style="color:#666;">상품</span>
+                <span style="font-weight:600;">1시간 팩</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:8px 0; margin-bottom:16px;">
+                <span style="color:#666;">결제 금액</span>
+                <span style="font-size:20px; font-weight:700; color:#1A73E8;">9,900원</span>
+            </div>
+            <div id="payment-method" style="background:#f5f5f5; border-radius:8px; padding:16px; text-align:center; color:#999; margin-bottom:16px;">
+                [토스페이먼츠 결제 위젯 영역]
+            </div>
+            <button class="btn btn-primary">결제하기</button>
+        </div>
+
+        <div class="legal-notice">
+            결제하기 버튼을 누르면 <a href="#">결제 약관</a>에 동의하는 것으로 간주됩니다.<br>
+            결제는 토스페이먼츠를 통해 안전하게 처리됩니다.
+        </div>
+    </div>
+</div>
+
+<!-- ========== 결제 성공 페이지 ========== -->
+<div id="page-success" class="page">
+    <div class="container">
+        <div class="header">
+            <h1>Proptalk</h1>
+            <p>세상 쉬운 업무 공유</p>
+        </div>
+
+        <div class="card" style="text-align:center;">
+            <div style="font-size:48px; margin-bottom:12px;">&#10004;&#65039;</div>
+            <h2 style="font-size:20px; font-weight:700;">결제 완료</h2>
+            <p style="color:#666; margin-top:8px;">1시간 팩이 충전되었습니다.</p>
+            <div style="margin-top:16px; padding:12px; background:#f5f5f5; border-radius:8px; font-size:14px;">
+                잔여 이용 시간: <strong>1시간 8분</strong><br>
+                플랜: <strong>1시간 팩</strong>
+            </div>
+        </div>
+
+        <div style="margin-top:16px;">
+            <a href="#" class="btn btn-primary" style="margin-bottom:8px;" onclick="alert('앱으로 돌아가기')">앱으로 돌아가기</a>
+            <a href="#" class="btn btn-secondary">영수증 보기</a>
+        </div>
+    </div>
+</div>
+
+<!-- ========== 결제 실패 페이지 ========== -->
+<div id="page-fail" class="page">
+    <div class="container">
+        <div class="header">
+            <h1>Proptalk</h1>
+            <p>세상 쉬운 업무 공유</p>
+        </div>
+
+        <div class="card" style="text-align:center;">
+            <div style="font-size:48px; margin-bottom:12px;">&#128532;</div>
+            <h2 style="font-size:20px; font-weight:700; color:#dc3545;">결제에 실패했습니다</h2>
+            <p style="color:#666; margin-top:8px;">결제가 취소되었거나 오류가 발생했습니다.</p>
+            <p style="font-size:12px; color:#999; margin-top:4px;">오류 코드: PAY_PROCESS_CANCELED</p>
+        </div>
+
+        <div style="margin-top:16px;">
+            <button class="btn btn-primary" style="margin-bottom:8px;" onclick="showPage('plans')">다시 시도</button>
+            <a href="#" class="btn btn-secondary" onclick="alert('닫기')">닫기</a>
+        </div>
+    </div>
+</div>
+
+<!-- ========== 구독 관리 페이지 ========== -->
+<div id="page-manage" class="page">
+    <div class="container">
+        <div class="header">
+            <h1>Proptalk</h1>
+            <p>세상 쉬운 업무 공유</p>
+        </div>
+
+        <div class="card">
+            <h2 style="font-size:16px; font-weight:700; margin-bottom:12px;">현재 구독</h2>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div>
+                    <div style="font-size:18px; font-weight:700;">Basic 30시간</div>
+                </div>
+                <span class="badge badge-success">이용 중</span>
+            </div>
+            <div style="background:#f5f5f5; border-radius:8px; padding:12px;">
+                <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;">
+                    <span style="color:#666;">잔여 시간</span>
+                    <span style="font-weight:600;">28시간 15분</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:14px;">
+                    <span style="color:#666;">다음 갱신일</span>
+                    <span style="font-weight:600;">2026.4.3</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <button class="btn btn-danger" onclick="alert('구독 해지 확인 다이얼로그')">구독 해지</button>
+            <p style="font-size:12px; color:#999; margin-top:8px; text-align:center;">
+                해지 후에도 현재 기간 만료일까지 이용 가능합니다.
+            </p>
+        </div>
+
+        <div class="card">
+            <button class="btn btn-primary" onclick="showPage('plans')">충전/요금제 변경</button>
+        </div>
+
+        <h2 style="font-size:16px; font-weight:700; margin:16px 0 8px; padding-left:4px;">결제 이력</h2>
+
+        <div class="card" style="padding:14px;">
+            <div style="display:flex; justify-content:space-between;">
+                <span style="font-weight:600;">Basic 30시간</span>
+                <span style="font-weight:700;">29,000원</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:12px; color:#999; margin-top:4px;">
+                <span>2026.3.4</span>
+                <span>완료</span>
+            </div>
+        </div>
+
+        <div class="card" style="padding:14px;">
+            <div style="display:flex; justify-content:space-between;">
+                <span style="font-weight:600;">1시간 팩</span>
+                <span style="font-weight:700;">9,900원</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:12px; color:#999; margin-top:4px;">
+                <span>2026.3.1</span>
+                <span>완료</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div><!-- /phone-frame -->
+
+<script>
+function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.preview-nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>

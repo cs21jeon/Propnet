@@ -1,0 +1,54 @@
+name: voiceroom
+description: 음성 채팅방 STT 플랫폼
+
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # 상태관리
+  provider: ^6.1.2
+  
+  # 네트워크
+  http: ^1.2.0
+  socket_io_client: ^3.0.2
+  
+  # Google 로그인
+  google_sign_in: ^6.2.2
+  
+  # 로컬 저장
+  shared_preferences: ^2.3.4
+  
+  # 파일 처리
+  file_picker: ^8.1.6
+  path_provider: ^2.1.5
+  path: ^1.9.0
+  
+  # 녹음
+  record: ^5.1.2
+  
+  # UI
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  
+  # Pretendard 폰트 (한국어 최적화) - 다운로드 후 추가
+  # fonts:
+  #   - family: Pretendard
+  #     fonts:
+  #       - asset: assets/fonts/Pretendard-Regular.otf
+  #       - asset: assets/fonts/Pretendard-Bold.otf
+  #         weight: 700
+  #       - asset: assets/fonts/Pretendard-SemiBold.otf
+  #         weight: 600

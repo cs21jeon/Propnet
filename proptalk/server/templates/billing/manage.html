@@ -1,0 +1,168 @@
+{% extends "billing/base.html" %}
+{% block title %}구독 관리{% endblock %}
+
+{% block content %}
+<div id="loading" class="loading"><div class="spinner"></div><p style="margin-top:8px;">로딩 중...</p></div>
+
+<div id="content" style="display:none;">
+    <!-- 현재 상태 -->
+    <div class="card">
+        <h2 style="font-size:16px; font-weight:700; margin-bottom:12px;">현재 구독</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div>
+                <div id="plan-name" style="font-size:18px; font-weight:700;">--</div>
+                <div id="plan-status" style="font-size:13px; color:#666;"></div>
+            </div>
+            <div id="status-badge"></div>
+        </div>
+        <div style="background:#f5f5f5; border-radius:8px; padding:12px;">
+            <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;">
+                <span style="color:#666;">잔여 시간</span>
+                <span id="remaining" style="font-weight:600;">--</span>
+            </div>
+            <div id="expires-row" style="display:flex; justify-content:space-between; font-size:14px; display:none;">
+                <span style="color:#666;">다음 갱신일</span>
+                <span id="expires-date" style="font-weight:600;">--</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 구독 액션 -->
+    <div id="sub-actions" style="display:none;">
+        <div class="card">
+            <button id="cancel-btn" class="btn btn-danger" onclick="cancelSubscription()">구독 해지</button>
+            <p style="font-size:12px; color:#999; margin-top:8px; text-align:center;">
+                해지 후에도 현재 기간 만료일까지 이용 가능합니다.
+            </p>
+        </div>
+    </div>
+
+    <!-- 충전 버튼 -->
+    <div class="card">
+        <button class="btn btn-primary" onclick="goToPlans()">충전/요금제 변경</button>
+    </div>
+
+    <!-- 결제 이력 -->
+    <h2 style="font-size:16px; font-weight:700; margin:16px 0 8px; padding-left:4px;">결제 이력</h2>
+    <div id="history"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function load() {
+    // 토큰 없이 직접 접속한 경우 안내 표시
+    const t = sessionStorage.getItem('billing_token');
+    if (!t) {
+        document.getElementById('loading').innerHTML =
+            '<div class="card" style="text-align:center; padding:24px;">' +
+            '<p style="font-size:16px; font-weight:600; color:#666; margin-bottom:8px;">로그인이 필요합니다</p>' +
+            '<p style="font-size:14px; color:#999;">이 페이지는 Proptalk 앱에서 열어주세요.</p>' +
+            '</div>';
+        return;
+    }
+
+    try {
+        const [status, history] = await Promise.all([
+            apiCall('/api/billing/status'),
+            apiCall('/api/billing/history'),
+        ]);
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+
+        // 상태 표시
+        const plan = status.plan || {};
+        document.getElementById('plan-name').textContent = plan.name || '무료 체험';
+
+        const remaining = Math.max(0, Math.floor((status.remaining_seconds || 0) / 60));
+        const hrs = Math.floor(remaining / 60);
+        const mins = remaining % 60;
+        document.getElementById('remaining').textContent =
+            hrs > 0 ? `${hrs}시간 ${mins}분` : `${remaining}분`;
+
+        const subStatus = status.subscription_status || 'free';
+        const statusLabels = {
+            free: '무료', active: '이용 중', cancelled: '해지 예정',
+            expired: '만료', past_due: '결제 실패'
+        };
+        const statusColors = {
+            free: 'badge-primary', active: 'badge-success',
+            cancelled: 'badge-warning', expired: 'badge-primary', past_due: 'badge-warning'
+        };
+        document.getElementById('status-badge').innerHTML =
+            `<span class="badge ${statusColors[subStatus] || 'badge-primary'}">${statusLabels[subStatus] || subStatus}</span>`;
+
+        if (status.subscription_expires_at) {
+            const expiresEl = document.getElementById('expires-row');
+            expiresEl.style.display = 'flex';
+            const d = new Date(status.subscription_expires_at);
+            document.getElementById('expires-date').textContent =
+                `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
+        }
+
+        // 구독 해지 버튼
+        if (subStatus === 'active' && status.auto_renew) {
+            document.getElementById('sub-actions').style.display = 'block';
+        }
+
+        // 결제 이력
+        const historyEl = document.getElementById('history');
+        const txs = history.transactions || [];
+        if (txs.length === 0) {
+            historyEl.innerHTML = '<div class="card" style="text-align:center; color:#999;">결제 이력이 없습니다.</div>';
+        } else {
+            txs.forEach(tx => {
+                const d = new Date(tx.created_at);
+                const dateStr = `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
+                const statusLabel = { approved: '완료', failed: '실패', refunded: '환불', pending: '대기' };
+                historyEl.innerHTML += `
+                    <div class="card" style="padding:14px;">
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="font-weight:600;">${tx.plan_name || '-'}</span>
+                            <span style="font-weight:700;">${(tx.amount || 0).toLocaleString()}원</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:12px; color:#999; margin-top:4px;">
+                            <span>${dateStr}</span>
+                            <span>${statusLabel[tx.status] || tx.status}</span>
+                        </div>
+                    </div>`;
+            });
+        }
+    } catch (e) {
+        document.getElementById('loading').innerHTML = `<p class="error">로딩 실패: ${e.message}</p>`;
+    }
+}
+
+async function cancelSubscription() {
+    if (!confirm('정말 구독을 해지하시겠습니까?\n현재 기간 만료일까지 이용 가능합니다.')) return;
+
+    const btn = document.getElementById('cancel-btn');
+    btn.disabled = true;
+    btn.textContent = '처리 중...';
+
+    try {
+        const result = await apiCall('/api/billing/subscription/cancel', { method: 'POST' });
+        if (result.success) {
+            alert(result.message);
+            location.reload();
+        } else {
+            alert(result.error || '해지 실패');
+            btn.disabled = false;
+            btn.textContent = '구독 해지';
+        }
+    } catch (e) {
+        alert('오류: ' + e.message);
+        btn.disabled = false;
+        btn.textContent = '구독 해지';
+    }
+}
+
+function goToPlans() {
+    const t = sessionStorage.getItem('billing_token');
+    window.location.href = `/proptalk/billing/?token=${t}`;
+}
+
+load();
+</script>
+{% endblock %}

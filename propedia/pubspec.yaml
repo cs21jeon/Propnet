@@ -1,0 +1,109 @@
+name: propedia
+description: Propedia - 부동산백과
+publish_to: 'none'
+version: 1.0.2+10
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # 상태 관리
+  flutter_riverpod: ^2.4.10
+  riverpod_annotation: ^2.3.4
+
+  # 네트워크
+  dio: ^5.4.0
+
+  # 로컬 저장소
+  shared_preferences: ^2.2.2
+  flutter_secure_storage: ^9.0.0
+  hive_flutter: ^1.1.0
+
+  # 라우팅
+  go_router: ^13.0.0
+
+  # UI
+  cached_network_image: ^3.3.1
+  flutter_hooks: ^0.20.5
+  hooks_riverpod: ^2.4.10
+  shimmer: ^3.0.0
+
+  # 지도
+  kakao_map_plugin: ^0.4.0
+  geolocator: ^11.0.0
+
+  # JSON
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.8.1
+
+  # 유틸리티
+  intl: ^0.19.0
+  logger: ^2.0.2+1
+  flutter_svg: ^2.0.9
+  url_launcher: ^6.2.4
+  flutter_dotenv: ^5.1.0
+
+  # Google 로그인
+  google_sign_in: ^6.2.2
+
+  # 광고
+  google_mobile_ads: ^5.1.0
+
+  # PDF
+  pdf: ^3.10.8
+  printing: ^5.12.0
+  path_provider: ^2.1.2
+  share_plus: ^7.2.1
+  package_info_plus: ^9.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+  # 앱 아이콘
+  flutter_launcher_icons: ^0.14.3
+
+  # 코드 생성
+  build_runner: ^2.4.8
+  freezed: ^2.4.6
+  json_serializable: ^6.7.1
+  riverpod_generator: ^2.3.11
+  hive_generator: ^2.0.1
+
+  # 테스트
+  mocktail: ^1.0.3
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env
+    - assets/fonts/
+    - assets/images/
+
+  fonts:
+    - family: NotoSansKR
+      fonts:
+        - asset: assets/fonts/NotoSansKR-Regular.ttf
+        - asset: assets/fonts/NotoSansKR-Bold.ttf
+          weight: 700
+
+# 앱 아이콘 설정
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  background_color_ios: "#FFFFFF"
+  web:
+    generate: true
+    background_color: "#FFFFFF"
+  windows:
+    generate: true
+  macos:
+    generate: true
+  image_path: "assets/images/proppedia_logo.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/proppedia_logo.png"

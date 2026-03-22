@@ -1,0 +1,121 @@
+{% extends "billing/base.html" %}
+{% block title %}결제 완료{% endblock %}
+
+{% block content %}
+<div id="loading" class="card" style="text-align:center; padding:40px;">
+    <div class="spinner"></div>
+    <p style="margin-top:12px; color:#666;">결제 확인 중...</p>
+</div>
+
+<div id="result" style="display:none;">
+    <div class="card" style="text-align:center;">
+        <div id="result-icon" style="font-size:48px; margin-bottom:12px;">✅</div>
+        <h2 id="result-title" style="font-size:20px; font-weight:700;">결제 완료</h2>
+        <p id="result-message" style="color:#666; margin-top:8px;"></p>
+        <div id="result-detail" style="margin-top:16px; padding:12px; background:#f5f5f5; border-radius:8px; font-size:14px;"></div>
+    </div>
+
+    <div style="margin-top:16px;">
+        <a href="javascript:window.close();" class="btn btn-primary" style="margin-bottom:8px;">앱으로 돌아가기</a>
+        <a id="receipt-link" href="#" target="_blank" class="btn btn-secondary" style="display:none;">영수증 보기</a>
+    </div>
+</div>
+
+<div id="error-card" class="card" style="display:none; text-align:center;">
+    <div style="font-size:48px; margin-bottom:12px;">❌</div>
+    <h2 style="font-size:20px; font-weight:700; color:#dc3545;">결제 실패</h2>
+    <p id="error-message" style="color:#666; margin-top:8px;"></p>
+    <a href="javascript:history.back();" class="btn btn-secondary" style="margin-top:16px;">다시 시도</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function processPayment() {
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get('type');
+    const loadingEl = document.getElementById('loading');
+    const resultEl = document.getElementById('result');
+    const errorEl = document.getElementById('error-card');
+
+    // 토큰 없이 직접 접속한 경우 안내 표시
+    const t = sessionStorage.getItem('billing_token');
+    if (!t) {
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'block';
+        document.getElementById('error-message').textContent = '이 페이지는 앱에서 결제 완료 후 자동으로 열립니다.';
+        document.querySelector('#error-card h2').textContent = '잘못된 접근';
+        document.querySelector('#error-card h2').style.color = '#666';
+        document.querySelector('#error-card div:first-child').textContent = '';
+        return;
+    }
+
+    try {
+        let response;
+
+        if (type === 'subscription') {
+            // 구독: 빌링키 발급 + 첫 결제
+            const authKey = params.get('authKey');
+            const orderId = params.get('order_id');
+            const planCode = params.get('plan_code');
+
+            response = await apiCall('/api/billing/subscribe', {
+                method: 'POST',
+                body: JSON.stringify({
+                    auth_key: authKey,
+                    order_id: orderId,
+                    plan_code: planCode,
+                }),
+            });
+        } else {
+            // 일반 결제: 승인 확인
+            const paymentKey = params.get('paymentKey');
+            const orderId = params.get('orderId');
+            const amount = parseInt(params.get('amount'));
+
+            response = await apiCall('/api/billing/confirm', {
+                method: 'POST',
+                body: JSON.stringify({
+                    payment_key: paymentKey,
+                    order_id: orderId,
+                    amount: amount,
+                }),
+            });
+        }
+
+        loadingEl.style.display = 'none';
+
+        if (response.success) {
+            resultEl.style.display = 'block';
+            document.getElementById('result-message').textContent = response.message || '결제가 완료되었습니다.';
+
+            const status = response.billing_status || {};
+            const remaining = Math.max(0, Math.floor((status.remaining_seconds || 0) / 60));
+            const hrs = Math.floor(remaining / 60);
+            const mins = remaining % 60;
+            const timeStr = hrs > 0 ? `${hrs}시간 ${mins}분` : `${remaining}분`;
+
+            document.getElementById('result-detail').innerHTML = `
+                잔여 이용 시간: <strong>${timeStr}</strong><br>
+                플랜: <strong>${(status.plan || {}).name || '-'}</strong>
+            `;
+
+            if (response.receipt_url) {
+                const link = document.getElementById('receipt-link');
+                link.href = response.receipt_url;
+                link.style.display = 'block';
+            }
+        } else {
+            errorEl.style.display = 'block';
+            document.getElementById('error-message').textContent = response.error || '알 수 없는 오류';
+        }
+    } catch (e) {
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'block';
+        document.getElementById('error-message').textContent = e.message || '처리 중 오류가 발생했습니다.';
+    }
+}
+
+processPayment();
+</script>
+{% endblock %}

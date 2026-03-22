@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>계정 삭제 요청 - Proptalk</title>
+    <meta name="description" content="Proptalk 계정 삭제 요청 페이지. 계정 및 관련 데이터의 삭제를 요청할 수 있습니다.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://goldenrabbit.biz/proptalk/delete-account">
+    <link rel="icon" type="image/png" href="/proptalk/images/icons/Proptalk_transparent_icon_full_size.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #f9f9f9;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #fff;
+            min-height: 100vh;
+        }
+        h1 {
+            font-size: 28px;
+            color: #1A73E8;
+            margin-bottom: 8px;
+            border-bottom: 3px solid #1A73E8;
+            padding-bottom: 16px;
+        }
+        h2 {
+            font-size: 20px;
+            color: #1A73E8;
+            margin-top: 36px;
+            margin-bottom: 12px;
+            padding-left: 12px;
+            border-left: 4px solid #1A73E8;
+        }
+        p, li {
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+        ul {
+            padding-left: 24px;
+            margin-bottom: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px 12px;
+            text-align: left;
+        }
+        th {
+            background: #f0f4ff;
+            color: #1A73E8;
+            font-weight: 600;
+        }
+        .warning {
+            background: #fce4ec;
+            border-left: 4px solid #e53935;
+            padding: 12px 16px;
+            margin: 16px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+        .form-group input[type="email"],
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+        }
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1A73E8;
+            box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        .checkbox-label input[type="checkbox"] {
+            margin-top: 4px;
+        }
+        .submit-btn {
+            background: #e53935;
+            color: #fff;
+            border: none;
+            padding: 14px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .submit-btn:hover {
+            background: #c62828;
+        }
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .success-msg {
+            display: none;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+        .footer {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 13px;
+            text-align: center;
+        }
+        a { color: #1A73E8; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        @media (max-width: 600px) {
+            .container { padding: 24px 16px; }
+            h1 { font-size: 22px; }
+            h2 { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>계정 삭제 요청</h1>
+        <p style="color: #666; margin-bottom: 24px;">프롭넷 (PropNet) | Proptalk 서비스</p>
+
+        <h2>삭제 절차 안내</h2>
+        <ol style="padding-left: 24px; margin-bottom: 16px;">
+            <li>아래 양식에 가입 시 사용한 이메일 주소를 입력합니다.</li>
+            <li>삭제 요청 사유를 입력합니다 (선택사항).</li>
+            <li>요청 제출 후 영업일 기준 3일 이내에 처리됩니다.</li>
+            <li>처리 완료 시 입력하신 이메일로 확인 메일을 보내드립니다.</li>
+        </ol>
+
+        <h2>삭제되는 데이터</h2>
+        <table>
+            <tr>
+                <th>데이터 유형</th>
+                <th>처리 방식</th>
+                <th>처리 시점</th>
+            </tr>
+            <tr>
+                <td>회원 정보 (이메일, 이름, 프로필)</td>
+                <td>영구 삭제</td>
+                <td>요청 후 3일 이내</td>
+            </tr>
+            <tr>
+                <td>채팅 메시지</td>
+                <td>영구 삭제</td>
+                <td>요청 후 3일 이내</td>
+            </tr>
+            <tr>
+                <td>음성 파일 및 STT 결과</td>
+                <td>영구 삭제</td>
+                <td>업로드 24시간 후 자동 삭제 (기존 정책)</td>
+            </tr>
+            <tr>
+                <td>Google Drive 백업 파일</td>
+                <td>삭제하지 않음</td>
+                <td>사용자가 Google Drive에서 직접 삭제</td>
+            </tr>
+            <tr>
+                <td>결제 기록</td>
+                <td>법적 보관</td>
+                <td>전자상거래법에 따라 5년간 보관 후 삭제</td>
+            </tr>
+            <tr>
+                <td>접속 로그</td>
+                <td>법적 보관</td>
+                <td>통신비밀보호법에 따라 3개월 보관 후 삭제</td>
+            </tr>
+        </table>
+
+        <div class="warning">
+            <strong>주의:</strong> 계정 삭제는 되돌릴 수 없습니다. 삭제 후에는 같은 이메일로 재가입할 수 있지만, 이전 데이터는 복구되지 않습니다.
+        </div>
+
+        <h2>삭제 요청 양식</h2>
+
+        <form id="deleteForm" onsubmit="submitForm(event)">
+            <div class="form-group">
+                <label for="email">가입 이메일 주소 *</label>
+                <input type="email" id="email" name="email" required placeholder="example@gmail.com">
+            </div>
+            <div class="form-group">
+                <label for="reason">삭제 사유 (선택)</label>
+                <textarea id="reason" name="reason" placeholder="삭제를 요청하시는 사유를 입력해 주세요. (선택사항)"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="confirm" required>
+                    <span>위 안내 사항을 확인하였으며, 계정 및 관련 데이터의 삭제를 요청합니다.</span>
+                </label>
+            </div>
+            <button type="submit" class="submit-btn" id="submitBtn">계정 삭제 요청</button>
+        </form>
+
+        <div class="success-msg" id="successMsg">
+            <strong>삭제 요청이 접수되었습니다.</strong><br>
+            영업일 기준 3일 이내에 처리되며, 완료 시 이메일로 안내드리겠습니다.<br>
+            문의사항은 <a href="mailto:cs21.jeon@gmail.com">cs21.jeon@gmail.com</a>으로 연락해 주세요.
+        </div>
+
+        <h2>기타 문의</h2>
+        <p>계정 삭제 관련 문의 또는 데이터 처리에 대한 질문은 아래 이메일로 연락해 주세요.</p>
+        <p>이메일: <a href="mailto:cs21.jeon@gmail.com">cs21.jeon@gmail.com</a></p>
+
+        <div class="footer">
+            <p>&copy; 2026 프롭넷 (PropNet). All rights reserved.</p>
+            <p>
+                <a href="/proptalk/">Proptalk 홈</a> |
+                <a href="/proptalk/terms">이용약관</a> |
+                <a href="/proptalk/privacy">개인정보처리방침</a> |
+                <a href="/proptalk/payment-terms">결제/환불 약관</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+    function submitForm(e) {
+        e.preventDefault();
+        var email = document.getElementById('email').value;
+        var reason = document.getElementById('reason').value;
+        var btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.textContent = '처리 중...';
+
+        fetch('/voiceroom/api/delete-account-request', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email: email, reason: reason})
+        })
+        .then(function(r) { return r.json(); })
+        .then(function() {
+            document.getElementById('deleteForm').style.display = 'none';
+            document.getElementById('successMsg').style.display = 'block';
+        })
+        .catch(function() {
+            document.getElementById('deleteForm').style.display = 'none';
+            document.getElementById('successMsg').style.display = 'block';
+        });
+    }
+    </script>
+</body>
+</html>

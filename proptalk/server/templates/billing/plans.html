@@ -1,0 +1,142 @@
+{% extends "billing/base.html" %}
+{% block title %}Proptalk 요금제{% endblock %}
+
+{% block content %}
+<div id="user-status" class="card" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <span style="font-size:13px; color:#666;">잔여 시간</span>
+            <div id="remaining-time" style="font-size:24px; font-weight:700; color:#1A73E8;">--</div>
+        </div>
+        <div id="plan-badge"></div>
+    </div>
+</div>
+
+<h2 style="font-size:16px; font-weight:700; margin:16px 0 8px; padding-left:4px;">시간 충전</h2>
+
+<div id="time-packs"></div>
+
+<h2 style="font-size:16px; font-weight:700; margin:16px 0 8px; padding-left:4px;">월 정기구독</h2>
+
+<div id="subscriptions"></div>
+
+<div class="legal-notice">
+    💳 결제는 토스페이먼츠를 통해 안전하게 처리됩니다.<br>
+    📋 표시 가격은 VAT 포함입니다.<br>
+    ↩️ 결제 후 7일 이내 미이용 시 전액 환불 가능합니다.<br>
+    📧 문의: cs21.jeon@gmail.com<br><br>
+    <a href="/proptalk/terms" target="_blank">이용약관</a> ·
+    <a href="/proptalk/privacy" target="_blank">개인정보 처리방침</a> ·
+    <a href="/proptalk/payment-terms" target="_blank">결제 약관</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const TOSS_CLIENT_KEY = '{{ toss_client_key }}';
+
+async function loadPlans() {
+    try {
+        const [statusData, plansData] = await Promise.all([
+            apiCall('/api/billing/status'),
+            apiCall('/api/billing/plans'),
+        ]);
+
+        // 잔여 시간 표시
+        const statusEl = document.getElementById('user-status');
+        const remainEl = document.getElementById('remaining-time');
+        const badgeEl = document.getElementById('plan-badge');
+
+        if (statusData.remaining_seconds !== undefined) {
+            statusEl.style.display = 'block';
+            const mins = Math.max(0, Math.floor(statusData.remaining_seconds / 60));
+            const hrs = Math.floor(mins / 60);
+            const m = mins % 60;
+            remainEl.textContent = hrs > 0 ? `${hrs}시간 ${m}분` : `${mins}분`;
+
+            const plan = statusData.plan || {};
+            let badgeClass = 'badge-primary';
+            if (statusData.subscription_status === 'active') badgeClass = 'badge-success';
+            badgeEl.innerHTML = `<span class="badge ${badgeClass}">${plan.name || '무료'}</span>`;
+        }
+
+        // 플랜 렌더링
+        const plans = plansData.plans || [];
+        const timePacksEl = document.getElementById('time-packs');
+        const subsEl = document.getElementById('subscriptions');
+
+        plans.forEach(plan => {
+            if (plan.code === 'free') return;
+
+            const perHour = plan.minutes_included > 0
+                ? Math.round(plan.price / (plan.minutes_included / 60))
+                : 0;
+            const hours = plan.minutes_included >= 60
+                ? `${Math.floor(plan.minutes_included / 60)}시간`
+                : `${plan.minutes_included}분`;
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                    <div>
+                        <div style="font-size:16px; font-weight:700;">${plan.name}</div>
+                        <div style="font-size:13px; color:#666; margin-top:2px;">
+                            ${hours} · ${plan.plan_type === 'subscription' ? '월 정기결제' : '일회성 · 만료 없음'}
+                            ${perHour > 0 ? ` · 시간당 ${perHour.toLocaleString()}원` : ''}
+                            ${plan.overage_rate > 0 ? ` · 초과 시 ${plan.overage_rate}원/분` : ''}
+                        </div>
+                    </div>
+                    <div style="font-size:18px; font-weight:700; white-space:nowrap;">
+                        ${plan.price.toLocaleString()}원${plan.plan_type === 'subscription' ? '<span style="font-size:12px; font-weight:400;">/월</span>' : ''}
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="selectPlan('${plan.code}')">
+                    ${plan.plan_type === 'subscription' ? '구독하기' : '구매하기'}
+                </button>
+            `;
+
+            if (plan.plan_type === 'time_pack') {
+                timePacksEl.appendChild(card);
+            } else if (plan.plan_type === 'subscription') {
+                subsEl.appendChild(card);
+            }
+        });
+    } catch (e) {
+        console.error('Failed to load plans:', e);
+    }
+}
+
+async function selectPlan(planCode) {
+    try {
+        // 주문 생성
+        const orderData = await apiCall('/api/billing/order', {
+            method: 'POST',
+            body: JSON.stringify({ plan_code: planCode }),
+        });
+
+        if (orderData.error) {
+            alert(orderData.error);
+            return;
+        }
+
+        // 토큰을 URL에 포함하여 체크아웃 페이지로 이동
+        const t = sessionStorage.getItem('billing_token');
+        const params = new URLSearchParams({
+            order_id: orderData.order_id,
+            amount: orderData.amount,
+            order_name: orderData.order_name,
+            billing_type: orderData.billing_type,
+            customer_key: orderData.customer_key,
+            plan_code: planCode,
+            token: t,
+        });
+        window.location.href = `/proptalk/billing/checkout?${params}`;
+    } catch (e) {
+        alert('주문 생성 실패: ' + e.message);
+    }
+}
+
+loadPlans();
+</script>
+{% endblock %}

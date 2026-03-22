@@ -1,0 +1,32 @@
+{% extends "billing/base.html" %}
+{% block title %}결제 실패{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align:center;">
+    <div style="font-size:48px; margin-bottom:12px;">😔</div>
+    <h2 style="font-size:20px; font-weight:700; color:#dc3545;">결제에 실패했습니다</h2>
+    <p id="fail-message" style="color:#666; margin-top:8px;"></p>
+    <p id="fail-code" style="font-size:12px; color:#999; margin-top:4px;"></p>
+</div>
+
+<div style="margin-top:16px;">
+    <button class="btn btn-primary" onclick="retry()" style="margin-bottom:8px;">다시 시도</button>
+    <a href="javascript:window.close();" class="btn btn-secondary">닫기</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const params = new URLSearchParams(window.location.search);
+const message = params.get('message') || '결제가 취소되었거나 오류가 발생했습니다.';
+const code = params.get('code') || '';
+
+document.getElementById('fail-message').textContent = message;
+if (code) document.getElementById('fail-code').textContent = `오류 코드: ${code}`;
+
+function retry() {
+    const t = sessionStorage.getItem('billing_token');
+    window.location.href = `/proptalk/billing/?token=${t}`;
+}
+</script>
+{% endblock %}

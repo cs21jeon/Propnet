@@ -1,0 +1,65 @@
+# Flutter
+flutter/build/
+flutter/.dart_tool/
+flutter/.packages
+flutter/.flutter-plugins
+flutter/.flutter-plugins-dependencies
+flutter/pubspec.lock
+*.iml
+
+# Android
+flutter/android/.gradle/
+flutter/android/local.properties
+flutter/android/key.properties
+*.jks
+flutter/android/app/debug/
+flutter/android/app/profile/
+flutter/android/app/release/
+*.apk
+*.aab
+
+# iOS
+flutter/ios/Pods/
+flutter/ios/.symlinks/
+flutter/ios/Flutter/Flutter.framework/
+flutter/ios/Flutter/Flutter.podspec
+
+# Server
+server/venv/
+server/__pycache__/
+*.pyc
+*.pyo
+ecosystem.config.js
+.openai_credit.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+photothumb.db
+nul
+
+# Credentials (절대 커밋하지 않음)
+*.json
+!flutter/pubspec.yaml
+credentials/
+*.env
+.env
+
+# Logs
+*.log
+logs/
+
+# Deploy patches (may contain credentials)
+server/deploy/
+
+# Temp
+*.tmp
+temp/
+uploads/
+audio/

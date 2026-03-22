@@ -1,0 +1,120 @@
+{% extends "admin/base.html" %}
+{% set active = "users" %}
+{% block title %}사용자{% endblock %}
+{% block content %}
+<h2 style="font-size:20px;margin-bottom:16px;font-weight:700;">사용자 ({{ users|length }}명)</h2>
+
+<!-- Mobile: Card view -->
+<div class="mobile-only">
+    {% for u in users %}
+    <a href="/proptalk/admin/users/{{ u.id }}" class="user-card">
+        <div class="user-card-header">
+            <div class="user-card-avatar">{{ (u.name or '?')[0] }}</div>
+            <div class="user-card-info">
+                <div class="user-card-name">{{ u.name }}</div>
+                <div class="user-card-email">{{ u.email }}</div>
+            </div>
+            <div>
+                {% if u.subscription_status == 'active' %}
+                    <span class="badge badge-active">활성</span>
+                {% elif u.subscription_status == 'expired' %}
+                    <span class="badge badge-expired">만료</span>
+                {% else %}
+                    <span class="badge badge-free">{{ u.subscription_status or '무료' }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="user-card-meta">
+            <span>{{ u.plan_name or '무료' }}</span>
+            <span>
+                {% if u.remaining_seconds is not none %}
+                    {{ "%.0f"|format((u.remaining_seconds or 0) / 60) }}분 남음
+                {% else %}
+                    -
+                {% endif %}
+            </span>
+            <span>{{ u.created_at.strftime('%Y-%m-%d') if u.created_at else '-' }}</span>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+
+<!-- Desktop: Table view -->
+<div class="desktop-only">
+<div class="card">
+    <div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>이름</th>
+                <th>이메일</th>
+                <th>요금제</th>
+                <th class="text-right">잔여시간</th>
+                <th>상태</th>
+                <th>가입일</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td>{{ u.id }}</td>
+                <td>{{ u.name }}</td>
+                <td>{{ u.email }}</td>
+                <td>{{ u.plan_name or '무료' }}</td>
+                <td class="text-right">
+                    {% if u.remaining_seconds is not none %}
+                        {{ "%.1f"|format((u.remaining_seconds or 0) / 60) }}분
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if u.subscription_status == 'active' %}
+                        <span class="badge badge-active">활성</span>
+                    {% elif u.subscription_status == 'expired' %}
+                        <span class="badge badge-expired">만료</span>
+                    {% else %}
+                        <span class="badge badge-free">{{ u.subscription_status or '무료' }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ u.created_at.strftime('%Y-%m-%d') if u.created_at else '-' }}</td>
+                <td><a href="/proptalk/admin/users/{{ u.id }}" class="btn">상세</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+</div>
+
+<style>
+    .mobile-only { display: none; }
+    .desktop-only { display: block; }
+
+    .user-card {
+        display: block; background: #fff; border-radius: 12px; padding: 14px;
+        margin-bottom: 8px; text-decoration: none; color: inherit;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .user-card:active { background: #f5f5f5; }
+    .user-card-header { display: flex; align-items: center; gap: 10px; }
+    .user-card-avatar {
+        width: 36px; height: 36px; border-radius: 50%; background: #1a1a2e; color: #fff;
+        display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; flex-shrink: 0;
+    }
+    .user-card-info { flex: 1; min-width: 0; }
+    .user-card-name { font-weight: 600; font-size: 14px; }
+    .user-card-email { font-size: 12px; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .user-card-meta {
+        display: flex; gap: 12px; margin-top: 8px; padding-top: 8px;
+        border-top: 1px solid #f0f0f0; font-size: 12px; color: #888;
+    }
+
+    @media (max-width: 767px) {
+        .mobile-only { display: block; }
+        .desktop-only { display: none; }
+    }
+</style>
+{% endblock %}

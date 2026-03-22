@@ -1,0 +1,167 @@
+{% extends "admin/base.html" %}
+{% set active = "users" %}
+{% block title %}{{ user.name }}{% endblock %}
+{% block content %}
+<div style="margin-bottom:16px;">
+    <a href="/proptalk/admin/users" style="color:#888;text-decoration:none;font-size:14px;">&larr; 사용자 목록</a>
+</div>
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+    <div style="width:44px;height:44px;border-radius:50%;background:#1a1a2e;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;flex-shrink:0;">
+        {{ (user.name or '?')[0] }}
+    </div>
+    <div>
+        <div style="font-size:18px;font-weight:700;">{{ user.name }}</div>
+        <div style="font-size:13px;color:#888;">{{ user.email }}</div>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="value">{{ "%.0f"|format((billing.remaining_seconds or 0) / 60 if billing else 0) }}</div>
+        <div class="label">잔여시간 (분)</div>
+    </div>
+    <div class="stat-card">
+        <div class="value" style="font-size:20px;">{{ billing.subscription_status or 'free' if billing else 'free' }}</div>
+        <div class="label">요금제 상태</div>
+    </div>
+    <div class="stat-card">
+        <div class="value" style="font-size:16px;">{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else '-' }}</div>
+        <div class="label">가입일</div>
+    </div>
+</div>
+
+<!-- Admin Actions -->
+<div class="card">
+    <h3>관리</h3>
+    <div class="action-grid">
+        <div class="action-item">
+            <label>시간 추가 (분)</label>
+            <div class="action-row">
+                <input type="number" id="addMinutes" placeholder="분" min="1">
+                <button onclick="addTime()">추가</button>
+            </div>
+        </div>
+        <div class="action-item">
+            <label>잔여시간 설정 (초)</label>
+            <div class="action-row">
+                <input type="number" id="setSeconds" placeholder="초" min="0"
+                       value="{{ (billing.remaining_seconds or 0)|int if billing else 0 }}">
+                <button onclick="setSeconds()">설정</button>
+            </div>
+        </div>
+        <div class="action-item">
+            <label>요금제 변경</label>
+            <div class="action-row">
+                <select id="planCode">
+                    {% for p in plans %}
+                    <option value="{{ p.code }}">{{ p.name }}</option>
+                    {% endfor %}
+                </select>
+                <button onclick="changePlan()">변경</button>
+            </div>
+        </div>
+    </div>
+    <div id="actionResult" style="margin-top:12px;color:#155724;font-size:13px;display:none;"></div>
+</div>
+
+<!-- Payment History -->
+<div class="card">
+    <h3>결제 내역</h3>
+    {% if transactions %}
+    <div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>날짜</th><th>요금제</th><th class="text-right">금액</th><th>상태</th></tr>
+        </thead>
+        <tbody>
+            {% for tx in transactions %}
+            <tr>
+                <td>{{ tx.created_at.strftime('%m/%d %H:%M') if tx.created_at else '-' }}</td>
+                <td>{{ tx.plan_name or '-' }}</td>
+                <td class="text-right">{{ "{:,.0f}".format(tx.amount or 0) }}</td>
+                <td><span class="badge badge-active">{{ tx.status }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% else %}
+    <p style="color:#999;font-size:14px;">결제 내역이 없습니다.</p>
+    {% endif %}
+</div>
+
+<!-- Usage History -->
+<div class="card">
+    <h3>사용 내역</h3>
+    {% if usage %}
+    <div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>날짜</th><th>파일명</th><th class="text-right">사용량</th><th class="text-right">사용 전</th><th class="text-right">사용 후</th></tr>
+        </thead>
+        <tbody>
+            {% for u in usage %}
+            <tr>
+                <td>{{ u.created_at.strftime('%m/%d %H:%M') if u.created_at else '-' }}</td>
+                <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;">{{ u.original_filename or '-' }}</td>
+                <td class="text-right">{{ "%.1f"|format((u.seconds_used or 0) / 60) }}분</td>
+                <td class="text-right">{{ "%.1f"|format((u.seconds_before or 0) / 60) }}</td>
+                <td class="text-right">{{ "%.1f"|format((u.seconds_after or 0) / 60) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% else %}
+    <p style="color:#999;font-size:14px;">사용 내역이 없습니다.</p>
+    {% endif %}
+</div>
+
+<style>
+    .action-grid { display: flex; gap: 16px; flex-wrap: wrap; }
+    .action-item { flex: 1; min-width: 160px; }
+    .action-item label { display: block; font-size: 12px; color: #888; margin-bottom: 6px; font-weight: 500; }
+    .action-row { display: flex; gap: 6px; }
+    .action-row input, .action-row select { flex: 1; min-width: 0; }
+
+    @media (max-width: 767px) {
+        .action-grid { flex-direction: column; gap: 12px; }
+        .action-item { min-width: 0; }
+    }
+</style>
+
+<script>
+const userId = {{ user.id }};
+async function adminAction(body) {
+    const res = await fetch(`/proptalk/admin/api/users/${userId}/plan`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (data.ok) {
+        const el = document.getElementById('actionResult');
+        el.textContent = '변경되었습니다.';
+        el.style.display = 'block';
+        setTimeout(() => location.reload(), 800);
+    } else {
+        alert(data.error || '실패');
+    }
+}
+function addTime() {
+    const min = parseInt(document.getElementById('addMinutes').value);
+    if (!min || min <= 0) return alert('올바른 분을 입력하세요');
+    adminAction({action: 'add_seconds', seconds: min * 60});
+}
+function setSeconds() {
+    const sec = parseInt(document.getElementById('setSeconds').value);
+    if (isNaN(sec) || sec < 0) return alert('올바른 초를 입력하세요');
+    adminAction({action: 'set_seconds', seconds: sec});
+}
+function changePlan() {
+    const code = document.getElementById('planCode').value;
+    adminAction({action: 'set_plan', plan_code: code});
+}
+</script>
+{% endblock %}

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Proptalk</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1a1a2e; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .login-card { background: #fff; border-radius: 16px; padding: 48px 36px; width: 100%; max-width: 380px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); text-align: center; }
+        h1 { font-size: 24px; margin-bottom: 8px; color: #1a1a2e; }
+        .subtitle { color: #999; font-size: 14px; margin-bottom: 32px; }
+        .error { color: #e74c3c; font-size: 13px; margin-bottom: 16px; display: none; }
+        .google-btn-wrap { display: flex; justify-content: center; }
+        .loading { display: none; color: #888; font-size: 14px; margin-top: 16px; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h1>Proptalk Admin</h1>
+        <p class="subtitle">관리자 계정으로 로그인하세요</p>
+        <div class="error" id="error"></div>
+        <div class="google-btn-wrap">
+            <div id="g_id_onload"
+                 data-client_id="{{ google_client_id }}"
+                 data-callback="onGoogleSignIn"
+                 data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin"
+                 data-type="standard"
+                 data-size="large"
+                 data-theme="outline"
+                 data-text="signin_with"
+                 data-shape="rectangular"
+                 data-logo_alignment="left"
+                 data-width="300">
+            </div>
+        </div>
+        <div class="loading" id="loading">로그인 중...</div>
+    </div>
+    <script>
+        async function onGoogleSignIn(response) {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            try {
+                const res = await fetch('/proptalk/admin/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id_token: response.credential})
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    window.location.href = data.redirect;
+                } else {
+                    const el = document.getElementById('error');
+                    el.textContent = data.error || '로그인 실패';
+                    el.style.display = 'block';
+                    document.getElementById('loading').style.display = 'none';
+                }
+            } catch(e) {
+                const el = document.getElementById('error');
+                el.textContent = '연결 오류';
+                el.style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+# robots.txt for goldenrabbit.biz
+# Updated: 2026-02-20
+
+User-agent: *
+Allow: /
+Allow: /proppedia/
+Allow: /proppedia-app/
+Allow: /app/
+
+# Block API and admin endpoints
+Disallow: /api/
+Disallow: /admin/
+Disallow: /*.json$
+
+# Block temporary and private files
+Disallow: /tmp/
+Disallow: /private/
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://goldenrabbit.biz/sitemap.xml
+
+# Additional rules for specific bots
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Yeti
+Allow: /

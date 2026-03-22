@@ -1,0 +1,253 @@
+{% extends "admin/base.html" %}
+{% set active = "openai" %}
+{% block title %}API 사용량{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+    <h2 style="font-size:20px;font-weight:700;">OpenAI API 사용량</h2>
+    <div style="display:flex;gap:6px;">
+        <button class="period-btn" data-days="7" onclick="loadData(7)">7일</button>
+        <button class="period-btn active" data-days="30" onclick="loadData(30)">30일</button>
+        <button class="period-btn" data-days="90" onclick="loadData(90)">90일</button>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div>
+            <div style="font-size:12px;color:#999;">충전액</div>
+            <div style="font-size:22px;font-weight:700;" id="credit-total">-</div>
+        </div>
+        <div style="font-size:20px;color:#ccc;">-</div>
+        <div>
+            <div style="font-size:12px;color:#999;">누적 사용</div>
+            <div style="font-size:22px;font-weight:700;color:#e74c3c;" id="credit-used">-</div>
+        </div>
+        <div style="font-size:20px;color:#ccc;">=</div>
+        <div>
+            <div style="font-size:12px;color:#999;">잔액</div>
+            <div style="font-size:22px;font-weight:700;color:#27ae60;" id="credit-balance">-</div>
+        </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+        <input type="number" id="creditInput" step="0.01" min="0" style="width:90px;" placeholder="충전액">
+        <button onclick="setCredit()">설정</button>
+    </div>
+</div>
+
+<div class="stats-grid" id="summary-cards">
+    <div class="stat-card">
+        <div class="value" id="total-cost">-</div>
+        <div class="label">기간 비용 (USD)</div>
+    </div>
+    <div class="stat-card">
+        <div class="value" id="whisper-seconds">-</div>
+        <div class="label">Whisper 사용량 (초)</div>
+    </div>
+    <div class="stat-card">
+        <div class="value" id="avg-daily">-</div>
+        <div class="label">일평균 비용 (USD)</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>일별 비용 추이</h3>
+    <div style="position:relative;height:280px;">
+        <canvas id="costChart"></canvas>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Whisper 음성인식 (초/일)</h3>
+    <div style="position:relative;height:240px;">
+        <canvas id="whisperChart"></canvas>
+    </div>
+</div>
+
+<div class="card">
+    <h3>일별 상세</h3>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>날짜</th>
+                    <th class="text-right">비용 (USD)</th>
+                    <th class="text-right">Whisper (초)</th>
+                    <th class="text-right">요청 수</th>
+                </tr>
+            </thead>
+            <tbody id="daily-table"></tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+.period-btn {
+    padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
+    background: #e8eaed; color: #555; border: none; cursor: pointer;
+}
+.period-btn.active { background: #1a1a2e; color: #fff; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+let costChart = null, whisperChart = null;
+
+async function loadData(days) {
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.toggle('active', +b.dataset.days === days));
+
+    try {
+        const [costsRes, usageRes] = await Promise.all([
+            fetch(`/proptalk/admin/api/openai-costs?days=${days}`),
+            fetch(`/proptalk/admin/api/openai-usage-detail?days=${days}`)
+        ]);
+        const costs = await costsRes.json();
+        const usage = await usageRes.json();
+
+        if (costs.error) { alert(costs.error + '\n' + (costs.detail || '')); return; }
+
+        renderCosts(costs.data || []);
+        renderWhisper(usage.audio_transcriptions || []);
+    } catch (e) {
+        alert('데이터 로드 실패: ' + e.message);
+    }
+}
+
+function renderCosts(data) {
+    const daily = {};
+    data.forEach(bucket => {
+        const d = new Date(bucket.start_time * 1000).toISOString().slice(0, 10);
+        const amt = (bucket.results || []).reduce((s, r) => s + parseFloat(r.amount?.value || 0), 0);
+        daily[d] = (daily[d] || 0) + amt;
+    });
+
+    const labels = Object.keys(daily).sort();
+    const values = labels.map(d => daily[d]);
+    const total = values.reduce((a, b) => a + b, 0);
+
+    document.getElementById('total-cost').textContent = '$' + total.toFixed(2);
+    document.getElementById('avg-daily').textContent = labels.length ? '$' + (total / labels.length).toFixed(2) : '-';
+
+    if (costChart) costChart.destroy();
+    costChart = new Chart(document.getElementById('costChart'), {
+        type: 'bar',
+        data: {
+            labels: labels.map(d => d.slice(5)),
+            datasets: [{
+                label: '비용 (USD)',
+                data: values,
+                backgroundColor: 'rgba(26,26,46,0.7)',
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { callback: v => '$' + v.toFixed(2) } },
+                x: { ticks: { maxRotation: 45, font: { size: 11 } } }
+            }
+        }
+    });
+
+    // 테이블은 whisper 데이터와 합쳐서 렌더링
+    window._costDaily = daily;
+    window._costLabels = labels;
+    mergeTable();
+}
+
+function renderWhisper(data) {
+    const daily = {};
+    data.forEach(bucket => {
+        const d = new Date(bucket.start_time * 1000).toISOString().slice(0, 10);
+        const secs = (bucket.results || []).reduce((s, r) => s + (r.seconds || 0), 0);
+        const requests = (bucket.results || []).reduce((s, r) => s + (r.num_model_requests || 0), 0);
+        daily[d] = { seconds: (daily[d]?.seconds || 0) + secs, requests: (daily[d]?.requests || 0) + requests };
+    });
+
+    const labels = Object.keys(daily).sort();
+    const secValues = labels.map(d => daily[d].seconds);
+    const totalSec = secValues.reduce((a, b) => a + b, 0);
+    const totalReq = labels.reduce((s, d) => s + daily[d].requests, 0);
+
+    document.getElementById('whisper-seconds').textContent = totalSec > 0
+        ? totalSec.toLocaleString() + '초'
+        : totalReq + '건';
+
+    if (whisperChart) whisperChart.destroy();
+    whisperChart = new Chart(document.getElementById('whisperChart'), {
+        type: 'bar',
+        data: {
+            labels: labels.map(d => d.slice(5)),
+            datasets: [{
+                label: 'Whisper (초)',
+                data: secValues.length && secValues.some(v => v > 0) ? secValues : labels.map(d => daily[d].requests),
+                backgroundColor: 'rgba(52,152,219,0.7)',
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true },
+                x: { ticks: { maxRotation: 45, font: { size: 11 } } }
+            }
+        }
+    });
+
+    window._whisperDaily = daily;
+    mergeTable();
+}
+
+function mergeTable() {
+    const costDaily = window._costDaily || {};
+    const whisperDaily = window._whisperDaily || {};
+    const allDates = [...new Set([...Object.keys(costDaily), ...Object.keys(whisperDaily)])].sort().reverse();
+
+    const tbody = document.getElementById('daily-table');
+    tbody.innerHTML = allDates.map(d => {
+        const cost = costDaily[d] || 0;
+        const w = whisperDaily[d] || { seconds: 0, requests: 0 };
+        return `<tr>
+            <td>${d}</td>
+            <td class="text-right">$${cost.toFixed(4)}</td>
+            <td class="text-right">${w.seconds > 0 ? w.seconds.toLocaleString() : '-'}</td>
+            <td class="text-right">${w.requests > 0 ? w.requests + '건' : '-'}</td>
+        </tr>`;
+    }).join('');
+}
+
+// 크레딧 잔액 로드
+async function loadCredit() {
+    try {
+        const res = await fetch('/proptalk/admin/api/openai-credit');
+        const data = await res.json();
+        document.getElementById('credit-total').textContent = '$' + data.total_credit.toFixed(2);
+        document.getElementById('credit-used').textContent = '$' + data.total_used.toFixed(2);
+        document.getElementById('credit-balance').textContent = '$' + data.balance.toFixed(2);
+        document.getElementById('creditInput').value = data.total_credit;
+        // 잔액 낮으면 경고색
+        if (data.balance < 2) {
+            document.getElementById('credit-balance').style.color = '#e74c3c';
+        }
+    } catch (e) {
+        console.error('크레딧 로드 실패:', e);
+    }
+}
+
+async function setCredit() {
+    const val = parseFloat(document.getElementById('creditInput').value);
+    if (isNaN(val) || val < 0) return alert('올바른 금액을 입력하세요');
+    const res = await fetch('/proptalk/admin/api/openai-credit', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({total_credit: val})
+    });
+    const data = await res.json();
+    if (data.ok) loadCredit();
+}
+
+loadCredit();
+loadData(30);
+</script>
+{% endblock %}
