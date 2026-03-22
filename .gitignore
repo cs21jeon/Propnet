@@ -18,6 +18,7 @@ proptalk/
 **/key.properties
 **/local.properties
 **/*.jks
+.mcp.json
 
 # OS
 **/photothumb.db
