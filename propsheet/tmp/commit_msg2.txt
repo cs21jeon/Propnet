@@ -1,0 +1,7 @@
+PropSheet: 스크롤 시 편집 자동저장, 전체보기 옵션 제거
+
+- 인라인 편집 중 스크롤 시 자동 저장+닫기 (spreadsheet-wrapper scroll listener)
+- per_page "전체" 옵션 제거 (25/50/100개씩만 선택 가능, DOM 부담 감소)
+- 렌더링 속도 최적화 시도 후 원복 (캐시/플로팅에디터/가상스크롤 → Alpine.js 호환성 문제)
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>

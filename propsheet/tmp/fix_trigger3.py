@@ -1,0 +1,124 @@
+#!/usr/bin/env python3
+"""Fix: use ?q= format + remove spaces for kakao map"""
+import sys, os
+sys.path.insert(0, '/home/webapp/goldenrabbit/backend/property-manager')
+os.chdir('/home/webapp/goldenrabbit/backend/property-manager')
+from dotenv import load_dotenv
+load_dotenv('/home/webapp/goldenrabbit/backend/.env')
+from services.database_service import get_db_connection
+
+with get_db_connection() as conn:
+    with conn.cursor() as cur:
+        # 1. Update trigger: use ?q= + REPLACE spaces
+        cur.execute("""
+            CREATE OR REPLACE FUNCTION calculate_property_values()
+            RETURNS trigger AS $$
+            BEGIN
+                NEW."실투자금" := COALESCE(NEW."매가(만원)", 0) - COALESCE(NEW."보증금(만원)", 0);
+                NEW."실투자금(융자포함)" := COALESCE(NEW."매가(만원)", 0) - COALESCE(NEW."융자(만원)", 0) - COALESCE(NEW."보증금(만원)", 0);
+
+                IF NEW."실투자금" > 0 THEN
+                    NEW."융자제외수익률(%)" := ROUND((COALESCE(NEW."월세(만원)", 0) * 12.0 / NEW."실투자금") * 100, 1);
+                ELSE
+                    NEW."융자제외수익률(%)" := 0;
+                END IF;
+
+                IF NEW."실투자금(융자포함)" > 0 THEN
+                    NEW."융자포함수익률" := ROUND(((COALESCE(NEW."월세(만원)", 0) * 12.0 - COALESCE(NEW."융자(만원)", 0) * 0.05) / NEW."실투자금(융자포함)") * 100, 1);
+                ELSE
+                    NEW."융자포함수익률" := 0;
+                END IF;
+
+                NEW."126%" := ROUND(COALESCE(NEW."주택공시가(만원)", 0) * 1.26, 0);
+                NEW."공시가(만원)" := ROUND(COALESCE(NEW."토지면적(㎡)", 0) * COALESCE(NEW."공시지가(원/㎡)", 0) / 10000, -2);
+                NEW."토지가치(만원)" := ROUND(COALESCE(NEW."토지면적(㎡)", 0) * COALESCE(NEW."공시지가(원/㎡)", 0) * 2 / 10000, 0);
+                NEW."10년간수익(만원)" := COALESCE(NEW."월세(만원)", 0) * 120;
+
+                -- 지도 링크: ?q= 형식 + 공백 제거
+                IF NEW."지번 주소" IS NOT NULL THEN
+                    NEW."지도" := 'https://map.kakao.com/?q=' || REPLACE(NEW."지번 주소", ' ', '');
+                END IF;
+
+                IF NEW."주구조" IS NOT NULL AND POSITION('콘크리트' IN NEW."주구조") > 0 THEN
+                    NEW."주구조값" := 50;
+                ELSE
+                    NEW."주구조값" := 30;
+                END IF;
+
+                IF NEW."사용승인일" IS NOT NULL THEN
+                    NEW."연식값" := EXTRACT(YEAR FROM AGE(CURRENT_DATE, NEW."사용승인일"))::INTEGER;
+                ELSE
+                    NEW."연식값" := 100;
+                END IF;
+
+                IF NEW."공시가(만원)" IS NOT NULL AND NEW."공시가(만원)" < COALESCE(NEW."주구조값", 30) THEN
+                    NEW."건물가치(만원)" := ROUND(COALESCE(NEW."연면적(㎡)", 0) * 1500000 *
+                        ((COALESCE(NEW."주구조값", 30) - COALESCE(NEW."연식값", 100)) / COALESCE(NEW."주구조값", 30)::NUMERIC) / 10000, 0);
+                ELSE
+                    NEW."건물가치(만원)" := 0;
+                END IF;
+
+                IF (COALESCE(NEW."연식값", 0) + 10) < COALESCE(NEW."주구조값", 30) THEN
+                    NEW."10년후건물가치(만원)" := ROUND(COALESCE(NEW."연면적(㎡)", 0) * 1500000 *
+                        ((COALESCE(NEW."주구조값", 30) - (COALESCE(NEW."연식값", 0) + 10)) / COALESCE(NEW."주구조값", 30)::NUMERIC) / 10000, 0);
+                ELSE
+                    NEW."10년후건물가치(만원)" := 0;
+                END IF;
+
+                NEW."10년후토지가치(만원)" := ROUND(COALESCE(NEW."토지면적(㎡)", 0) *
+                    COALESCE(NEW."공시지가(원/㎡)", 0) * POWER(1.026, 10) * 2 / 10000, 0);
+
+                IF COALESCE(NEW."매가(만원)", 0) > 0 THEN
+                    NEW."현재가치지수(%)" := ROUND(
+                        (COALESCE(NEW."토지가치(만원)", 0) + COALESCE(NEW."건물가치(만원)", 0)) /
+                        NEW."매가(만원)" * 100, 1);
+                    NEW."10년가치지수(%)" := ROUND(
+                        (COALESCE(NEW."10년후토지가치(만원)", 0) + COALESCE(NEW."10년후건물가치(만원)", 0) + COALESCE(NEW."10년간수익(만원)", 0)) /
+                        NEW."매가(만원)" * 100, 1);
+                ELSE
+                    NEW."현재가치지수(%)" := 0;
+                    NEW."10년가치지수(%)" := 0;
+                END IF;
+
+                IF COALESCE(NEW."감정가(만원,랜드북)", 0) > 0 THEN
+                    NEW."감정가율(%)" := ROUND(COALESCE(NEW."매가(만원)", 0) / NEW."감정가(만원,랜드북)" * 100, 1);
+                ELSE
+                    NEW."감정가율(%)" := NULL;
+                END IF;
+
+                RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql;
+        """)
+        print("1. Trigger updated: ?q= format + REPLACE spaces")
+
+        # 2. Update all existing map URLs
+        cur.execute("""
+            UPDATE sales_building
+            SET "지도" = 'https://map.kakao.com/?q=' || REPLACE("지번 주소", ' ', '')
+            WHERE "지번 주소" IS NOT NULL
+        """)
+        print(f"2. Updated {cur.rowcount} map URLs")
+
+        # 3. Update formula
+        cur.execute(
+            "UPDATE field_definitions SET formula = %s WHERE field_name = '지도' AND database_id = 1",
+            ("'https://map.kakao.com/?q=' || REPLACE(\"지번 주소\", ' ', '')",)
+        )
+        print("3. Updated formula")
+
+        conn.commit()
+
+        # Verify
+        cur.execute("""SELECT id, substring("지도", 1, 60) FROM sales_building ORDER BY id DESC LIMIT 2""")
+        for r in cur.fetchall():
+            print(f"   id={r[0]}: {r[1]}")
+
+        # Test INSERT
+        cur.execute("""INSERT INTO sales_building (database_id, "지번 주소") VALUES (1, '동작구 상도동 126-58') RETURNING id, "지도", "위반건축물", "주차대수", "승강기수" """)
+        r = cur.fetchone()
+        print(f"\n   Test INSERT: id={r[0]}, map={r[1]}, 위반={r[2]}, 주차={r[3]}, 승강기={r[4]}")
+        cur.execute(f"DELETE FROM sales_building WHERE id = {r[0]}")
+        conn.commit()
+
+print("Done!")

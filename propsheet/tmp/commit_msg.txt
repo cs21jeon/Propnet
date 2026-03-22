@@ -1,0 +1,12 @@
+PropSheet: 광고 자동완성 트리거, 테이블 구조 변경, UI 개선
+
+- 광고(자동완성) DB 트리거: 단일부동산(format_ad_text), 부분부동산(format_ad_text_partial), 집합부동산(format_ad_text_multi)
+- 부분부동산 컬럼 추가(호수,물건종류,호실,전용면적,관리비,방,화,입주가능일) 및 삭제(실투자금 등)
+- 상세보기 줄바꿈 표시 (white-space: pre-line)
+- Attachment 필드 클릭 시 편집모드 진입 방지
+- 브로커 카드 전화번호 클릭-복사 기능
+- 체크박스/상세보기 컬럼 순서 변경
+- psycopg2 formula % 이스케이프 수정
+- 개발 진행현황 문서 업데이트
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>

@@ -1,0 +1,23 @@
+PropSheet: 다크모드, 로딩오버레이, Checkbox, 날짜형식, Select색상반전
+
+다크모드:
+- CSS 변수 기반 다크 테마 ([data-theme="dark"])
+- 워크스페이스 + 데이터베이스 페이지 모두 지원
+- 🌙/☀️ 토글 버튼, localStorage 저장, 페이지 간 유지
+- Select 태그 bg↔text 색상 반전, 팀관리/헤더/카드 색상 대응
+
+로딩 오버레이:
+- 전체 화면 반투명 스피너 (다크모드 대응)
+- $nextTick + double requestAnimationFrame으로 실제 렌더링 완료 감지
+
+기타:
+- Checkbox 필드 타입 추가 (셀 클릭 토글, 상세보기 체크박스)
+- 날짜 표시 형식: 상세보기에서도 col.dateFormat 반영
+- Select 옵션 순서 UI: 세로 리스트 + 행 드래그
+- 용도지역 필드 양식 전체 DB 통일
+- % 컬럼명 편집 오류 수정 (audit SELECT/UPDATE)
+- DB 설명 누락 수정 (json_build_object에 description 추가)
+- _dragIdx → dragIdx 등 Alpine _ 접두사 수정
+- refreshRecord: Alpine 반응성 보장 (Object.keys 직접 수정)
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>

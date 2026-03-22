@@ -1,0 +1,33 @@
+# 서비스별 독립 Git 제외 (nested repos)
+propedia/
+proptalk/
+
+# Flutter/Dart 빌드
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+
+# IDE
+**/.idea/
+**/.vscode/
+*.iml
+
+# 환경/시크릿
+**/.env
+**/key.properties
+**/local.properties
+**/*.jks
+
+# OS
+**/photothumb.db
+**/.DS_Store
+**/Thumbs.db
+**/nul
+
+# Playwright logs
+**/.playwright-mcp/
+
+# Python
+**/__pycache__/
+**/*.pyc

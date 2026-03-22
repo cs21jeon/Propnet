@@ -1,0 +1,18 @@
+PropSheet: Formula 실시간 반영, 뷰 순서 수정, clone 수정
+
+Formula 실시간 반영:
+- openDetailPanel: list_properties API 사용 (formula 포함)
+- refreshRecord: Alpine 반응성 보장 (Object.keys 직접 프로퍼티 수정)
+- saveInlineEdit/saveSelectValue/saveDetailField 후 refreshRecord 호출
+
+뷰/컬럼 순서:
+- 뷰 전환 시 allColumns를 뷰 column_config 순서로 재정렬
+- loadColumns 후 뷰 순서 자동 재적용 (applyViewColumnOrder)
+- 뷰 column_config 없으면 전체 필드 기본 표시
+
+clone/기타:
+- clone_database_full에 clone_field_definitions_impl 호출 추가
+- 폴링(3초) 제거 (sync_events/API는 유지)
+- Nginx propsheet static 캐시 7일→1시간
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>

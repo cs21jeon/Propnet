@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "goldenrabbit-server": {
+      "command": "ssh",
+      "args": [
+        "-o", "LogLevel=ERROR",
+        "-o", "StrictHostKeyChecking=no",
+        "root@175.119.224.71",
+        "npx -y @modelcontextprotocol/server-filesystem /home/webapp/goldenrabbit"
+      ]
+    },
+    "playwright": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-playwright"]
+    }
+  }
+}
