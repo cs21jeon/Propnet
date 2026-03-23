@@ -1,6 +1,6 @@
 # Propsheet 시스템 현황 문서
 
-> 작성일: 2026-03-03 | 마지막 업데이트: 2026-03-22 (다크모드, 로딩오버레이, Checkbox, 날짜형식, Select색상반전)
+> 작성일: 2026-03-03 | 마지막 업데이트: 2026-03-24 (캘린더 뷰, 일정관리 DB 템플릿, time 필드 타입, 담당자/중요도 필드)
 
 ---
 
@@ -87,12 +87,20 @@ routes/ → services/ → External APIs (공공데이터포털, VWorld, Airtable
 │   │   │   ├── record_id_service.py # Propsheet 고유 record_id 생성
 │   │   │   ├── airtable_service.py  # Airtable 저장
 │   │   │   └── ...
-│   │   └── templates/
-│   │       └── propsheet/
-│   │           ├── workspaces.html    # 워크스페이스 목록
-│   │           ├── database_list.html # 스프레드시트 UI
-│   │           ├── share.html         # DB 공유 미리보기/복제 페이지 (2026-03-05 추가)
-│   │           └── landing.html       # 랜딩 페이지 (Propnet 정보)
+│   │   ├── templates/
+│   │   │   └── propsheet/
+│   │   │       ├── workspaces.html    # 워크스페이스 목록 (DB 생성 시 일정관리 템플릿 선택)
+│   │   │       ├── database_list.html # 스프레드시트 UI (time 필드 시/분 피커, 캘린더 뷰 토글)
+│   │   │       ├── calendar.html      # 캘린더 뷰 (월/주/일/년 4가지 모드) (2026-03-24 추가)
+│   │   │       ├── share.html         # DB 공유 미리보기/복제 페이지 (2026-03-05 추가)
+│   │   │       └── landing.html       # 랜딩 페이지 (Propnet 정보)
+│   │   └── static/
+│   │       ├── css/propsheet/
+│   │       │   ├── calendar.css       # 캘린더 뷰 스타일 (2026-03-24 추가)
+│   │       │   └── ...
+│   │       └── js/propsheet/
+│   │           ├── calendar.js        # 캘린더 Alpine.js 컴포넌트 (2026-03-24 추가)
+│   │           └── ...
 │   ├── shared/                   # 공유 모듈
 │   ├── scripts/                  # 유틸리티 스크립트
 │   │   ├── airtable_backup.py    # 에어테이블 백업 (02:00 AM)
@@ -216,14 +224,14 @@ DB_CONFIG = {
 |------|------|------|
 | id | SERIAL PK | |
 | field_name | TEXT | 필드명 |
-| field_type | TEXT | 필드 타입 (text, number, single-select, multi-select, formula 등) |
+| field_type | TEXT | 필드 타입 (text, number, date, time, single-select, multi-select, checkbox, formula, long-text, attachment, url, system_generated_value) |
 | formula | TEXT | 수식 (nullable) |
 | system_value_key | TEXT | 시스템 값 키 |
 | select_options | TEXT[] | Select 필드 선택지 목록 (PostgreSQL 배열) |
 | is_editable | BOOLEAN | 편집 가능 여부 |
 | display_order | INTEGER | 정렬 순서 |
 
-#### views (2026-03-04 추가)
+#### views (2026-03-04 추가, 2026-03-24 view_type 추가)
 
 | 컬럼 | 타입 | 설명 |
 |------|------|------|
@@ -231,9 +239,10 @@ DB_CONFIG = {
 | database_id | INTEGER FK | databases.id 참조 |
 | name | VARCHAR(100) | 뷰 이름 |
 | slug | VARCHAR(100) | URL용 식별자 (UNIQUE with database_id) |
+| view_type | VARCHAR(20) | 뷰 타입: `grid` (스프레드시트) / `calendar` (캘린더) (2026-03-24 추가) |
 | filter_config | JSONB | 필터 규칙 배열 [{field, operator, value}] |
 | sort_config | JSONB | 정렬 설정 {sort_by, sort_order} |
-| column_config | JSONB | 표시 컬럼 키 배열 |
+| column_config | JSONB | 표시 컬럼 키 배열 (캘린더 뷰: {calendar: {date_field, end_date_field, title_field, color_field}}) |
 | display_order | INTEGER | 정렬 순서 |
 | is_default | BOOLEAN | 기본 뷰 여부 (삭제 불가) |
 | created_at | TIMESTAMP | 생성일 |
@@ -526,6 +535,20 @@ backups/airtable/
 - 뷰별 필터/정렬/컬럼 설정 JSONB 저장
 - 기본 뷰 보호 (삭제 불가)
 - slug 기반 조회
+- **view_type 지원**: `grid` (스프레드시트) / `calendar` (캘린더) — 2026-03-24 추가
+
+**캘린더 뷰** — 2026-03-24 추가:
+- **URL**: `/propsheet/workspace/{slug}/database/{slug}/calendar`
+- **4가지 뷰 모드**: 월간(monthly), 주간(weekly), 일간(daily), 연간(yearly)
+- **일정/할일 관리**: 유형(일정/할일), 상태(예정/진행중/완료/취소), 우선순위, 중요도(★★★/★★/★)
+- **담당자 지정**: agent/subagent 이름 드롭다운 (`/api/agent/assignees` API)
+- **시간 필드**: `time` 필드 타입 — 시/분 2단계 드롭다운 (10분 단위)
+- **종일 이벤트**: 체크 시 00:00~23:50 자동 설정
+- **일정관리 DB 템플릿**: 워크스페이스에서 DB 생성 시 "일정관리" 선택 → 제목/시작일/종료일/시작시간/종료시간/종일/유형/상태/우선순위/중요도/카테고리/담당자/메모/비고 자동 생성
+- **캘린더 API**: `GET /api/database/calendar?db=&year=&month=` (날짜 범위 기반 이벤트 조회)
+- **뷰 전환 토글**: 스프레드시트 ↔ 캘린더 아이콘 (database_list.html 헤더)
+- **다크모드 지원**: 기존 CSS 변수 재활용
+- **할일 사이드바**: 미완료 할일 목록 (시작일순 정렬, 체크박스 완료 토글)
 
 **에어테이블 → Propsheet 동기화** (`scripts/airtable_to_propsheet_sync.py`):
 - 매일 04:00 AM 자동 실행 (cron)
