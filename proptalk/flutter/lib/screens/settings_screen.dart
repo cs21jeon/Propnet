@@ -105,7 +105,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showBillingSheet() {
-    final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -114,169 +113,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         maxChildSize: 0.9,
         minChildSize: 0.4,
         expand: false,
-        builder: (ctx, scrollController) => SafeArea(
-          child: ListView(
-            controller: scrollController,
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-            children: [
-              // 핸들
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.outline.withAlpha(60),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Text('요금제 안내',
-                  style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 16),
-
-              // 무료
-              _buildPlanCard(theme,
-                title: 'Free',
-                subtitle: '계정당 평생 제공',
-                time: '10분',
-                price: '무료',
-                highlight: false,
-              ),
-              const SizedBox(height: 10),
-
-              // 1시간 팩
-              _buildPlanCard(theme,
-                title: '1시간 팩',
-                subtitle: '일회성 · 만료 없음',
-                time: '60분',
-                price: '9,900원',
-                highlight: false,
-              ),
-              const SizedBox(height: 10),
-
-              // 10시간 팩
-              _buildPlanCard(theme,
-                title: '10시간 팩',
-                subtitle: '일회성 · 만료 없음 · 시간당 132원',
-                time: '600분',
-                price: '79,000원',
-                highlight: true,
-              ),
-              const SizedBox(height: 10),
-
-              // Basic 30h
-              _buildPlanCard(theme,
-                title: 'Basic 30h',
-                subtitle: '월구독 · 초과 시 12원/분',
-                time: '1,800분/월',
-                price: '29,000원/월',
-                highlight: false,
-              ),
-              const SizedBox(height: 10),
-
-              // Pro 90h
-              _buildPlanCard(theme,
-                title: 'Pro 90h',
-                subtitle: '월구독 · 초과 시 12원/분',
-                time: '5,400분/월',
-                price: '79,000원/월',
-                highlight: false,
-              ),
-
-              const SizedBox(height: 24),
-              const Divider(),
-              const SizedBox(height: 16),
-
-              // 충전 안내
-              Text('충전 방법',
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              const Text(
-                '모바일 또는 PC 브라우저에서 아래 주소로 접속하여 충전할 수 있습니다.',
-                style: TextStyle(fontSize: 13),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: SelectableText(
-                  BillingService.billingWebUrl,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '로그인 후 요금제를 선택하고 결제하면 앱에 자동으로 이용 시간이 충전됩니다.',
-                style: TextStyle(fontSize: 12, color: theme.colorScheme.outline),
-              ),
-            ],
-          ),
+        builder: (ctx, scrollController) => _BillingSheetContent(
+          scrollController: scrollController,
         ),
       ),
     );
   }
 
-  Widget _buildPlanCard(ThemeData theme, {
-    required String title,
-    required String subtitle,
-    required String time,
-    required String price,
-    bool highlight = false,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: highlight
-            ? theme.colorScheme.primaryContainer.withAlpha(60)
-            : theme.colorScheme.surfaceContainerHighest.withAlpha(120),
-        borderRadius: BorderRadius.circular(12),
-        border: highlight
-            ? Border.all(color: theme.colorScheme.primary.withAlpha(100))
-            : null,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: theme.textTheme.titleSmall
-                        ?.copyWith(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 2),
-                Text(subtitle,
-                    style: TextStyle(
-                        fontSize: 12, color: theme.colorScheme.outline)),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(time,
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(fontWeight: FontWeight.w600)),
-              Text(price,
-                  style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: theme.colorScheme.primary)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
   Future<void> _withdrawConsent(String type, String label) async {
     final confirmed = await showDialog<bool>(
@@ -646,5 +489,240 @@ class _SettingsScreenState extends State<SettingsScreen> {
             : null,
       );
     }).toList();
+  }
+}
+
+/// 서버에서 요금제를 불러와 표시하는 바텀시트 위젯
+class _BillingSheetContent extends StatefulWidget {
+  final ScrollController scrollController;
+  const _BillingSheetContent({required this.scrollController});
+
+  @override
+  State<_BillingSheetContent> createState() => _BillingSheetContentState();
+}
+
+class _BillingSheetContentState extends State<_BillingSheetContent> {
+  List<dynamic> _plans = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlans();
+  }
+
+  Future<void> _loadPlans() async {
+    try {
+      final api = context.read<ApiService>();
+      final data = await api.getBillingPlans();
+      if (mounted) {
+        setState(() {
+          _plans = data['plans'] ?? [];
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  String _formatMinutes(dynamic mins) {
+    if (mins == null) return '-';
+    final m = (mins is int) ? mins : (mins as num).toInt();
+    if (m >= 60) {
+      final h = m ~/ 60;
+      final rem = m % 60;
+      return rem > 0 ? '${h}시간 ${rem}분' : '${h}시간';
+    }
+    return '${m}분';
+  }
+
+  String _formatPrice(dynamic price) {
+    if (price == null || price == 0) return '무료';
+    final p = (price is int) ? price : (price as num).toInt();
+    final formatted = p.toString().replaceAllMapped(
+        RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+    return '${formatted}원';
+  }
+
+  String _buildSubtitle(Map<String, dynamic> plan) {
+    final parts = <String>[];
+    final type = plan['plan_type'] ?? '';
+
+    if (type == 'free') {
+      parts.add('계정당 평생 제공');
+    } else if (type == 'time_pack') {
+      parts.add('일회성 · 만료 없음');
+    } else if (type == 'subscription') {
+      parts.add('월 정기결제');
+    }
+
+    final mins = (plan['minutes_included'] as num?)?.toInt() ?? 0;
+    if (mins > 0 && (plan['price'] as num?)?.toInt() != null) {
+      final price = (plan['price'] as num).toInt();
+      if (price > 0) {
+        final hours = mins / 60;
+        final perHour = (price / hours).round();
+        parts.add('시간당 ${_formatPrice(perHour)}');
+      }
+    }
+
+    final overage = plan['overage_rate'];
+    if (overage != null && overage > 0) {
+      parts.add('초과 시 ${overage}원/분');
+    }
+
+    return parts.join(' · ');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return SafeArea(
+      child: ListView(
+        controller: widget.scrollController,
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.outline.withAlpha(60),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          Text('요금제 안내',
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+
+          if (_isLoading)
+            const Center(
+                child: Padding(
+              padding: EdgeInsets.all(32),
+              child: CircularProgressIndicator(),
+            ))
+          else ...[
+            // 일반 사용자 요금제 (free, time_pack, subscription 중 agent 아닌 것)
+            ..._plans
+                .where((p) => !(p['code']?.toString().startsWith('agent') ?? false))
+                .map((plan) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _buildPlanCard(theme, plan),
+                    )),
+
+            // Agent 요금제가 있으면 섹션 분리
+            if (_plans.any((p) => p['code']?.toString().startsWith('agent') ?? false)) ...[
+              const SizedBox(height: 8),
+              Text('중개사 (Agent)',
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withAlpha(25),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'Agent 요금제에는 Propsheet(부동산 데이터베이스)가 포함되어 있습니다.',
+                  style: TextStyle(fontSize: 12, color: Colors.deepOrange),
+                ),
+              ),
+              ..._plans
+                  .where((p) => p['code']?.toString().startsWith('agent') ?? false)
+                  .map((plan) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _buildPlanCard(theme, plan),
+                      )),
+            ],
+          ],
+
+          const SizedBox(height: 24),
+          const Divider(),
+          const SizedBox(height: 16),
+
+          Text('충전 방법',
+              style: theme.textTheme.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          const Text(
+            '모바일 또는 PC 브라우저에서 아래 주소로 접속하여 충전할 수 있습니다.',
+            style: TextStyle(fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: SelectableText(
+              BillingService.billingWebUrl,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '로그인 후 요금제를 선택하고 결제하면 앱에 자동으로 이용 시간이 충전됩니다.',
+            style: TextStyle(fontSize: 12, color: theme.colorScheme.outline),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlanCard(ThemeData theme, Map<String, dynamic> plan) {
+    final isSub = plan['plan_type'] == 'subscription';
+    final priceStr = _formatPrice(plan['price']);
+    final timeStr = _formatMinutes(plan['minutes_included']);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withAlpha(120),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(plan['name'] ?? '',
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 2),
+                Text(_buildSubtitle(plan),
+                    style: TextStyle(
+                        fontSize: 12, color: theme.colorScheme.outline)),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(timeStr,
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.w600)),
+              Text(isSub ? '$priceStr/월' : priceStr,
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: theme.colorScheme.primary)),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

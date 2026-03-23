@@ -234,7 +234,11 @@ class Room:
 
     @staticmethod
     def delete(room_id):
-        """채팅방 삭제 (CASCADE로 멤버/메시지/음성파일도 삭제)"""
+        """채팅방 삭제 (usage_logs FK 먼저 정리 후 CASCADE 삭제)"""
+        execute(
+            "DELETE FROM usage_logs WHERE audio_file_id IN (SELECT id FROM audio_files WHERE room_id = %s)",
+            (room_id,)
+        )
         execute("DELETE FROM rooms WHERE id = %s", (room_id,))
 
 
@@ -415,7 +419,7 @@ class AudioFile:
         """음성 파일 검색 (전화번호, 날짜 범위)"""
         conditions = []
         params = []
-        
+
         if room_id:
             conditions.append("af.room_id = %s")
             params.append(room_id)
@@ -428,9 +432,9 @@ class AudioFile:
         if date_to:
             conditions.append("af.record_date <= %s")
             params.append(date_to)
-        
+
         where = " AND ".join(conditions) if conditions else "1=1"
-        
+
         return query_all(
             f"""SELECT af.*, u.name as user_name
                 FROM audio_files af
@@ -440,6 +444,72 @@ class AudioFile:
                 LIMIT 100""",
             tuple(params)
         )
+
+    @staticmethod
+    def list_summaries_for_user(user_id, room_id=None, phone_number=None,
+                                 parsed_name=None, date_from=None, date_to=None,
+                                 page=1, per_page=30):
+        """사용자가 속한 방의 음성파일 요약 목록 (페이지네이션)"""
+        conditions = [
+            "rm.user_id = %s",
+            "rm.status IN ('approved', 'active')",
+            "af.status = 'completed'",
+        ]
+        params = [user_id]
+
+        if room_id:
+            conditions.append("af.room_id = %s")
+            params.append(room_id)
+        if phone_number:
+            conditions.append("af.phone_number ILIKE %s")
+            params.append(f"%{phone_number}%")
+        if parsed_name:
+            conditions.append("af.parsed_name ILIKE %s")
+            params.append(f"%{parsed_name}%")
+        if date_from:
+            conditions.append("af.record_date >= %s")
+            params.append(date_from)
+        if date_to:
+            conditions.append("af.record_date <= %s")
+            params.append(date_to)
+
+        where = " AND ".join(conditions)
+        offset = (page - 1) * per_page
+
+        # 총 개수
+        count = query_one(
+            f"""SELECT COUNT(*) as total
+                FROM audio_files af
+                JOIN room_members rm ON af.room_id = rm.room_id
+                WHERE {where}""",
+            tuple(params)
+        )
+        total = count['total'] if count else 0
+
+        # 데이터 조회
+        rows = query_all(
+            f"""SELECT af.id, af.room_id, r.name as room_name,
+                       af.original_filename, af.phone_number, af.parsed_name,
+                       af.record_date, af.duration_seconds,
+                       af.transcript_summary, af.transcript_text,
+                       af.drive_url, af.status, af.created_at,
+                       u.name as user_name
+                FROM audio_files af
+                JOIN room_members rm ON af.room_id = rm.room_id
+                JOIN rooms r ON af.room_id = r.id
+                JOIN users u ON af.user_id = u.id
+                WHERE {where}
+                ORDER BY af.created_at DESC
+                LIMIT %s OFFSET %s""",
+            tuple(params) + (per_page, offset)
+        )
+
+        return {
+            'audio_files': rows,
+            'total': total,
+            'page': page,
+            'per_page': per_page,
+        }
 
 
 # ============================================================

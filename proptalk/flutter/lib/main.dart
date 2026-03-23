@@ -5,7 +5,7 @@ import 'services/auth_service.dart';
 import 'services/billing_service.dart';
 import 'services/ad_service.dart';
 import 'screens/login_screen.dart';
-import 'screens/rooms_screen.dart';
+import 'screens/main_screen.dart';
 import 'screens/consent_screen.dart';
 import 'theme/app_theme.dart';
 import 'theme/theme_provider.dart';
@@ -81,7 +81,7 @@ class _VoiceRoomAppState extends State<VoiceRoomApp> {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             context.read<BillingService>().loadBillingStatus();
           });
-          return const RoomsScreen();
+          return const MainScreen();
         },
       ),
     );

@@ -426,10 +426,52 @@ class ApiService {
   }
 
   // ============================================================
+  // 음성파일 요약 조회
+  // ============================================================
+
+  /// 음성파일 요약 목록 (크로스 룸)
+  Future<Map<String, dynamic>> getAudioSummaries({
+    int? roomId,
+    String? phone,
+    String? name,
+    String? dateFrom,
+    String? dateTo,
+    int page = 1,
+    int perPage = 30,
+  }) async {
+    var url = '$baseUrl/api/audio/summaries?page=$page&per_page=$perPage';
+    if (roomId != null) url += '&room_id=$roomId';
+    if (phone != null && phone.isNotEmpty) url += '&phone=${Uri.encodeComponent(phone)}';
+    if (name != null && name.isNotEmpty) url += '&name=${Uri.encodeComponent(name)}';
+    if (dateFrom != null) url += '&date_from=$dateFrom';
+    if (dateTo != null) url += '&date_to=$dateTo';
+
+    final response = await _client.get(Uri.parse(url), headers: _headers);
+    return _handleResponse(response);
+  }
+
+  /// 채팅방 Drive 폴더 URL 조회
+  Future<Map<String, dynamic>> getRoomDriveFolder(int roomId) async {
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/rooms/$roomId/drive-folder'),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  // ============================================================
   // 응답 처리
   // ============================================================
   Map<String, dynamic> _handleResponse(http.Response response) {
-    final data = jsonDecode(response.body);
+    dynamic data;
+    try {
+      data = jsonDecode(response.body);
+    } on FormatException {
+      throw ApiException(
+        '서버 응답 파싱 오류 (status=${response.statusCode}): ${response.body.length > 200 ? response.body.substring(0, 200) : response.body}',
+        response.statusCode,
+      );
+    }
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return data;
     }
