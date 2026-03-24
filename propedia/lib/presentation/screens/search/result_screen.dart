@@ -13,7 +13,7 @@ import 'package:propedia/presentation/providers/favorites_provider.dart';
 import 'package:propedia/presentation/widgets/ads/banner_ad_widget.dart';
 import 'package:propedia/presentation/widgets/common/login_prompt_dialog.dart';
 import 'package:propedia/presentation/widgets/common/loading_progress_indicator.dart';
-import 'package:propedia/presentation/providers/airtable_provider.dart';
+import 'package:propedia/presentation/providers/propsheet_provider.dart';
 
 class ResultScreen extends ConsumerStatefulWidget {
   const ResultScreen({super.key});
@@ -220,8 +220,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     final pdfState = ref.watch(pdfProvider);
     final areaInfoState = ref.watch(areaInfoProvider);
     final favoritesState = ref.watch(favoritesProvider);
-    final canSaveToAirtable = ref.watch(canSaveToAirtableProvider);
-    final airtableSaveState = ref.watch(airtableSaveProvider);
+    final canSaveToPropSheet = ref.watch(canSaveToPropSheetProvider);
+    final propSheetSaveState = ref.watch(propSheetSaveProvider);
 
     // 공동주택 여부 확인
     final isMultiUnit = searchState.result?.building?.type == 'multi_unit';
@@ -243,27 +243,27 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
       appBar: AppBar(
         title: const Text('검색 결과'),
         actions: [
-          // Airtable 저장 버튼 (권한 있는 사용자만)
-          if (canSaveToAirtable && searchState.status == SearchStatus.success && searchState.result != null)
+          // PropSheet 저장 버튼 (권한 있는 사용자만)
+          if (canSaveToPropSheet && searchState.status == SearchStatus.success && searchState.result != null)
             IconButton(
-              icon: airtableSaveState.status == AirtableSaveStatus.saving
+              icon: propSheetSaveState.status == PropSheetSaveStatus.saving
                   ? const SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : Icon(
-                      airtableSaveState.status == AirtableSaveStatus.success
+                      propSheetSaveState.status == PropSheetSaveStatus.success
                           ? Icons.cloud_done
                           : Icons.cloud_upload_outlined,
-                      color: airtableSaveState.status == AirtableSaveStatus.success
+                      color: propSheetSaveState.status == PropSheetSaveStatus.success
                           ? Colors.green
                           : null,
                     ),
-              tooltip: 'Airtable에 저장',
-              onPressed: airtableSaveState.status == AirtableSaveStatus.saving
+              tooltip: 'PropSheet에 저장',
+              onPressed: propSheetSaveState.status == PropSheetSaveStatus.saving
                   ? null
-                  : () => _saveToAirtable(searchState.result!),
+                  : () => _saveToPropSheet(searchState.result!),
             ),
           // 즐겨찾기 버튼
           if (searchState.status == SearchStatus.success && searchState.result != null)
@@ -372,25 +372,134 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     }
   }
 
-  /// Airtable에 저장
-  Future<void> _saveToAirtable(BuildingSearchResponse result) async {
+  static const _typeNames = {
+    PropSheetPropertyType.danil: '단일부동산',
+    PropSheetPropertyType.bubun: '부분부동산',
+    PropSheetPropertyType.jibhap: '집합부동산',
+  };
+
+  /// PropSheet에 저장
+  Future<void> _saveToPropSheet(BuildingSearchResponse result) async {
+    final buildingType = result.building?.type;
+    final isMultiUnit = buildingType == 'multi_unit';
+
+    PropSheetPropertyType propertyType;
+
+    if (isMultiUnit) {
+      propertyType = PropSheetPropertyType.jibhap;
+    } else {
+      final selected = await _showPropertyTypeDialog();
+      if (selected == null) return;
+      propertyType = selected;
+    }
+
+    // 저장 확인
+    final typeName = _typeNames[propertyType]!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('저장 확인'),
+        content: Text('$typeName으로 저장할까요?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('취소'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('저장'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    await _doSaveToPropSheet(result, propertyType: propertyType, forceNew: false);
+  }
+
+  Future<void> _doSaveToPropSheet(
+    BuildingSearchResponse result, {
+    required PropSheetPropertyType propertyType,
+    required bool forceNew,
+  }) async {
     final areaInfoState = ref.read(areaInfoProvider);
     final areaInfo = areaInfoState.status == SearchStatus.success ? areaInfoState.areaInfo : null;
 
-    final success = await ref.read(airtableSaveProvider.notifier).saveToAirtable(
+    final success = await ref.read(propSheetSaveProvider.notifier).saveToPropSheet(
       result,
+      propertyType: propertyType,
       selectedDong: _selectedDong,
       selectedHo: _selectedHo,
       areaInfo: areaInfo,
+      forceNew: forceNew,
     );
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(success ? 'Airtable에 저장되었습니다' : '저장 실패: ${ref.read(airtableSaveProvider).errorMessage ?? "오류"}'),
-        duration: const Duration(seconds: 2),
-        backgroundColor: success ? Colors.green : Colors.red,
+    final saveState = ref.read(propSheetSaveProvider);
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${_typeNames[propertyType]} 저장 완료!'),
+          duration: const Duration(seconds: 2),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else if (saveState.status == PropSheetSaveStatus.duplicate) {
+      // 중복 발견 → 새 레코드로 추가할지 확인
+      final addNew = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('중복 주소'),
+          content: Text('${saveState.duplicateMessage}\n\n새 레코드로 추가 저장하시겠습니까?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('취소'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('추가 저장'),
+            ),
+          ],
+        ),
+      );
+      if (addNew == true && mounted) {
+        await _doSaveToPropSheet(result, propertyType: propertyType, forceNew: true);
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('저장 실패: ${saveState.errorMessage ?? "오류"}'),
+          duration: const Duration(seconds: 2),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  /// 단독부동산 유형 선택 다이얼로그
+  Future<PropSheetPropertyType?> _showPropertyTypeDialog() async {
+    return showDialog<PropSheetPropertyType>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('부동산 유형 선택'),
+        content: const Text('어떤 유형으로 저장하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소'),
+          ),
+          FilledButton.tonal(
+            onPressed: () => Navigator.pop(context, PropSheetPropertyType.danil),
+            child: const Text('단일부동산'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, PropSheetPropertyType.bubun),
+            child: const Text('부분부동산'),
+          ),
+        ],
       ),
     );
   }

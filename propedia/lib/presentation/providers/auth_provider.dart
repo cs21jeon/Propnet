@@ -192,8 +192,4 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(authRepository);
 });
 
-// 권한 Provider
-final canSaveToAirtableProvider = Provider<bool>((ref) {
-  final authState = ref.watch(authProvider);
-  return authState.user?.canSaveToAirtable ?? false;
-});
+// PropSheet 저장 권한은 propsheet_provider.dart에서 관리

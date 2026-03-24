@@ -20,7 +20,7 @@ class User with _$User {
   bool get isAdmin => role == 'admin';
   bool get isAgent => role == 'agent' || role == 'admin';
   bool get isSubAgent => role == 'subagent' || isAgent;
-  bool get canSaveToAirtable => isSubAgent;
+  bool get canSaveToPropSheet => isSubAgent;
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 }

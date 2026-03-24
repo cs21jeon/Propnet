@@ -2470,6 +2470,21 @@ else if (RegExp(r'[동리읍면]산\s+\d').hasMatch(working)) {
 - API 타임아웃 60초, 에러 화면 개선
 - 화성시 신규 행정구역 25개동 old_bjdong_code 매핑
 
+### [1.0.3+7] - 2026-03-24
+
+- **Airtable → PropSheet 저장 전환**: 부동산 정보 저장 대상을 Airtable에서 PropSheet DB로 변경
+  - 단독부동산: 단일부동산/부분부동산 선택 모달 UI
+  - 공동주택: 자동으로 집합부동산에 저장
+  - 저장 전 확인 다이얼로그 추가 ("OO부동산으로 저장할까요?")
+  - 중복 주소 감지 시 새 레코드 추가 여부 확인 (기존 데이터 보호)
+- **서버 엔드포인트**: `/app/api/propsheet/save/property` (통합 엔드포인트, JWT 인증)
+- **레코드생성일자 자동 부여**: 신규 레코드 저장 시 현재 시각 자동 기록
+- **레거시 코드 정리**:
+  - Airtable 저장 코드 전면 제거 (서버 route/service, Flutter, PWA)
+  - 구 Property Manager UI 파일 백업 후 삭제 (templates, routes, frontend HTML/JS)
+  - 백업 위치: `/home/webapp/goldenrabbit/backups/legacy-cleanup-20260324/`
+- **JDK 환경**: Android Studio 제거 후 OpenJDK 17 독립 설치, key.properties 경로 수정
+
 ### [1.0.2+5] - 2026-02-25
 
 - API 병렬 호출, 건축물대장 TTL 캐싱
