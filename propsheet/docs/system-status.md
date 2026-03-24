@@ -217,6 +217,8 @@ DB_CONFIG = {
 | icon | TEXT | 이모지 아이콘 |
 | color | VARCHAR | 테마 색상 |
 | display_order | INTEGER | 정렬 순서 |
+| external_source | VARCHAR(50) | 외부 데이터 소스 (`proptalk` 등) (2026-03-24 추가) |
+| external_config | JSONB | 외부 연동 설정 (`{"room_id": 5}` 등) (2026-03-24 추가) |
 
 #### field_definitions
 
@@ -537,6 +539,15 @@ backups/airtable/
 - slug 기반 조회
 - **view_type 지원**: `grid` (스프레드시트) / `calendar` (캘린더) — 2026-03-24 추가
 
+**Proptalk 연동 서비스** (`services/proptalk_service.py`) — 2026-03-24 추가:
+- voiceroom DB 연결 (별도 psycopg2 커넥션, 같은 서버 localhost)
+- `get_proptalk_rooms(email)` — 사용자의 Proptalk 채팅방 목록
+- `create_proptalk_database_table()` — 통화요약 테이블 + field_definitions 자동 생성
+- `import_all_audio_files()` — 최초 전체 가져오기 (voiceroom → goldenrabbit_db)
+- `sync_new_audio_files()` — 새 오디오만 추가 (기존 데이터 보존, INSERT only)
+- `check_matched_phones(phones)` — 전화번호 일괄 매칭 (숫자 정규화 후 비교)
+- `get_audio_by_phone(phone)` — 특정 전화번호의 통화 요약 목록 조회
+
 **캘린더 뷰** — 2026-03-24 추가:
 - **URL**: `/propsheet/workspace/{slug}/database/{slug}/calendar`
 - **4가지 뷰 모드**: 월간(monthly), 주간(weekly), 일간(daily), 연간(yearly)
@@ -547,6 +558,19 @@ backups/airtable/
 - **일정관리 DB 템플릿**: 워크스페이스에서 DB 생성 시 "일정관리" 선택 → 제목/시작일/종료일/시작시간/종료시간/종일/유형/상태/우선순위/중요도/카테고리/담당자/메모/비고 자동 생성
 - **캘린더 API**: `GET /api/database/calendar?db=&year=&month=` (날짜 범위 기반 이벤트 조회)
 - **뷰 전환 토글**: 스프레드시트 ↔ 캘린더 아이콘 (database_list.html 헤더)
+
+**Proptalk 통화요약 연동** — 2026-03-24 추가:
+- **통화요약 DB 템플릿**: DB 생성 시 "통화요약" 선택 → Proptalk 채팅방 선택 → 해당 방의 음성 요약을 PropSheet 테이블로 가져오기
+  - 필드: 날짜, 이름, 전화번호, 요약, 통화내용, 길이(초), 파일명, Drive 링크, 상태, 업로더, 메모
+  - agent/subagent 전용 (일반 user는 템플릿 미표시)
+  - `databases.external_source='proptalk'`, `external_config={"room_id": N}` 저장
+  - 스프레드시트 열 때 새 오디오 자동 동기화 (INSERT only, 기존 편집 보존)
+- **전화번호-통화기록 연결**: 스프레드시트의 전화번호와 Proptalk 음성 파일 전화번호 자동 매칭
+  - 숫자 정규화 매칭 (하이픈/공백/메모 포함 형식 모두 대응)
+  - 매칭된 셀에 📞+건수 아이콘 표시
+  - 클릭 시 사이드패널에 통화 기록 목록 (날짜, 이름, AI 요약, 길이, Drive 링크, 전문보기)
+  - API: `POST /api/proptalk/check-phones` (일괄 매칭), `GET /api/proptalk/audio-by-phone` (통화 상세)
+- **Nginx 캐시 개선**: propsheet static 경로 `expires 1h` → `ETag + no-cache, must-revalidate` (파일 수정 즉시 반영)
 - **다크모드 지원**: 기존 CSS 변수 재활용
 - **할일 사이드바**: 미완료 할일 목록 (시작일순 정렬, 체크박스 완료 토글)
 
