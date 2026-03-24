@@ -110,8 +110,14 @@ Run `dart run build_runner build --delete-conflicting-outputs` to regenerate `.g
 4. `docs/progress_development.md` 변경 이력 업데이트
 5. `pubspec.yaml` 버전 업데이트
 6. `/build` 실행하여 APK/AAB 생성
-7. 커밋 및 푸시
+7. **보안 확인 후** 커밋 및 푸시
 8. (필요시) `/deploy`로 서버 배포
+
+### Git 보안 규칙
+- **절대 커밋 금지**: `android/key.properties`, `*.jks`, `.env`, OAuth 시크릿 파일
+- 커밋 전 `git diff --cached`로 API 키, 비밀번호, 토큰 노출 여부 반드시 확인
+- `.gitignore`에 이미 등록됨: `.env`, `key.properties`, `*.jks`, `*.keystore`
+- 서버 `.env` 값을 코드/문서에 하드코딩 금지
 
 ### 버전 관리
 - 버전 형식: `X.Y.Z+N` (Major.Minor.Patch+BuildNumber)

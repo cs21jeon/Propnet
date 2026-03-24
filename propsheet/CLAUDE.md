@@ -82,4 +82,8 @@ source /home/webapp/goldenrabbit/backend/venv/bin/activate
 1. Property Manager(`/backend/property-manager/`)와 같은 Flask 앱 — Blueprint 구조
 2. 공유 venv 사용: `/home/webapp/goldenrabbit/backend/venv/`
 3. 환경변수: `/home/webapp/goldenrabbit/backend/.env`
-4. Airtable 동기화: 매일 04:00 AM 자동 실행 (`scripts/airtable_to_propsheet_sync.py`)
+
+## Git 보안
+- **절대 커밋 금지**: `.env`, DB 비밀번호, API 키, OAuth 시크릿 파일
+- 커밋 전 `git diff --cached`로 민감 정보 노출 여부 반드시 확인
+- 서버 `.env` 값을 코드/문서에 하드코딩 금지

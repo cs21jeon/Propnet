@@ -6,6 +6,11 @@
 - PM2 process management (ecosystem.config.js)
 - SSH: `ssh cafe24-server` (root@175.119.224.71)
 
+## CRITICAL: Git 보안
+- **절대 커밋 금지**: `.env`, `ecosystem.config.js`(API 키 포함), OAuth 토큰/시크릿 파일
+- 커밋 전 `git diff --cached`로 API 키, 비밀번호, 토큰 노출 여부 반드시 확인
+- 서버 `.env` 값을 코드/문서에 하드코딩 금지
+
 ## CRITICAL: Whisper STT - OpenAI API ONLY
 - **MUST use OpenAI Whisper API (`whisper-1` model) via `whisper_service.py`**
 - **NEVER use local whisper model (import whisper / whisper.load_model)**
