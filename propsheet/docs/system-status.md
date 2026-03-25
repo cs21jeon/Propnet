@@ -689,9 +689,8 @@ backups/airtable/
 | GET | `/api/propsheet/map-data` | 지도 마커 데이터 (좌표 + 매물정보) |
 | POST | `/api/propsheet/search-map` | 조건 검색 → 카카오맵 HTML 반환 |
 | GET | `/api/propsheet/property-detail` | 단일 매물 상세 |
+| GET | `/api/propsheet/category-properties?view_id={id}` | 뷰 기반 카테고리별 매물 조회 (2026-03-25) |
 
 ### 미완료 항목
-
-- 추천매물 3개 카테고리 (재건축용 토지, 고수익률 건물, 저가단독주택): 아직 Airtable API 연결, DB 전환 필요
 - map.html 상세 모달 → 부모 모달 통일: 현재 iframe 내 자체 모달 사용 중, `parent.postMessage`로 변경 예정
 - 워크스페이스별 지도: 향후 워크스페이스가 늘어나면 각각의 map HTML 생성 구조 필요
