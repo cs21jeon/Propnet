@@ -1,6 +1,6 @@
 # Propsheet 시스템 현황 문서
 
-> 작성일: 2026-03-03 | 마지막 업데이트: 2026-03-24 (캘린더 뷰, 일정관리 DB 템플릿, time 필드 타입, 담당자/중요도 필드)
+> 작성일: 2026-03-03 | 마지막 업데이트: 2026-03-25 (홈페이지 매물지도/검색/상세 PropSheet DB 전환)
 
 ---
 
@@ -663,3 +663,32 @@ backups/airtable/
 | 에어테이블 백업 | `/home/webapp/goldenrabbit/logs/airtable_backup.log` |
 | 맵 생성 | `/var/log/airtable_map.log` |
 | Propsheet 동기화 | `/home/webapp/goldenrabbit/logs/propsheet_sync.log` (활성) |
+
+---
+
+## 10. 홈페이지 연동 (2026-03-25)
+
+### 매물지도/검색/상세 DB 전환
+
+기존 Airtable 백업 JSON/API 기반에서 PropSheet DB 실시간 조회로 전환 완료.
+
+| 기능 | 변경 전 | 변경 후 |
+|------|---------|---------|
+| 매물 지도 | `airtable_map.html` (매일 새벽 크론 정적 HTML) | `map.html` (PropSheet DB 실시간 로드) |
+| 매물 검색 | `POST /property-manager/api/search-map` (Airtable 백업 JSON) | `POST /propsheet/api/propsheet/search-map` (DB SQL 쿼리) |
+| 매물 상세 | `GET /api/property-detail?id=` (Airtable API 직접 호출) | `GET /propsheet/api/propsheet/property-detail?id=` (PropSheet DB) |
+| 공유 링크 | `/property/{recordId}` (별도 페이지) | `/?property={recordId}` (홈페이지 모달 자동 오픈) |
+
+### 추가된 PropSheet API 엔드포인트
+
+| Method | URL | 설명 |
+|--------|-----|------|
+| GET | `/api/propsheet/map-data` | 지도 마커 데이터 (좌표 + 매물정보) |
+| POST | `/api/propsheet/search-map` | 조건 검색 → 카카오맵 HTML 반환 |
+| GET | `/api/propsheet/property-detail` | 단일 매물 상세 |
+
+### 미완료 항목
+
+- 추천매물 3개 카테고리 (재건축용 토지, 고수익률 건물, 저가단독주택): 아직 Airtable API 연결, DB 전환 필요
+- map.html 상세 모달 → 부모 모달 통일: 현재 iframe 내 자체 모달 사용 중, `parent.postMessage`로 변경 예정
+- 워크스페이스별 지도: 향후 워크스페이스가 늘어나면 각각의 map HTML 생성 구조 필요

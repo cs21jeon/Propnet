@@ -2470,6 +2470,21 @@ else if (RegExp(r'[동리읍면]산\s+\d').hasMatch(working)) {
 - API 타임아웃 60초, 에러 화면 개선
 - 화성시 신규 행정구역 25개동 old_bjdong_code 매핑
 
+### [1.0.3+8] - 2026-03-25
+
+- **홈페이지 매물지도/검색/상세 DB 전환**: Airtable 백업 JSON/API → PropSheet DB 실시간 조회로 전환
+  - `airtable_map.html` (크론 생성 정적 HTML) → `map.html` (PropSheet DB 실시간 로드, 카카오맵 SDK)
+  - 매물 검색: `POST /property-manager/api/search-map` → `POST /propsheet/api/propsheet/search-map`
+  - 매물 상세: `GET /api/property-detail?id=` (Airtable API) → `GET /propsheet/api/propsheet/property-detail?id=` (PropSheet DB)
+  - 에이전트(부동산) 정보도 DB에서 동적 로드
+- **공유 링크 변경**: `/property/{recordId}` → `/?property={recordId}` (홈페이지에서 모달 자동 오픈)
+- **PropSheet API 엔드포인트 추가** (`propsheet.py`):
+  - `GET /api/propsheet/map-data` — 지도 마커 데이터 (좌표 + 매물정보)
+  - `POST /api/propsheet/search-map` — 조건 검색 → 카카오맵 HTML 반환
+  - `GET /api/propsheet/property-detail` — 단일 매물 상세
+- **보안 강화**: `.gitignore` 보완 (`*.bak`, `uploads/`, `.openai_credit.json`, `*.pre-migration`)
+- **미완료**: 추천매물 3개 카테고리 DB 전환, map.html 상세 모달 → 부모 모달 통일
+
 ### [1.0.3+7] - 2026-03-24
 
 - **Airtable → PropSheet 저장 전환**: 부동산 정보 저장 대상을 Airtable에서 PropSheet DB로 변경

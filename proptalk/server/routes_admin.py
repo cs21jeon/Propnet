@@ -114,8 +114,17 @@ def register_admin_routes(app):
         stats = AdminQueries.get_stats()
         recent = AdminQueries.recent_transactions(10)
 
+        changelog_path = os.path.join(os.path.dirname(__file__), 'changelog.json')
+        current_version = ''
+        try:
+            with open(changelog_path, 'r', encoding='utf-8') as f:
+                current_version = json.load(f).get('current', '')
+        except Exception:
+            pass
+
         return render_template('admin/dashboard.html',
-                               stats=stats, recent=recent)
+                               stats=stats, recent=recent,
+                               current_version=current_version)
 
     @app.route('/proptalk/admin/users')
     @admin_required
@@ -181,7 +190,18 @@ def register_admin_routes(app):
     @app.route('/proptalk/admin/versions')
     @admin_required
     def admin_versions():
-        return render_template('admin/versions.html', active='versions')
+        changelog_path = os.path.join(os.path.dirname(__file__), 'changelog.json')
+        releases = []
+        current_version = ''
+        try:
+            with open(changelog_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                releases = data.get('releases', [])
+                current_version = data.get('current', '')
+        except Exception:
+            pass
+        return render_template('admin/versions.html', active='versions',
+                               releases=releases, current_version=current_version)
 
     # ── OpenAI Usage Dashboard ──────────────────────────────
 

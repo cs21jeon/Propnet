@@ -67,6 +67,42 @@
 
 ---
 
+## 1.5차 마이그레이션: 홈페이지 Airtable → PropSheet DB 전환 (2026-03-25)
+
+### 배경
+- 기존 홈페이지 매물 기능이 Airtable 백업 JSON 및 Airtable API에 의존
+- 매물 지도: 매일 새벽 크론으로 Airtable 백업 JSON → 정적 HTML 생성
+- 매물 검색/상세: Airtable 백업 JSON 파일 스캔 또는 Airtable API 직접 호출
+- PropSheet DB가 안정화되어 실시간 DB 조회로 전환
+
+### 변경 내용
+
+| 기능 | 변경 전 | 변경 후 |
+|------|---------|---------|
+| 매물 지도 | `airtable_map.html` (크론 정적 HTML) | `map.html` (PropSheet DB 실시간, 카카오맵 SDK) |
+| 매물 검색 | `POST /property-manager/api/search-map` | `POST /propsheet/api/propsheet/search-map` |
+| 매물 상세 | `GET /api/property-detail?id=` (Airtable API) | `GET /propsheet/api/propsheet/property-detail?id=` (PropSheet DB) |
+| 공유 링크 | `/property/{recordId}` (별도 페이지) | `/?property={recordId}` (홈페이지 모달) |
+
+### 추가된 PropSheet API
+
+- `GET /api/propsheet/map-data` — 지도 마커 데이터
+- `POST /api/propsheet/search-map` — 조건 검색
+- `GET /api/propsheet/property-detail` — 매물 상세
+
+### 미완료
+
+- [ ] 추천매물 3개 카테고리 DB 전환 (재건축용 토지, 고수익률 건물, 저가단독주택)
+- [ ] map.html 상세 모달 → 부모 `index.html` 모달 통일 (`parent.postMessage`)
+- [ ] 워크스페이스별 지도 구조
+
+### 서버 상태
+- PropSheet API 엔드포인트 추가 (`propsheet.py`)
+- 프론트엔드 정적 파일만 변경 → Nginx/Flask 재시작 불필요
+- 보안: `.gitignore` 보완 (`*.bak`, `uploads/`, `.openai_credit.json`, `*.pre-migration`)
+
+---
+
 ## 2차 마이그레이션 예정: PropMap + URL 변경
 
 ### 계획
