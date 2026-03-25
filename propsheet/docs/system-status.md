@@ -530,7 +530,9 @@ backups/airtable/
 - 동적 테이블 생성/복제
 - 수식 필드 계산 (COALESCE 래핑으로 NULL 처리)
 - field_definitions 테이블을 통한 필드 메타데이터 관리 (select_options, is_editable 포함)
-- 고급 필터 (AND/OR 로직, 12개 연산자: equals, not_equals, contains, not_contains, gt, lt, gte, lte, is_empty, is_not_empty, is_any_of, is_none_of)
+- 고급 필터 (AND/OR 로직, 16개 연산자: equals, not_equals, contains, not_contains, gt, lt, gte, lte, is_before, is_after, is_on_or_before, is_on_or_after, is_empty, is_not_empty, is_any_of, is_none_of)
+- 필드 타입별 필터 조건 분리: 텍스트/숫자/날짜/선택/체크박스/수식 각각 적절한 연산자만 표시 (2026-03-25)
+- 수식(formula) 필드 결과값 필터링 지원: SQL 표현식을 WHERE 절에 삽입 (2026-03-25)
 
 **뷰 서비스** (`services/view_service.py`) — 2026-03-04 추가:
 - 뷰 CRUD (생성, 조회, 수정, 삭제)
@@ -559,12 +561,13 @@ backups/airtable/
 - **캘린더 API**: `GET /api/database/calendar?db=&year=&month=` (날짜 범위 기반 이벤트 조회)
 - **뷰 전환 토글**: 스프레드시트 ↔ 캘린더 아이콘 (database_list.html 헤더)
 
-**Proptalk 통화요약 연동** — 2026-03-24 추가:
+**Proptalk 통화요약 연동** — 2026-03-24 추가, 2026-03-25 수정:
 - **통화요약 DB 템플릿**: DB 생성 시 "통화요약" 선택 → Proptalk 채팅방 선택 → 해당 방의 음성 요약을 PropSheet 테이블로 가져오기
-  - 필드: 날짜, 이름, 전화번호, 요약, 통화내용, 길이(초), 파일명, Drive 링크, 상태, 업로더, 메모
+  - 필드: 녹음날짜, 이름, 전화번호, 요약, 통화내용, 길이(초), 파일명, Drive 링크, 상태, 업로더, 메모
   - agent/subagent 전용 (일반 user는 템플릿 미표시)
   - `databases.external_source='proptalk'`, `external_config={"room_id": N}` 저장
   - 스프레드시트 열 때 새 오디오 자동 동기화 (INSERT only, 기존 편집 보존)
+  - `proptalk_audio_id` 컬럼으로 동기화 상태 추적 (중복 INSERT 방지)
 - **전화번호-통화기록 연결**: 스프레드시트의 전화번호와 Proptalk 음성 파일 전화번호 자동 매칭
   - 숫자 정규화 매칭 (하이픈/공백/메모 포함 형식 모두 대응)
   - 매칭된 셀에 📞+건수 아이콘 표시
