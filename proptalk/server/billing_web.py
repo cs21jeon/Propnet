@@ -37,6 +37,15 @@ def register_billing_web_routes(app):
             filename,
         )
 
+    # ── 사용 가이드 ──
+    @app.route('/proptalk/guide')
+    def proptalk_guide():
+        """Proptalk 사용 가이드"""
+        return send_from_directory(
+            os.path.join(_PROJECT_ROOT, 'marketing', 'proptalk'),
+            'guide.html',
+        )
+
     # ── 법적 문서 페이지 ──
     _MARKETING_DIR = os.path.join(_PROJECT_ROOT, 'marketing', 'proptalk')
 

@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- SEO Meta Tags -->
+    <title>사용 가이드 - Proptalk</title>
+    <meta name="description" content="Proptalk 사용 가이드. 로그인, 음성 파일 업로드, AI 요약, Google Drive 백업까지 모든 기능을 안내합니다.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://goldenrabbit.biz/proptalk/guide">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://goldenrabbit.biz/proptalk/guide">
+    <meta property="og:title" content="사용 가이드 - Proptalk">
+    <meta property="og:description" content="통화 녹음 AI 변환 앱의 모든 기능을 쉽게 알려드립니다.">
+    <meta property="og:image" content="https://goldenrabbit.biz/proptalk/images/og-image.png">
+    <meta property="og:locale" content="ko_KR">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/proptalk/images/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/proptalk/images/icons/Proptalk_transparent_icon_full_size.png">
+
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --primary-dark: #1976D2;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --background: #FFFFFF;
+            --surface: #F5F5F5;
+            --border: #E0E0E0;
+            --max-width: 800px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background: var(--background);
+        }
+
+        /* Header */
+        header {
+            background: var(--background);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo img {
+            height: 36px;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .logo-text .title {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .logo-text .subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .header-nav a {
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .nav-back {
+            color: var(--primary-color);
+            border: 1.5px solid var(--primary-color);
+        }
+
+        .nav-back:hover {
+            background: #E3F2FD;
+        }
+
+        /* Main content */
+        main {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 90px 20px 60px;
+        }
+
+        /* Page title */
+        .page-title {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 40px;
+        }
+
+        .page-title h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .page-title p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+        }
+
+        /* Table of Contents */
+        .toc {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 24px 30px;
+            margin-bottom: 50px;
+        }
+
+        .toc h2 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .toc ol {
+            padding-left: 20px;
+        }
+
+        .toc li {
+            margin-bottom: 6px;
+        }
+
+        .toc a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        /* Section */
+        .guide-section {
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .guide-section:last-child {
+            border-bottom: none;
+        }
+
+        .guide-section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-left: 12px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .guide-section h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin: 25px 0 12px;
+            color: var(--text-primary);
+        }
+
+        .guide-section p {
+            margin-bottom: 12px;
+            color: #424242;
+        }
+
+        .guide-section ul, .guide-section ol {
+            padding-left: 24px;
+            margin-bottom: 16px;
+        }
+
+        .guide-section li {
+            margin-bottom: 6px;
+            color: #424242;
+        }
+
+        /* Screenshot */
+        .screenshot {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .screenshot img {
+            max-width: 280px;
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        .screenshot-row {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .screenshot-row .screenshot {
+            margin: 0;
+        }
+
+        .screenshot-row .screenshot img {
+            max-width: 220px;
+        }
+
+        .screenshot-caption {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Tip box */
+        .tip {
+            background: #E3F2FD;
+            border-left: 4px solid var(--primary-color);
+            padding: 14px 18px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+            font-size: 0.95rem;
+        }
+
+        .tip strong {
+            color: var(--primary-dark);
+        }
+
+        /* Step list */
+        .steps {
+            counter-reset: step;
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .steps li {
+            counter-increment: step;
+            padding: 10px 0 10px 40px;
+            position: relative;
+        }
+
+        .steps li::before {
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 10px;
+            width: 28px;
+            height: 28px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        /* Footer */
+        footer {
+            background: #212121;
+            color: #B0B0B0;
+            padding: 30px 20px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: #B0B0B0;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .page-title h1 {
+                font-size: 1.5rem;
+            }
+
+            .guide-section h2 {
+                font-size: 1.25rem;
+            }
+
+            .screenshot img {
+                max-width: 240px;
+            }
+
+            .screenshot-row .screenshot img {
+                max-width: 160px;
+            }
+
+            .header-nav .nav-back span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="/proptalk/" class="logo">
+                <img src="/proptalk/images/icons/Proptalk_icon_half_size.png" alt="Proptalk 로고">
+                <div class="logo-text">
+                    <span class="title">Proptalk</span>
+                    <span class="subtitle">세상 쉬운 업무 공유</span>
+                </div>
+            </a>
+            <div class="header-nav">
+                <a href="/proptalk/" class="nav-back"><span>홈으로</span></a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Page Title -->
+        <div class="page-title">
+            <h1>사용 가이드</h1>
+            <p>Proptalk의 모든 기능을 쉽게 알려드립니다</p>
+        </div>
+
+        <!-- Table of Contents -->
+        <nav class="toc">
+            <h2>목차</h2>
+            <ol>
+                <li><a href="#start">시작하기</a></li>
+                <li><a href="#login">로그인</a></li>
+                <li><a href="#chatroom">채팅방 만들기 & 메시지 공유</a></li>
+                <li><a href="#voice">음성 파일 업로드 & AI 요약</a></li>
+                <li><a href="#data">저장된 데이터 확인</a></li>
+                <li><a href="#profile">프로필 & 설정</a></li>
+            </ol>
+        </nav>
+
+        <!-- 1. 시작하기 -->
+        <section class="guide-section" id="start">
+            <h2>1. 시작하기</h2>
+
+            <h3>Android 앱 설치</h3>
+            <ol class="steps">
+                <li>Google Play 스토어에서 <strong>"Proptalk"</strong>을 검색합니다.</li>
+                <li><strong>설치</strong> 버튼을 눌러 앱을 다운로드합니다.</li>
+                <li>설치가 완료되면 앱을 실행합니다.</li>
+            </ol>
+
+            <div class="screenshot">
+                <img src="/proptalk/images/Capture/Proptalk_screenshot_%EB%A1%9C%EA%B7%B8%EC%9D%B8%ED%99%94%EB%A9%B4.jpg" alt="Proptalk 시작 화면">
+                <p class="screenshot-caption">앱 시작 화면</p>
+            </div>
+        </section>
+
+        <!-- 2. 로그인 -->
+        <section class="guide-section" id="login">
+            <h2>2. 로그인</h2>
+
+            <p>Proptalk은 <strong>Google 계정</strong>으로 간편하게 로그인합니다. 별도의 회원가입 절차가 없습니다.</p>
+
+            <ol class="steps">
+                <li>시작 화면에서 <strong>"Google 계정으로 시작하기"</strong> 버튼을 탭합니다.</li>
+                <li>Google 계정 선택 화면이 나타나면 <strong>사용할 계정을 선택</strong>합니다.</li>
+                <li>이용약관과 개인정보처리방침에 동의하면 로그인이 완료됩니다.</li>
+            </ol>
+
+            <div class="tip">
+                <strong>TIP:</strong> Google 계정으로 로그인하면 Google Drive가 자동으로 연동됩니다. 음성 파일과 요약 결과가 Drive에 자동 저장됩니다.
+            </div>
+
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EB%A1%9C%EA%B7%B8%EC%9D%B8%ED%99%94%EB%A9%B4.jpg" alt="시작 화면">
+                    <p class="screenshot-caption">시작 화면</p>
+                </div>
+                <div class="screenshot">
+                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EB%A1%9C%EA%B7%B8%EC%9D%B8.jpg" alt="계정 선택 화면">
+                    <p class="screenshot-caption">Google 계정 선택</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. 채팅방 만들기 & 메시지 공유 -->
+        <section class="guide-section" id="chatroom">
+            <h2>3. 채팅방 만들기 & 메시지 공유</h2>
+
+            <p>로그인 후 메인 화면에서 <strong>"업무 채팅방 가기"</strong>를 탭하면 채팅방 목록으로 이동합니다.</p>
+
+            <h3>새 채팅방 만들기</h3>
+            <ol class="steps">
+                <li>채팅방 목록 화면 우측 하단의 <strong>+ 버튼</strong>을 탭합니다.</li>
+                <li>채팅방 이름과 주제를 입력합니다.</li>
+                <li>초대 코드를 공유하면 팀원이 참여할 수 있습니다.</li>
+            </ol>
+
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EB%A9%94%EC%9D%B8%ED%99%94%EB%A9%B4.jpg" alt="메인 화면">
+                    <p class="screenshot-caption">메인 화면</p>
+                </div>
+                <div class="screenshot">
+                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%B1%84%ED%8C%85%EB%B0%A9%EB%AA%A9%EB%A1%9D.jpg" alt="채팅방 목록">
+                    <p class="screenshot-caption">채팅방 목록</p>
+                </div>
+            </div>
+
+            <h3>메시지 & 파일 공유</h3>
+            <p>채팅방에서 텍스트 메시지를 주고받고, <strong>사진과 파일을 자유롭게 공유</strong>할 수 있습니다. 공유된 파일은 Google Drive에 자동으로 저장됩니다.</p>
+
+            <div class="screenshot">
+                <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%B1%84%ED%8C%85%EB%B0%A9_%EB%A9%94%EC%8B%9C%EC%A7%80%EB%B0%8F%ED%8C%8C%EC%9D%BC%EA%B3%B5%EC%9C%A0.jpg" alt="메시지 및 파일 공유">
+                <p class="screenshot-caption">채팅방에서 메시지와 파일 공유</p>
+            </div>
+        </section>
+
+        <!-- 4. 음성 파일 업로드 & AI 요약 -->
+        <section class="guide-section" id="voice">
+            <h2>4. 음성 파일 업로드 & AI 요약</h2>
+
+            <p>Proptalk의 핵심 기능입니다. 통화 녹음 파일을 채팅방에 업로드하면 <strong>AI가 자동으로 텍스트 변환 + 핵심 요약</strong>을 생성합니다.</p>
+
+            <h3>음성 파일 업로드</h3>
+            <ol class="steps">
+                <li>채팅방 하단의 <strong>+ 버튼</strong> 또는 <strong>마이크 아이콘</strong>을 탭합니다.</li>
+                <li>녹음 파일(m4a, mp3, wav 등)을 선택합니다.</li>
+                <li>파일이 업로드되면 AI가 자동으로 텍스트 변환을 시작합니다.</li>
+                <li>변환이 완료되면 <strong>핵심 요약이 채팅방에 자동으로 표시</strong>됩니다.</li>
+            </ol>
+
+            <div class="tip">
+                <strong>TIP:</strong> 요약 결과에는 주제, 매물 정보, 가격 변경, 결론 등이 마크다운 형식으로 깔끔하게 정리됩니다. 파일명에서 전화번호와 날짜도 자동으로 추출됩니다.
+            </div>
+
+            <h3>채팅방에서 요약 확인</h3>
+            <p>음성 파일을 업로드하면 채팅방 내에서 바로 요약 결과를 확인할 수 있습니다.</p>
+
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%B1%84%ED%8C%85%EB%B0%A9_%EC%9D%8C%EC%84%B1%EC%9A%94%EC%95%BD_%EC%83%81%EB%8B%A8.jpg" alt="채팅방 음성 요약 상단">
+                    <p class="screenshot-caption">음성 요약 - 파일 정보</p>
+                </div>
+                <div class="screenshot">
+                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%B1%84%ED%8C%85%EB%B0%A9_%EC%9D%8C%EC%84%B1%EC%9A%94%EC%95%BD_%ED%95%98%EB%8B%A8.jpg" alt="채팅방 음성 요약 하단">
+                    <p class="screenshot-caption">음성 요약 - 상세 내용</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. 저장된 데이터 확인 -->
+        <section class="guide-section" id="data">
+            <h2>5. 저장된 데이터 확인</h2>
+
+            <p>업로드한 음성 파일과 AI 요약 결과는 여러 방법으로 확인할 수 있습니다.</p>
+
+            <h3>음성 요약 보러가기</h3>
+            <p>메인 화면에서 <strong>"음성 요약 보러가기"</strong>를 탭하면, 채팅방별로 정리된 요약 카드를 확인할 수 있습니다.</p>
+
+            <ol class="steps">
+                <li>메인 화면에서 <strong>"음성 요약 보러가기"</strong>를 탭합니다.</li>
+                <li>요약을 확인할 <strong>채팅방을 선택</strong>합니다.</li>
+                <li>해당 채팅방의 <strong>모든 음성 요약 카드 목록</strong>이 표시됩니다.</li>
+                <li>카드를 탭하면 <strong>상세 요약 내용</strong>을 펼쳐 볼 수 있습니다.</li>
+            </ol>
+
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%9D%8C%EC%84%B1%ED%8C%8C%EC%9D%BC%EC%9A%94%EC%95%BD_%EC%B1%84%ED%8C%85%EB%B0%A9%EB%AA%A9%EB%A1%9D.jpg" alt="음성 요약 방 선택">
+                    <p class="screenshot-caption">채팅방 선택</p>
+                </div>
+                <div class="screenshot">
+                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%9D%8C%EC%84%B1%ED%8C%8C%EC%9D%BC%EC%9A%94%EC%95%BD_%EC%83%81%EC%84%B8%EB%AA%A9%EB%A1%9D.jpg" alt="음성 요약 목록">
+                    <p class="screenshot-caption">요약 카드 목록</p>
+                </div>
+            </div>
+
+            <div class="screenshot">
+                <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%9D%8C%EC%84%B1%ED%8C%8C%EC%9D%BC%EC%9A%94%EC%95%BD_%EC%83%81%EC%84%B8%ED%8E%BC%EC%B9%A8.jpg" alt="AI 요약 상세">
+                <p class="screenshot-caption">요약 카드 상세 펼침</p>
+            </div>
+
+            <h3>음성파일 원본 확인</h3>
+            <p>메인 화면에서 <strong>"음성 및 업무 파일 확인"</strong>을 탭하면, Google Drive에 저장된 원본 파일을 확인할 수 있습니다.</p>
+
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%9D%8C%EC%84%B1%ED%8C%8C%EC%9D%BC%EC%9B%90%EB%B3%B8_%ED%8F%B4%EB%8D%94%EB%AA%A9%EB%A1%9D.jpg" alt="음성파일 원본 폴더">
+                    <p class="screenshot-caption">채팅방별 폴더 목록</p>
+                </div>
+                <div class="screenshot">
+                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EA%B5%AC%EA%B8%80%EB%93%9C%EB%9D%BC%EC%9D%B4%EB%B8%8C_%ED%8F%B4%EB%8D%94%ED%8C%8C%EC%9D%BC%EB%AA%A9%EB%A1%9D.jpg" alt="Google Drive 파일 목록">
+                    <p class="screenshot-caption">Google Drive 파일 목록</p>
+                </div>
+            </div>
+
+            <div class="tip">
+                <strong>TIP:</strong> Google Drive 앱에서도 직접 파일을 확인하고 재생할 수 있습니다. 채팅방 이름으로 폴더가 자동 생성됩니다.
+            </div>
+        </section>
+
+        <!-- 6. 프로필 & 설정 -->
+        <section class="guide-section" id="profile">
+            <h2>6. 프로필 & 설정</h2>
+
+            <p>프로필 화면에서 계정 정보, 구독 현황, 앱 설정을 관리할 수 있습니다.</p>
+
+            <h3>구독/결제 확인</h3>
+            <p>현재 이용 중인 요금제와 잔여 시간, 최근 사용 이력을 확인할 수 있습니다.</p>
+
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%ED%94%84%EB%A1%9C%ED%95%84_%EC%83%81%EB%8B%A8.jpg" alt="프로필 화면">
+                    <p class="screenshot-caption">프로필 화면</p>
+                </div>
+                <div class="screenshot">
+                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EA%B5%AC%EB%8F%85%EA%B2%B0%EC%A0%9C_%EC%82%AC%EC%9A%A9%EC%9D%B4%EB%A0%A5.jpg" alt="구독/결제 화면">
+                    <p class="screenshot-caption">구독/결제 현황</p>
+                </div>
+            </div>
+
+            <h3>앱 설정</h3>
+            <ul>
+                <li><strong>다크 모드</strong>: 눈이 편안한 다크 테마로 전환할 수 있습니다.</li>
+                <li><strong>법적 문서</strong>: 이용약관, 개인정보처리방침을 확인할 수 있습니다.</li>
+                <li><strong>동의 관리</strong>: 음성 데이터 처리, 개인정보 관련 동의 상태를 관리합니다.</li>
+            </ul>
+
+            <div class="screenshot">
+                <img src="/proptalk/images/Capture/Proptalk_screenshot_%ED%94%84%EB%A1%9C%ED%95%84%EC%84%A4%EC%A0%95_%EB%8B%A4%ED%81%AC%EB%AA%A8%EB%93%9CON.jpg" alt="다크 모드">
+                <p class="screenshot-caption">다크 모드 설정</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 <a href="/proptalk/">프롭넷 (PropNet)</a>. All rights reserved.</p>
+    </footer>
+
+    <script>
+    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            var target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+    </script>
+</body>
+</html>
