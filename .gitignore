@@ -22,6 +22,8 @@
 **/*.jks
 **/*.keystore
 **/*.pem
+**/google-services.json
+**/*firebase-adminsdk*.json
 .mcp.json
 
 # 개인정보/사업 문서
