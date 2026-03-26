@@ -2470,6 +2470,18 @@ else if (RegExp(r'[동리읍면]산\s+\d').hasMatch(working)) {
 - API 타임아웃 60초, 에러 화면 개선
 - 화성시 신규 행정구역 25개동 old_bjdong_code 매핑
 
+### [1.0.3+9] - 2026-03-26
+
+- **PropSheet 중복 저장 3가지 옵션**: 기존 2가지(취소/새 레코드) → 3가지(덮어쓰기/새 레코드/입력 안함)로 확장
+  - 서버: `save_property()`에 `overwrite` 파라미터 추가, `_update_record()`로 기존 레코드 덮어쓰기 지원
+  - Flutter 앱: `propsheet_provider.dart`, `result_screen.dart` 중복 다이얼로그 3가지 선택지
+  - 웹 PWA: `result.html` 커스텀 모달(`showDuplicateDialog`)로 변경
+  - API: `proppedia/app.py`, `propsheet_save.py` 양쪽 엔드포인트에 `overwrite` 전달
+- **웹 브라우저 캐시 문제 해결**: Service Worker(`sw.js`) v3→v4
+  - HTML 파일은 캐시 제외 (항상 서버에서 최신 로드)
+  - CSS/JS/이미지만 캐시 유지 (성능 영향 없음)
+  - `skipWaiting()` + `clients.claim()`으로 SW 즉시 활성화
+
 ### [1.0.3+8] - 2026-03-25
 
 - **홈페이지 매물지도/검색/상세 DB 전환**: Airtable 백업 JSON/API → PropSheet DB 실시간 조회로 전환
