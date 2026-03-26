@@ -420,7 +420,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   Future<void> _doSaveToPropSheet(
     BuildingSearchResponse result, {
     required PropSheetPropertyType propertyType,
-    required bool forceNew,
+    bool forceNew = false,
+    bool overwrite = false,
   }) async {
     final areaInfoState = ref.read(areaInfoProvider);
     final areaInfo = areaInfoState.status == SearchStatus.success ? areaInfoState.areaInfo : null;
@@ -432,6 +433,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
       selectedHo: _selectedHo,
       areaInfo: areaInfo,
       forceNew: forceNew,
+      overwrite: overwrite,
     );
 
     if (!mounted) return;
@@ -439,33 +441,41 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     final saveState = ref.read(propSheetSaveProvider);
 
     if (success) {
+      final actionLabel = overwrite ? '덮어쓰기' : '저장';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${_typeNames[propertyType]} 저장 완료!'),
+          content: Text('${_typeNames[propertyType]} $actionLabel 완료!'),
           duration: const Duration(seconds: 2),
           backgroundColor: Colors.green,
         ),
       );
     } else if (saveState.status == PropSheetSaveStatus.duplicate) {
-      // 중복 발견 → 새 레코드로 추가할지 확인
-      final addNew = await showDialog<bool>(
+      // 중복 발견 → 3가지 선택: 덮어쓰기 / 새 레코드 / 입력 안함
+      final action = await showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('중복 주소'),
-          content: Text('${saveState.duplicateMessage}\n\n새 레코드로 추가 저장하시겠습니까?'),
+          content: Text('${saveState.duplicateMessage}\n\n어떻게 처리하시겠습니까?'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('취소'),
+              onPressed: () => Navigator.pop(context, 'cancel'),
+              child: const Text('입력 안함'),
+            ),
+            FilledButton.tonal(
+              onPressed: () => Navigator.pop(context, 'overwrite'),
+              child: const Text('덮어쓰기'),
             ),
             FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('추가 저장'),
+              onPressed: () => Navigator.pop(context, 'new'),
+              child: const Text('새 레코드'),
             ),
           ],
         ),
       );
-      if (addNew == true && mounted) {
+      if (!mounted) return;
+      if (action == 'overwrite') {
+        await _doSaveToPropSheet(result, propertyType: propertyType, overwrite: true);
+      } else if (action == 'new') {
         await _doSaveToPropSheet(result, propertyType: propertyType, forceNew: true);
       }
     } else {

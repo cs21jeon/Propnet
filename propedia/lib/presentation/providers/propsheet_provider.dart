@@ -41,6 +41,7 @@ class PropSheetSaveNotifier extends StateNotifier<PropSheetSaveState> {
     String? selectedHo,
     AreaInfo? areaInfo,
     bool forceNew = false,
+    bool overwrite = false,
   }) {
     final building = result.building;
 
@@ -84,6 +85,7 @@ class PropSheetSaveNotifier extends StateNotifier<PropSheetSaveState> {
     };
 
     if (forceNew) payload['force_new'] = true;
+    if (overwrite) payload['overwrite'] = true;
 
     if (propertyType == PropSheetPropertyType.jibhap && areaInfo != null) {
       final areaPayload = <String, dynamic>{
@@ -105,6 +107,7 @@ class PropSheetSaveNotifier extends StateNotifier<PropSheetSaveState> {
     String? selectedHo,
     AreaInfo? areaInfo,
     bool forceNew = false,
+    bool overwrite = false,
   }) async {
     state = const PropSheetSaveState(status: PropSheetSaveStatus.saving);
 
@@ -116,6 +119,7 @@ class PropSheetSaveNotifier extends StateNotifier<PropSheetSaveState> {
         selectedHo: selectedHo,
         areaInfo: areaInfo,
         forceNew: forceNew,
+        overwrite: overwrite,
       );
 
       final response = await _api.saveProperty(payload);
