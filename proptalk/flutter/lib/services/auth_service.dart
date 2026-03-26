@@ -3,6 +3,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 import 'socket_service.dart';
+import 'notification_service.dart';
 
 /// 인증 상태 관리
 class AuthService extends ChangeNotifier {
@@ -57,6 +58,7 @@ class AuthService extends ChangeNotifier {
         }
 
         socket.connect();
+        NotificationService().registerToken(api);
         notifyListeners();
       } catch (e) {
         // 토큰 만료 등
@@ -111,6 +113,9 @@ class AuthService extends ChangeNotifier {
       // WebSocket 연결
       socket.connect();
 
+      // FCM 토큰 등록
+      NotificationService().registerToken(api);
+
       _isLoading = false;
       notifyListeners();
       return true;
@@ -138,6 +143,7 @@ class AuthService extends ChangeNotifier {
 
   /// 로그아웃
   Future<void> signOut() async {
+    await NotificationService().unregisterToken(api);
     await _googleSignIn.signOut();
     socket.disconnect();
 

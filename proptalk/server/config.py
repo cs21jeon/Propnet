@@ -95,6 +95,11 @@ class Config:
     BILLING_ENCRYPTION_KEY = os.environ.get('BILLING_ENCRYPTION_KEY', '')
 
     # ============================================================
+    # FCM 푸시 알림 (Firebase Admin SDK)
+    # ============================================================
+    FCM_SERVICE_ACCOUNT_FILE = os.environ.get('FCM_SERVICE_ACCOUNT_FILE', '')
+
+    # ============================================================
     # 관리자
     # ============================================================
     ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', '')

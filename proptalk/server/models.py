@@ -549,3 +549,46 @@ class FileAttachment:
     @staticmethod
     def find_by_message_id(message_id):
         return query_one("SELECT * FROM file_attachments WHERE message_id = %s", (message_id,))
+
+
+# ============================================================
+# DeviceToken 모델 (FCM 푸시 알림)
+# ============================================================
+class DeviceToken:
+    @staticmethod
+    def upsert(user_id, fcm_token, platform='android'):
+        """토큰 등록/갱신"""
+        return execute(
+            """INSERT INTO device_tokens (user_id, fcm_token, platform, updated_at)
+               VALUES (%s, %s, %s, NOW())
+               ON CONFLICT (user_id, fcm_token) DO UPDATE
+               SET updated_at = NOW(), platform = EXCLUDED.platform
+               RETURNING *""",
+            (user_id, fcm_token, platform)
+        )
+
+    @staticmethod
+    def delete(user_id, fcm_token):
+        """토큰 삭제 (로그아웃 시)"""
+        execute(
+            "DELETE FROM device_tokens WHERE user_id = %s AND fcm_token = %s",
+            (user_id, fcm_token)
+        )
+
+    @staticmethod
+    def delete_by_token(fcm_token):
+        """유효하지 않은 토큰 삭제"""
+        execute("DELETE FROM device_tokens WHERE fcm_token = %s", (fcm_token,))
+
+    @staticmethod
+    def get_tokens_for_users(user_ids):
+        """여러 사용자의 FCM 토큰 목록 조회"""
+        if not user_ids:
+            return []
+        placeholders = ','.join(['%s'] * len(user_ids))
+        return query_all(
+            f"""SELECT user_id, fcm_token, platform
+                FROM device_tokens
+                WHERE user_id IN ({placeholders})""",
+            tuple(user_ids)
+        )

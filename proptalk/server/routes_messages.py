@@ -82,6 +82,11 @@ def register_message_routes(app, socketio):
             })
         }, room=f'room_{room_id}')
 
+        # FCM 푸시 알림
+        from notification_service import notify_new_message
+        notify_new_message(room_id, g.user['name'], content,
+                           msg_type='text', sender_user_id=g.user_id)
+
         return jsonify({'message': msg}), 201
     
     
@@ -159,7 +164,12 @@ def register_message_routes(app, socketio):
                 'audio_status': 'uploading',
             })
         }, room=f'room_{room_id}')
-        
+
+        # FCM 푸시 알림
+        from notification_service import notify_new_message
+        notify_new_message(room_id, g.user['name'], original_filename,
+                           msg_type='audio', sender_user_id=g.user_id)
+
         # 5) 백그라운드에서 STT + Drive 업로드 처리
         room_drive_enabled = room.get('enable_drive_backup', True)
         room_sheets_enabled = room.get('enable_sheets_logging', True)
@@ -289,6 +299,11 @@ def register_message_routes(app, socketio):
                 'file_status': 'uploading',
             })
         }, room=f'room_{room_id}')
+
+        # FCM 푸시 알림
+        from notification_service import notify_new_message
+        notify_new_message(room_id, g.user['name'], original_filename,
+                           msg_type='file', sender_user_id=g.user_id)
 
         # 5) 백그라운드 Drive 업로드
         room = Room.find_by_id(room_id)

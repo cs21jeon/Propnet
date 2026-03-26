@@ -1,13 +1,13 @@
 # Proptalk Project Rules
 
 ## Architecture
-- Flutter 3.x Android app + Flask backend (Cafe24 server 175.119.224.71:5060)
-- PostgreSQL with psycopg2 connection pooling
-- PM2 process management (ecosystem.config.js)
-- SSH: `ssh cafe24-server` (root@175.119.224.71)
+- Flutter 3.x Android app + Flask backend (Cafe24 server 175.119.224.71)
+- PostgreSQL `voiceroom` DB with psycopg2 connection pooling
+- **systemd** 서비스 관리 (`proptalk.service`)
+- SSH: `ssh root@175.119.224.71`
 
 ## CRITICAL: Git 보안
-- **절대 커밋 금지**: `.env`, `ecosystem.config.js`(API 키 포함), OAuth 토큰/시크릿 파일
+- **절대 커밋 금지**: `.env`, `ecosystem.config.js`(API 키 포함), OAuth 토큰/시크릿 파일, `google-services.json`, `*firebase-adminsdk*.json`
 - 커밋 전 `git diff --cached`로 API 키, 비밀번호, 토큰 노출 여부 반드시 확인
 - 서버 `.env` 값을 코드/문서에 하드코딩 금지
 
@@ -18,12 +18,14 @@
 - `whisper_service.py` on server handles: format conversion, file splitting, API calls
 - Usage: `from whisper_service import transcribe_audio`
 - Returns: `{'text': '...', 'segments': [...]}`
-- OPENAI_API_KEY is configured in ecosystem.config.js
+- OPENAI_API_KEY is configured in .env
 
 ## Deploy
 - Server files: `/home/webapp/goldenrabbit/chat_stt/server/`
-- SCP then `pm2 restart voiceroom`
-- Config: `ecosystem.config.js` (env vars, PM2 settings)
+- SCP 후 `sudo systemctl restart proptalk`
+- 환경변수: `/home/webapp/goldenrabbit/chat_stt/server/.env` (systemd EnvironmentFile)
+- venv: `/home/webapp/goldenrabbit/chat_stt/server/venv/`
+- 로그: `journalctl -u proptalk -f`
 
 ## Version Management
 - 버전 정보 단일 소스: `CHANGELOG.json` (로컬 + 서버)
@@ -60,8 +62,29 @@
 - `routes_messages.py` - message/audio upload/download endpoints
 - `whisper_service.py` - OpenAI Whisper API wrapper (DO NOT replace with local whisper)
 - `claude_service.py` - Claude API for transcript summarization
-- `models.py` - DB models (User, Room, Message, AudioFile)
+- `models.py` - DB models (User, Room, Message, AudioFile, DeviceToken)
+- `notification_service.py` - FCM push notification (firebase-admin)
 - `billing_service.py` - usage billing/deduction
 - `billing_web.py` - 랜딩페이지/결제페이지/법적문서 라우트
 - `routes_billing.py` - 결제 API 라우트
 - `models_billing.py` - 요금제/결제 DB 모델
+
+## 향후 계획: propnet.kr 마이그레이션 (Phase 4)
+
+### URL 변경
+| 현재 (goldenrabbit.biz) | 신규 (propnet.kr) |
+|---|---|
+| `/proptalk/` (랜딩) | `/proptalk/home` |
+| `/proptalk/admin/*` | `/proptalk/dashboard/*` |
+| `/proptalk/billing/*` | `/proptalk/billing/*` (변경 없음) |
+| `/voiceroom/*` | `/voiceroom/*` (변경 없음, 앱 의존) |
+
+### 수정 대상 파일
+1. **Flask 라우트**: 랜딩 `/proptalk/` → `/proptalk/home`, admin → dashboard
+2. **Flutter App**: 5개 파일 URL 변경
+   - `flutter/lib/services/api_service.dart` → baseUrl
+   - `flutter/lib/services/socket_service.dart` → 소켓 URL
+   - `flutter/lib/services/billing_service.dart` → 결제 URL
+   - `flutter/lib/constants/terms.dart` → 약관 URL
+   - `flutter/lib/screens/settings_screen.dart` → 관리자 URL
+3. `/voiceroom/*` 경로는 양쪽 도메인 모두 유지 (변경 없음)

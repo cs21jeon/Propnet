@@ -124,6 +124,19 @@ CREATE INDEX IF NOT EXISTS idx_access_logs_user ON access_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_access_logs_created ON access_logs(created_at);
 CREATE INDEX IF NOT EXISTS idx_access_logs_action ON access_logs(action);
 
+-- FCM 디바이스 토큰
+CREATE TABLE IF NOT EXISTS device_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    fcm_token TEXT NOT NULL,
+    platform VARCHAR(20) DEFAULT 'android',  -- android / ios / web
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(user_id, fcm_token)
+);
+
+CREATE INDEX IF NOT EXISTS idx_device_tokens_user ON device_tokens(user_id);
+
 -- 업데이트 트리거
 CREATE OR REPLACE FUNCTION update_room_timestamp()
 RETURNS TRIGGER AS $$

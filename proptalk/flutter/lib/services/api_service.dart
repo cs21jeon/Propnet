@@ -66,6 +66,28 @@ class ApiService {
   }
 
   // ============================================================
+  // FCM 디바이스 토큰
+  // ============================================================
+
+  /// FCM 토큰 등록
+  Future<void> registerDeviceToken(String fcmToken, String platform) async {
+    await _client.post(
+      Uri.parse('$baseUrl/api/devices/register'),
+      headers: _headers,
+      body: jsonEncode({'fcm_token': fcmToken, 'platform': platform}),
+    );
+  }
+
+  /// FCM 토큰 해제
+  Future<void> unregisterDeviceToken(String fcmToken) async {
+    await _client.post(
+      Uri.parse('$baseUrl/api/devices/unregister'),
+      headers: _headers,
+      body: jsonEncode({'fcm_token': fcmToken}),
+    );
+  }
+
+  // ============================================================
   // 채팅방
   // ============================================================
   

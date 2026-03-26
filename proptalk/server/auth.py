@@ -286,6 +286,36 @@ def register_auth_routes(app):
         return jsonify({'ok': True})
 
     # ============================================================
+    # FCM 디바이스 토큰
+    # ============================================================
+    @app.route('/api/devices/register', methods=['POST'])
+    @login_required
+    def register_device_token():
+        """FCM 토큰 등록"""
+        data = request.get_json()
+        fcm_token = (data.get('fcm_token') or '').strip()
+        platform = data.get('platform', 'android')
+
+        if not fcm_token:
+            return jsonify({'error': 'fcm_token 필요'}), 400
+
+        from models import DeviceToken
+        DeviceToken.upsert(g.user_id, fcm_token, platform)
+        return jsonify({'ok': True})
+
+    @app.route('/api/devices/unregister', methods=['POST'])
+    @login_required
+    def unregister_device_token():
+        """FCM 토큰 해제 (로그아웃 시)"""
+        data = request.get_json()
+        fcm_token = (data.get('fcm_token') or '').strip()
+
+        if fcm_token:
+            from models import DeviceToken
+            DeviceToken.delete(g.user_id, fcm_token)
+        return jsonify({'ok': True})
+
+    # ============================================================
     # 계정 삭제
     # ============================================================
     @app.route('/api/auth/account', methods=['DELETE'])
