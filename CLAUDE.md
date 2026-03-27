@@ -89,8 +89,11 @@ journalctl -u proptalk -f
 8. **Git 커밋/푸시 시 보안 필수 확인**:
    - 절대 커밋 금지 파일: `.env`, `key.properties`, `*.jks`, `*.keystore`, OAuth 토큰/시크릿 파일
    - 커밋 전 `git diff --cached`로 API 키, 비밀번호, 토큰이 포함되지 않았는지 반드시 확인
+   - **신규 파일(A)도 반드시 검사**: `git diff --cached --diff-filter=A`로 새로 추가되는 파일 내용도 확인
    - 서버 경로의 `.env` 내용(API 키, DB 비밀번호 등)을 코드나 문서에 하드코딩 금지
    - 각 서비스 `.gitignore`에 민감 파일 패턴이 포함되어 있는지 주기적 확인
+   - 서버 리포(`goldenrabbit`)에 pre-commit hook 설치됨 — 하드코딩 비밀번호/API 키 자동 차단
+9. **비밀번호/API 키는 반드시 환경변수로**: DB 접속, 외부 API 키 등은 `os.environ.get()` 사용. 절대 소스코드에 직접 작성 금지. `.env` 파일에서 로드
 
 ## Git 구조
 
