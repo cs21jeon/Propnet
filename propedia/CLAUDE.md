@@ -142,3 +142,34 @@ Run `dart run build_runner build --delete-conflicting-outputs` to regenerate `.g
 - **Web App**: `/home/webapp/goldenrabbit`
 - **MCP Config**: `.mcp.json`
 - **API Base**: `https://goldenrabbit.biz/app/api/`
+
+### 포트 구조
+
+Propedia 관련 서버는 **포트 5010** (`proppedia` 서비스) 하나로 통합됨:
+- **app.py**: `/backend/proppedia/app.py`
+- **Nginx**: `/app/*` → `localhost:5010`
+- **Blueprint**: `app_api`, `app_auth`, `app_user_data`, `admin_dashboard` + PropSheet 저장 API
+- **코드 위치**: `/backend/property-manager/`의 routes/services를 `sys.path`로 임포트
+
+> property-manager(5000)에는 Propedia Blueprint가 없음. Propedia 관련 수정 시 `proppedia` 서비스만 재시작: `sudo systemctl restart proppedia`
+
+## 향후 계획: propnet.kr 마이그레이션 (Phase 3)
+
+Proppedia URL을 propnet.kr로 이전 예정 (가장 복잡한 단계):
+
+### URL 변경
+| 현재 (goldenrabbit.biz) | 신규 (propnet.kr) |
+|---|---|
+| `/app/` (PWA) | `/proppedia/` |
+| `/proppedia/` (랜딩) | `/proppedia/landing/` |
+| `/app/api/*` | `/proppedia/api/*` |
+| `/app/dashboard` | `/proppedia/dashboard` |
+
+### 수정 대상 파일
+1. **Flutter Web**: `flutter build web --base-href /proppedia/`로 리빌드
+2. **Flutter App**: 4개 파일 URL 변경
+   - `lib/core/network/api_client.dart` → baseUrl을 `https://propnet.kr`로
+   - `lib/presentation/widgets/property/property_image.dart` → 이미지 URL
+   - `lib/presentation/screens/property/property_detail_screen.dart` → 공유 URL
+   - `lib/presentation/widgets/common/app_drawer.dart` → 링크 URL
+3. **주의**: goldenrabbit.biz의 `/app/api/*` 프록시는 구버전 앱 호환을 위해 최소 6개월 유지
