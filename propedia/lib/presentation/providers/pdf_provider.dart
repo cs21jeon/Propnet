@@ -65,7 +65,7 @@ class PdfNotifier extends StateNotifier<PdfState> {
       _currentFileName = _buildFileName(data, areaInfo);
 
       if (address.isNotEmpty && _naverMapApi.isConfigured) {
-        final geocoding = await _ref.read(geocodingProvider(address).future);
+        final geocoding = await _ref.read(geocodingProvider((address: address, pnu: null)).future);
 
         if (geocoding.success && geocoding.lat != null && geocoding.lng != null) {
           // 2. 네이버 Static Map 이미지 가져오기
@@ -225,8 +225,12 @@ class PdfNotifier extends StateNotifier<PdfState> {
     final address = data.address;
     final codes = data.codes;
 
-    // 1. 동 이름 가져오기
+    // 1. 동+리 이름 가져오기
     String? dongName = address?.eupmyeondongName;
+    final riName = address?.riName;
+    if (riName != null && riName.isNotEmpty && dongName != null) {
+      dongName = '$dongName $riName';
+    }
 
     // 2. 번지 가져오기
     String? bun;
@@ -292,6 +296,7 @@ class PdfNotifier extends StateNotifier<PdfState> {
       if (address?.sidoName != null) parts.add(address!.sidoName!);
       if (address?.sigunguName != null) parts.add(address!.sigunguName!);
       if (address?.eupmyeondongName != null) parts.add(address!.eupmyeondongName!);
+      if (address?.riName != null && address!.riName!.isNotEmpty) parts.add(address!.riName!);
       platPlc = parts.join(' ');
     }
 

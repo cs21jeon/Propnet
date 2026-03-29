@@ -26,7 +26,9 @@
 | 12 | 화성시동탄구 오산동 971 101동 3103호 | 동탄광역환승로 63 | 신규 행정구역 | 구 코드 매핑, 대지지분 28.12㎡ |
 | 13 | 화성시동탄구 신동 898 2319동 201호 | 동탄신리천로2길 65 | 신규 행정구역 | 구 코드 매핑, 신축건물 |
 | 14 | 화성시동탄구 신동 822 4018동 201호 | 동탄신리천로8길 46 | 신규 행정구역 | 구 코드 매핑, 신축건물 |
-| 15 | 대구광역시 달성군 옥포읍 기세리 969-22 | 비슬로 2265 | 법정동 행정동 불일치 | 법정동 행정동 불일치 |
+| 15 | 대구광역시 달성군 옥포읍 기세리 969-22 | 비슬로 2265 (옥포읍 기세리) | 읍/면+리, 법정동 행정동 불일치 | bjdong_code: 2771026226 |
+| 16 | 충청남도 태안군 태안읍 남산리 151 | 독샘로 151 | 읍/면+리 주소 | 리 이름 표시, 지도 마커에 리 포함, 지번/도로명 혼동 방지 |
+| 17 | 경기도 포천시 소흘읍 이동교리 123 | 무림길 123 | 읍/면+리 주소 | 리 이름 표시, 지도 정확도 확인 |
 
 ---
 
@@ -50,7 +52,7 @@ curl -s -X POST "https://goldenrabbit.biz/app/api/search/jibun" \
 ```json
 {
   "success": true,
-  "address": { "sido_name", "sigungu_name", "eupmyeondong_name", "full_address" },
+  "address": { "sido_name", "sigungu_name", "eupmyeondong_name", "ri_name", "full_address" },
   "codes": { "bjdong_code", "bun", "ji", "pnu" },
   "land": { "land_area", "parcel_count", "public_land_price", "price_year", ... },
   "building": {
@@ -60,7 +62,8 @@ curl -s -X POST "https://goldenrabbit.biz/app/api/search/jibun" \
     "recap_title_info": { ... },
     "dong_ho_dict": { "동명": [{ "ho_nm": "101호" }, ...] },
     "floor_info": [ ... ]
-  }
+  },
+  "location": { "lat": 37.483, "lng": 126.97, "source": "vworld_pnu" | "vworld_api_pnu" | "kakao" }
 }
 ```
 
@@ -155,7 +158,17 @@ ssh root@175.119.224.71 "grep -n 'displayBasicInfo\|displayLandInfo\|displayGene
 | 주차대수 + 대 | ☐ | ☐ | ☐ | ☐ |
 | 승강기수 + 기 | ☐ | ☐ | ☐ | ☐ |
 
-### 5.4 전유부정보 섹션 (공동주택)
+### 5.4 지도/위치 섹션
+
+| 항목 | 웹앱 조회 | Flutter 조회 |
+|------|----------|--------------|
+| 지도 좌표 정확 (올바른 위치) | ☐ | ☐ |
+| 지도 마커 레이블 (동+리+번지) | ☐ | ☐ |
+| 도로명주소 표시 (기본정보) | ☐ | ☐ |
+| 읍/면+리 주소: 리 이름 포함 | ☐ | ☐ |
+| 지번/도로명 혼동 없음 | ☐ | ☐ |
+
+### 5.5 전유부정보 섹션 (공동주택)
 
 | 항목 | 웹앱 조회 | 웹앱 PDF | Flutter 조회 | Flutter PDF |
 |------|----------|---------|--------------|-------------|
@@ -242,6 +255,12 @@ _buildAreaInfoSection()         // PDF 전유부정보
 | 2026-02-11 | 필지수 표시 형식 | 전체 | `(합계)` → `[n필지]` |
 | 2026-02-11 | 층수/높이/승강기 누락 | Flutter 조회 | 항목 추가 |
 | 2026-02-11 | 세대/가구/호 라벨 | Flutter 조회 | `총 세대/가구/호` → `세대/가구/호` |
+| 2026-03-29 | 읍/면+리 검색 실패 | 서버 | juso.go.kr 확인 시 ri_name 누락 수정, ORDER BY에 ri_name 추가 |
+| 2026-03-29 | 지도 위치 오류 | 서버+PWA+앱 | 서버에서 좌표 해결 후 응답에 포함 (location 필드), 클라이언트 지오코딩 제거 |
+| 2026-03-29 | 지도 마커 ri_name 누락 | PWA+앱 | 마커에 리 이름 포함 (태안읍 151 → 태안읍 남산리 151) |
+| 2026-03-29 | 도로명/지번 혼용 | 서버 | 지오코딩에 순수 지번주소만 사용, 도로명 사용 금지 |
+| 2026-03-29 | Case 15 bjdong_code 오류 | 가이드 | 2771025323(삼리리) → 2771026226(기세리) |
+| 2026-03-29 | Case 16, 17 추가 | 가이드 | 태안읍 남산리 151, 소흘읍 이동교리 123 (읍/면+리 테스트) |
 
 ---
 
@@ -381,3 +400,48 @@ curl -s -X POST "https://goldenrabbit.biz/app/api/area" \
 - `codes.old_bjdong_code`: 4159012900 (구 화성시 오산동)
 - DB 캐시 히트: 전유면적 합계 76,711.11㎡
 - 전유부 조회 (101동 3103호): 전용면적 73.65㎡, 대지지분 28.12㎡
+
+### Case 15: 옥포읍 기세리 (법정동코드 수정)
+```bash
+curl -s -X POST "https://goldenrabbit.biz/app/api/search/jibun" \
+  -H "Content-Type: application/json" \
+  -d '{"bjdong_code":"2771026226","bun":"969","ji":"22","land_type":"1"}'
+```
+
+**검증 포인트:**
+- bjdong_code: `2771026226` (기존 가이드의 2771025323은 삼리리 — 오류 수정)
+- 도로명주소: 비슬로 2265 (옥포읍 기세리)
+- `location.source`: kakao
+- ri_name: 기세리
+
+### Case 16: 읍/면+리 - 태안읍 남산리 151
+```bash
+curl -s -X POST "https://goldenrabbit.biz/app/api/search/jibun" \
+  -H "Content-Type: application/json" \
+  -d '{"bjdong_code":"4482525024","bun":"151","ji":"0","land_type":"1"}'
+```
+
+**검증 포인트:**
+- 지번주소: 충청남도 태안군 태안읍 남산리 151
+- 도로명주소: 독샘로 151 (건축물대장 기준)
+- `address.ri_name`: 남산리
+- `location`: 36.735, 126.295 (태안읍 위치, 독샘로 151 위치가 아님)
+- `location.source`: kakao (VWorld PNU 불일치 → 카카오 fallback)
+- 지도 마커: "태안읍 남산리 151" (ri_name 포함)
+- **핵심 검증**: 지도가 독샘로 151(동문리)이 아닌 태안읍 남산리를 가리키는지
+
+### Case 17: 읍/면+리 - 소흘읍 이동교리 123
+```bash
+curl -s -X POST "https://goldenrabbit.biz/app/api/search/jibun" \
+  -H "Content-Type: application/json" \
+  -d '{"bjdong_code":"4165025022","bun":"123","ji":"0","land_type":"1"}'
+```
+
+**검증 포인트:**
+- 지번주소: 경기도 포천시 소흘읍 이동교리 123
+- 도로명주소: 무림길 123
+- `address.ri_name`: 이동교리
+- `location`: 37.818, 127.131 (소흘읍 위치)
+- `location.source`: kakao
+- 지도 마커: "소흘읍 이동교리 123" (ri_name 포함)
+- **핵심 검증**: 지도가 무림길 123이 아닌 이동교리 123을 가리키는지

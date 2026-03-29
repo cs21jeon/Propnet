@@ -32,11 +32,15 @@ class MapApi {
     return ParcelBoundaryResponse.fromJson(response.data);
   }
 
-  /// 주소 → 좌표 변환 (지오코딩)
-  Future<GeocodingResponse> geocodeAddress(String address) async {
+  /// 주소 → 좌표 변환 (지오코딩) - PNU 기반 VWorld 우선, 카카오 fallback
+  Future<GeocodingResponse> geocodeAddress(String address, {String? pnu}) async {
+    final params = <String, dynamic>{'address': address};
+    if (pnu != null && pnu.length == 19) {
+      params['pnu'] = pnu;
+    }
     final response = await _dio.get(
       '/app/api/map/geocode',
-      queryParameters: {'address': address},
+      queryParameters: params,
     );
     return GeocodingResponse.fromJson(response.data);
   }

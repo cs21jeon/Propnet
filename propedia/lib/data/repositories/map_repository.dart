@@ -55,11 +55,11 @@ class MapRepository {
     }
   }
 
-  /// 주소 → 좌표 변환 (지오코딩)
-  Future<GeocodingResponse> geocodeAddress(String address) async {
+  /// 주소 → 좌표 변환 (지오코딩) - PNU 기반 VWorld 우선, 카카오 fallback
+  Future<GeocodingResponse> geocodeAddress(String address, {String? pnu}) async {
     try {
-      debugPrint('📡 API 호출: geocodeAddress($address)');
-      final response = await _mapApi.geocodeAddress(address);
+      debugPrint('📡 API 호출: geocodeAddress($address, pnu=$pnu)');
+      final response = await _mapApi.geocodeAddress(address, pnu: pnu);
       debugPrint('📡 API 응답: success=${response.success}, lat=${response.lat}, lng=${response.lng}');
       return response;
     } on DioException catch (e) {

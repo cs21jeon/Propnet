@@ -58,13 +58,17 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     return address.replaceFirst('$city ', '$city $district ');
   }
 
-  /// 지도 마커 라벨 생성 (동+지번 형태)
+  /// 지도 마커 라벨 생성 (동+리+지번 형태)
   String _buildMarkerLabel(BuildingSearchResponse result) {
     final address = result.address;
     final codes = result.codes;
 
-    // 동 이름
+    // 동 이름 + 리 이름 (리가 있으면 "태안읍 남산리", 없으면 "사당동")
     String? dongName = address?.eupmyeondongName;
+    final riName = address?.riName;
+    if (riName != null && riName.isNotEmpty && dongName != null) {
+      dongName = '$dongName $riName';
+    }
 
     // 지번 (PNU에서 추출)
     String? jibun;
@@ -896,6 +900,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
         parts.add(normalizedSigungu);
       }
       if (address?.eupmyeondongName != null) parts.add(address!.eupmyeondongName!);
+      if (address?.riName != null && address!.riName!.isNotEmpty) parts.add(address!.riName!);
       if (codes?.pnu != null && codes!.pnu!.length >= 19) {
         final bun = int.tryParse(codes.pnu!.substring(11, 15))?.toString() ?? '';
         final ji = int.tryParse(codes.pnu!.substring(15, 19))?.toString() ?? '';
@@ -1706,7 +1711,7 @@ class _ResultMapWidgetState extends ConsumerState<_ResultMapWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final geocoding = ref.watch(geocodingProvider(widget.address));
+    final geocoding = ref.watch(geocodingProvider((address: widget.address, pnu: widget.pnu)));
 
     return geocoding.when(
       loading: () => Container(

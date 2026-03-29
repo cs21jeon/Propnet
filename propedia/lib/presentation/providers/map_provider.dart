@@ -133,10 +133,10 @@ final mapSearchProvider =
   return MapSearchNotifier(repository);
 });
 
-// 지오코딩 Provider (주소 → 좌표)
-final geocodingProvider = FutureProvider.family<GeocodingResponse, String>((ref, address) async {
+// 지오코딩 Provider (주소 → 좌표) - PNU 기반 VWorld 우선
+final geocodingProvider = FutureProvider.family<GeocodingResponse, ({String address, String? pnu})>((ref, params) async {
   final repository = ref.watch(mapRepositoryProvider);
-  return repository.geocodeAddress(address);
+  return repository.geocodeAddress(params.address, pnu: params.pnu);
 });
 
 // 현재 위치 Provider
