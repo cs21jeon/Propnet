@@ -49,7 +49,7 @@
 ├── :5020  PropSheet                      → /backend/propsheet/
 ├── :5030  Proptalk / VoiceRoom           → /chat_stt/server/
 ├── :5040  Shorts                         → /backend/shorts_automation/
-└── :8000  레거시 Threads (제거 예정)      → /backend/api/
+└── :8000  API Server (VWorld, 블로그, SNS) → /backend/api/
 ```
 
 ### Nginx URL 라우팅 (현재 상태, 변경 없음)
@@ -92,7 +92,6 @@
 
 ### 미완료
 
-- [ ] 추천매물 3개 카테고리 DB 전환 (재건축용 토지, 고수익률 건물, 저가단독주택)
 - [ ] map.html 상세 모달 → 부모 `index.html` 모달 통일 (`parent.postMessage`)
 - [ ] 워크스페이스별 지도 구조
 
@@ -100,6 +99,37 @@
 - PropSheet API 엔드포인트 추가 (`propsheet.py`)
 - 프론트엔드 정적 파일만 변경 → Nginx/Flask 재시작 불필요
 - 보안: `.gitignore` 보완 (`*.bak`, `uploads/`, `.openai_credit.json`, `*.pre-migration`)
+
+---
+
+## 1.7차 마이그레이션: Airtable 완전 제거 (2026-03-26)
+
+### 배경
+- 1.5차에서 홈페이지 DB 전환 후, 나머지 Airtable 의존성도 모두 제거
+- SNS 공유, 이미지, 건축물대장 등 모든 기능이 PropSheet DB + 로컬 파일로 전환
+
+### 변경 내용
+
+| 항목 | 변경 전 | 변경 후 |
+|------|---------|---------|
+| SNS 공유 (`/property/{id}`) | Airtable API 조회 | PropSheet DB 조회 |
+| 대표사진/건축물대장 | Airtable Attachment URL | `/uploads/propsheet/{db_id}/{record_id}/파일명` |
+| 추천매물 카테고리 | Airtable 백업 JSON | PropSheet DB (재건축70, 고수익71, 저가72) |
+| property-detail.html | 별도 상세 페이지 | 삭제 (index.html 모달로 통합) |
+| backup 스크립트 | 활성 (cron) | `deprecated/`로 이동, cron 비활성화 |
+
+### 중지된 Cron Jobs
+- `airtable_backup.py` — Airtable → JSON 백업 (DISABLED)
+- `generate_map.py` — JSON → 지도 HTML 생성 (DISABLED)
+
+### 추가된 파일 시스템
+- `/uploads/propsheet/` — 모든 첨부파일 저장소
+- `file_attachments` 테이블 — 파일 메타데이터 관리
+
+### 서버 상태
+- `backend/scripts/deprecated/` — Airtable 관련 스크립트 격리 (참조 전용, 호출 금지)
+- Airtable API 키는 `.env`에 남아있으나 사용하지 않음
+- 서비스 재시작: `property-manager`, `goldenrabbit-api`
 
 ---
 
