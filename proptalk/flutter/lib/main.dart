@@ -9,9 +9,13 @@ import 'services/notification_service.dart';
 import 'screens/login_screen.dart';
 import 'screens/main_screen.dart';
 import 'screens/consent_screen.dart';
+import 'screens/chat_screen.dart';
 import 'theme/app_theme.dart';
 import 'theme/theme_provider.dart';
 import 'widgets/propnet_footer.dart';
+
+/// 전역 네비게이터 키 (알림 탭 시 화면 이동용)
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,6 +35,15 @@ void main() async {
   final apiService = ApiService();
   final authService = AuthService(apiService);
   final billingService = BillingService(apiService);
+
+  // 알림 탭 → 해당 채팅방으로 이동
+  NotificationService().onNotificationTap = (roomId, roomName) {
+    navigatorKey.currentState?.push(
+      MaterialPageRoute(
+        builder: (_) => ChatScreen(roomId: roomId, roomName: roomName),
+      ),
+    );
+  };
 
   runApp(
     MultiProvider(
@@ -67,6 +80,7 @@ class _VoiceRoomAppState extends State<VoiceRoomApp> {
     final themeProvider = context.watch<ThemeProvider>();
 
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'Proptalk',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),

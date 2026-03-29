@@ -165,10 +165,7 @@ def register_message_routes(app, socketio):
             })
         }, room=f'room_{room_id}')
 
-        # FCM 푸시 알림
-        from notification_service import notify_new_message
-        notify_new_message(room_id, g.user['name'], original_filename,
-                           msg_type='audio', sender_user_id=g.user_id)
+        # 음성 업로드 시에는 알림 보내지 않음 (요약 완료 시 알림)
 
         # 5) 백그라운드에서 STT + Drive 업로드 처리
         room_drive_enabled = room.get('enable_drive_backup', True)
@@ -708,6 +705,15 @@ def process_audio_background(app, socketio, filepath, audio_id, message_id,
                 })
             }, room=f'room_{room_id}')
 
+            # FCM 푸시 알림: 요약 완료/실패 시 전송
+            from notification_service import notify_new_message
+            if summary_text:
+                notify_body = summary_text[:100] + ('...' if len(summary_text) > 100 else '')
+            else:
+                notify_body = f"{user_name}: 음성 요약에 실패했습니다. 원본 텍스트를 확인하세요."
+            notify_new_message(room_id, user_name, notify_body,
+                               msg_type='text', sender_user_id=user_id)
+
             socketio.emit('audio_status', {
                 'audio_id': audio_id,
                 'message_id': message_id,
@@ -766,6 +772,15 @@ def process_audio_background(app, socketio, filepath, audio_id, message_id,
                 f'⚠️ 음성 변환 실패: {str(e)[:100]}',
                 parent_id=message_id
             )
+
+            # FCM 푸시 알림: 변환 실패 알림
+            try:
+                from notification_service import notify_new_message
+                notify_new_message(room_id, user_name,
+                                   f"{user_name}: 음성 변환에 실패했습니다.",
+                                   msg_type='text', sender_user_id=user_id)
+            except Exception:
+                pass
 
             # 실패 시에도 임시 파일 정리
             if os.path.exists(filepath):

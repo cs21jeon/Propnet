@@ -20,8 +20,14 @@
 - Returns: `{'text': '...', 'segments': [...]}`
 - OPENAI_API_KEY is configured in .env
 
+## CRITICAL: Flutter 빌드 - 릴리즈 모드 전용
+- **항상 `flutter run --release` 사용. 디버그 모드 사용 금지**
+- 디버그 SHA1이 Google Cloud Console에 미등록 → 디버그 빌드에서 Google 로그인 불가
+- 이미 출시된 앱이므로 디버그 빌드 불필요
+
 ## Deploy
 - Server files: `/home/webapp/goldenrabbit/chat_stt/server/`
+- **WSGI 서버**: gunicorn + eventlet (워커 1개, `proptalk.service`에서 실행)
 - SCP 후 `sudo systemctl restart proptalk`
 - 환경변수: `/home/webapp/goldenrabbit/chat_stt/server/.env` (systemd EnvironmentFile)
 - venv: `/home/webapp/goldenrabbit/chat_stt/server/venv/`

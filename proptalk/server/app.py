@@ -2,6 +2,9 @@
 VoiceRoom - 음성 채팅방 STT 플랫폼
 메인 Flask 앱
 """
+import eventlet
+eventlet.monkey_patch()
+
 import os
 import logging
 from flask import Flask
@@ -36,7 +39,7 @@ CORS(app, origins=['*'])
 socketio = SocketIO(
     app, 
     cors_allowed_origins='*',
-    async_mode='threading',
+    async_mode='eventlet',
     ping_timeout=60,
     ping_interval=25,
 )
@@ -120,6 +123,5 @@ if __name__ == '__main__':
         app,
         host=Config.HOST,
         port=Config.PORT,
-        debug=Config.DEBUG,
-        allow_unsafe_werkzeug=True
+        debug=Config.DEBUG
     )

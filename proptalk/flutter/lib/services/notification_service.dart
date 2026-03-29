@@ -25,8 +25,8 @@ class NotificationService {
   String? _fcmToken;
   String? get fcmToken => _fcmToken;
 
-  /// 알림 탭 콜백 (room_id 전달)
-  void Function(int roomId)? onNotificationTap;
+  /// 알림 탭 콜백 (room_id, room_name 전달)
+  void Function(int roomId, String roomName)? onNotificationTap;
 
   /// 초기화
   Future<void> initialize() async {
@@ -111,7 +111,12 @@ class NotificationService {
           icon: '@mipmap/ic_launcher',
         ),
       ),
-      payload: roomId != null ? jsonEncode({'room_id': roomId}) : null,
+      payload: roomId != null
+          ? jsonEncode({
+              'room_id': roomId,
+              'room_name': message.data['room_name'] ?? '',
+            })
+          : null,
     );
   }
 
@@ -121,8 +126,9 @@ class NotificationService {
     try {
       final data = jsonDecode(response.payload!);
       final roomId = int.tryParse(data['room_id'].toString());
+      final roomName = data['room_name']?.toString() ?? '톡방';
       if (roomId != null) {
-        onNotificationTap?.call(roomId);
+        onNotificationTap?.call(roomId, roomName);
       }
     } catch (_) {}
   }
@@ -130,8 +136,9 @@ class NotificationService {
   /// FCM 메시지 탭 처리
   void _handleMessageTap(RemoteMessage message) {
     final roomId = int.tryParse(message.data['room_id']?.toString() ?? '');
+    final roomName = message.data['room_name']?.toString() ?? '톡방';
     if (roomId != null) {
-      onNotificationTap?.call(roomId);
+      onNotificationTap?.call(roomId, roomName);
     }
   }
 
