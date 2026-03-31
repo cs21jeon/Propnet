@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>음성 데이터 처리 동의 - Proptalk</title>
+    <meta name="description" content="Proptalk 음성 데이터 수집 및 처리 동의. 음성 파일의 수집, 변환, 제3자 제공 및 삭제에 관한 안내입니다.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://goldenrabbit.biz/legal/service-specific/proptalk-voice.html">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #f9f9f9;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #fff;
+            min-height: 100vh;
+        }
+        h1 {
+            font-size: 28px;
+            color: #1A73E8;
+            margin-bottom: 8px;
+            border-bottom: 3px solid #1A73E8;
+            padding-bottom: 16px;
+        }
+        .effective-date {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+        h2 {
+            font-size: 20px;
+            color: #1A73E8;
+            margin-top: 36px;
+            margin-bottom: 12px;
+            padding-left: 12px;
+            border-left: 4px solid #1A73E8;
+        }
+        h3 {
+            font-size: 16px;
+            color: #444;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+        p, li {
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+        ul, ol {
+            padding-left: 24px;
+            margin-bottom: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px 12px;
+            text-align: left;
+        }
+        th {
+            background: #f0f4ff;
+            color: #1A73E8;
+            font-weight: 600;
+        }
+        .highlight {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px 16px;
+            margin: 16px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .warning {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 12px 16px;
+            margin: 16px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .footer {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 13px;
+            text-align: center;
+        }
+        a { color: #1A73E8; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        @media (max-width: 600px) {
+            .container { padding: 24px 16px; }
+            h1 { font-size: 22px; }
+            h2 { font-size: 18px; }
+            table { font-size: 13px; }
+            th, td { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Proptalk 음성 데이터 처리 동의</h1>
+        <p class="effective-date">시행일: 2026년 4월 1일</p>
+
+        <p>Proptalk 서비스의 음성-텍스트 변환(STT) 및 AI 요약 기능 이용을 위해, 아래와 같이 음성 데이터의 수집 및 처리에 대한 동의를 받고 있습니다.</p>
+
+        <h2>제1조 (음성 데이터 처리 과정)</h2>
+        <p>이용자가 업로드한 음성 파일은 다음 과정을 거쳐 처리됩니다:</p>
+        <ol>
+            <li><strong>음성 파일 업로드:</strong> 이용자가 Proptalk 앱을 통해 음성 파일을 서버에 업로드합니다.</li>
+            <li><strong>음성-텍스트 변환(STT):</strong> 음성 파일이 <strong>OpenAI 서버(미국)</strong>로 전송되어 Whisper API를 통해 텍스트로 변환됩니다.</li>
+            <li><strong>AI 요약 생성:</strong> 변환된 텍스트가 <strong>Anthropic 서버(미국)</strong>로 전송되어 Claude API를 통해 대화 내용이 요약됩니다.</li>
+            <li><strong>Google Drive 백업:</strong> 채팅방 방장의 Google Drive에 음성 파일이 백업 저장됩니다.</li>
+            <li><strong>자동 삭제:</strong> 서버에 저장된 음성 파일, 변환 텍스트, AI 요약 결과는 <strong>업로드 후 24시간 이내에 자동으로 완전 삭제</strong>됩니다.</li>
+        </ol>
+
+        <h2>제2조 (수집 및 이용 항목)</h2>
+        <table>
+            <tr>
+                <th>수집 항목</th>
+                <th>이용 목적</th>
+                <th>보관 기간</th>
+            </tr>
+            <tr>
+                <td>음성 파일 (통화 녹음, 음성 메모 등)</td>
+                <td>음성-텍스트 변환 서비스 제공</td>
+                <td>24시간 후 자동 삭제</td>
+            </tr>
+            <tr>
+                <td>음성-텍스트 변환 결과</td>
+                <td>변환 결과 표시 및 AI 요약 입력</td>
+                <td>24시간 후 자동 삭제</td>
+            </tr>
+            <tr>
+                <td>AI 요약 결과</td>
+                <td>통화 내용 요약 제공</td>
+                <td>24시간 후 자동 삭제</td>
+            </tr>
+            <tr>
+                <td>파일명 내 메타데이터 (전화번호, 날짜, 이름)</td>
+                <td>자동 파싱 및 검색 기능 제공</td>
+                <td>24시간 후 자동 삭제</td>
+            </tr>
+        </table>
+
+        <h2>제3조 (제3자 제공 - 국외 이전)</h2>
+        <table>
+            <tr>
+                <th>제공받는 자</th>
+                <th>이전 국가</th>
+                <th>제공 항목</th>
+                <th>제공 목적</th>
+                <th>보유 기간</th>
+            </tr>
+            <tr>
+                <td><strong>OpenAI, Inc.</strong></td>
+                <td>미국</td>
+                <td>음성 파일</td>
+                <td>Whisper API를 통한 STT 변환</td>
+                <td>처리 즉시 삭제 (API 데이터 학습 미사용)</td>
+            </tr>
+            <tr>
+                <td><strong>Anthropic, PBC</strong></td>
+                <td>미국</td>
+                <td>변환 텍스트</td>
+                <td>Claude API를 통한 AI 요약</td>
+                <td>처리 즉시 삭제</td>
+            </tr>
+            <tr>
+                <td><strong>Google LLC</strong></td>
+                <td>미국</td>
+                <td>음성 파일</td>
+                <td>Google Drive 백업 저장</td>
+                <td>이용자 직접 관리</td>
+            </tr>
+        </table>
+
+        <div class="highlight">
+            <strong>안내:</strong> 위 제3자 제공은 Proptalk의 핵심 기능 제공에 필수적입니다. 동의하지 않을 경우 음성 변환 및 AI 요약 기능을 이용할 수 없습니다.
+        </div>
+
+        <h2>제4조 (이용자의 의무)</h2>
+
+        <div class="warning">
+            <strong>중요:</strong> 이용자는 반드시 <strong>적법하게 녹음된 음성 파일만</strong> 업로드해야 합니다. 「통신비밀보호법」에 따라 통화 당사자 중 일방의 동의가 있어야 합니다. 불법 녹음물 업로드로 인한 모든 법적 책임은 이용자에게 있습니다.
+        </div>
+
+        <h2>제5조 (동의 철회)</h2>
+        <ol>
+            <li>이용자는 음성 데이터 수집 및 처리에 대한 동의를 언제든지 철회할 수 있습니다.</li>
+            <li>동의 철회 시 Proptalk의 음성 변환 및 AI 요약 기능 이용이 제한됩니다.</li>
+            <li>이미 업로드된 데이터는 24시간 자동 삭제 정책에 따라 처리됩니다.</li>
+            <li>동의 철회 요청: <a href="mailto:cs21.jeon@gmail.com">cs21.jeon@gmail.com</a></li>
+        </ol>
+
+        <div class="footer">
+            <p>&copy; 2026 프롭넷 (PropNet). All rights reserved.</p>
+            <p>
+                <a href="/legal/terms-of-service.html">이용약관</a> |
+                <a href="/legal/privacy-policy.html">개인정보 처리방침</a> |
+                <a href="/legal/overseas-transfer.html">국외 이전 고지</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

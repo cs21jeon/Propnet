@@ -138,6 +138,12 @@ journalctl -u proptalk -f
    - 각 서비스 `.gitignore`에 민감 파일 패턴이 포함되어 있는지 주기적 확인
    - 서버 리포(`goldenrabbit`)에 pre-commit hook 설치됨 — 하드코딩 비밀번호/API 키 자동 차단
 9. **비밀번호/API 키는 반드시 환경변수로**: DB 접속, 외부 API 키 등은 `os.environ.get()` 사용. 절대 소스코드에 직접 작성 금지. `.env` 파일에서 로드
+10. **ID 체계 매핑 주의**: `app_users.id` ≠ `propnet_users.id` ≠ `voiceroom.users.id`. JWT의 user_id를 다른 테이블의 ID로 직접 사용 금지. 반드시 `service_user_links`를 통해 변환
+11. **서버 코드 수정 전 변수명 확인 필수**: Blueprint, 함수명, 클래스명 등을 grep으로 반드시 확인 후 사용. 추정하여 코드 작성 금지
+12. **Propedia 웹 = 정적 HTML**: Propedia 웹페이지는 `/app/*.html` 정적 파일. `flutter build web` 사용 금지. 앱 수정 시 HTML 웹도 함께 수정
+13. **서비스 수정 후 기동 검증 필수**: 재시작 후 `journalctl -u <서비스명> -n 20`으로 에러 확인 + `curl`로 HTTP 응답 코드 확인. 에러 있으면 즉시 롤백
+14. **탈퇴/비활성 유저 재가입 고려**: 회원탈퇴(is_active=FALSE) 후 동일 계정 재로그인 시 재활성화 + 동의 초기화 로직 필수
+15. **Google OAuth 유저 특수 케이스**: Google 로그인 유저는 비밀번호가 없음. 비밀번호 요구 로직에 provider 체크 필수
 
 ## Git 구조
 
