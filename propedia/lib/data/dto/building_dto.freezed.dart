@@ -1292,6 +1292,8 @@ mixin _$AddressInfo {
   String? get sigunguName => throw _privateConstructorUsedError;
   @JsonKey(name: 'eupmyeondong_name')
   String? get eupmyeondongName => throw _privateConstructorUsedError;
+  @JsonKey(name: 'ri_name')
+  String? get riName => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -1310,7 +1312,8 @@ abstract class $AddressInfoCopyWith<$Res> {
       @JsonKey(name: 'full_address') String? fullAddress,
       @JsonKey(name: 'sido_name') String? sidoName,
       @JsonKey(name: 'sigungu_name') String? sigunguName,
-      @JsonKey(name: 'eupmyeondong_name') String? eupmyeondongName});
+      @JsonKey(name: 'eupmyeondong_name') String? eupmyeondongName,
+      @JsonKey(name: 'ri_name') String? riName});
 }
 
 /// @nodoc
@@ -1331,6 +1334,7 @@ class _$AddressInfoCopyWithImpl<$Res, $Val extends AddressInfo>
     Object? sidoName = freezed,
     Object? sigunguName = freezed,
     Object? eupmyeondongName = freezed,
+    Object? riName = freezed,
   }) {
     return _then(_value.copyWith(
       bjdongCode: freezed == bjdongCode
@@ -1353,6 +1357,10 @@ class _$AddressInfoCopyWithImpl<$Res, $Val extends AddressInfo>
           ? _value.eupmyeondongName
           : eupmyeondongName // ignore: cast_nullable_to_non_nullable
               as String?,
+      riName: freezed == riName
+          ? _value.riName
+          : riName // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -1370,7 +1378,8 @@ abstract class _$$AddressInfoImplCopyWith<$Res>
       @JsonKey(name: 'full_address') String? fullAddress,
       @JsonKey(name: 'sido_name') String? sidoName,
       @JsonKey(name: 'sigungu_name') String? sigunguName,
-      @JsonKey(name: 'eupmyeondong_name') String? eupmyeondongName});
+      @JsonKey(name: 'eupmyeondong_name') String? eupmyeondongName,
+      @JsonKey(name: 'ri_name') String? riName});
 }
 
 /// @nodoc
@@ -1389,6 +1398,7 @@ class __$$AddressInfoImplCopyWithImpl<$Res>
     Object? sidoName = freezed,
     Object? sigunguName = freezed,
     Object? eupmyeondongName = freezed,
+    Object? riName = freezed,
   }) {
     return _then(_$AddressInfoImpl(
       bjdongCode: freezed == bjdongCode
@@ -1411,6 +1421,10 @@ class __$$AddressInfoImplCopyWithImpl<$Res>
           ? _value.eupmyeondongName
           : eupmyeondongName // ignore: cast_nullable_to_non_nullable
               as String?,
+      riName: freezed == riName
+          ? _value.riName
+          : riName // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -1423,7 +1437,8 @@ class _$AddressInfoImpl implements _AddressInfo {
       @JsonKey(name: 'full_address') this.fullAddress,
       @JsonKey(name: 'sido_name') this.sidoName,
       @JsonKey(name: 'sigungu_name') this.sigunguName,
-      @JsonKey(name: 'eupmyeondong_name') this.eupmyeondongName});
+      @JsonKey(name: 'eupmyeondong_name') this.eupmyeondongName,
+      @JsonKey(name: 'ri_name') this.riName});
 
   factory _$AddressInfoImpl.fromJson(Map<String, dynamic> json) =>
       _$$AddressInfoImplFromJson(json);
@@ -1443,10 +1458,13 @@ class _$AddressInfoImpl implements _AddressInfo {
   @override
   @JsonKey(name: 'eupmyeondong_name')
   final String? eupmyeondongName;
+  @override
+  @JsonKey(name: 'ri_name')
+  final String? riName;
 
   @override
   String toString() {
-    return 'AddressInfo(bjdongCode: $bjdongCode, fullAddress: $fullAddress, sidoName: $sidoName, sigunguName: $sigunguName, eupmyeondongName: $eupmyeondongName)';
+    return 'AddressInfo(bjdongCode: $bjdongCode, fullAddress: $fullAddress, sidoName: $sidoName, sigunguName: $sigunguName, eupmyeondongName: $eupmyeondongName, riName: $riName)';
   }
 
   @override
@@ -1463,13 +1481,14 @@ class _$AddressInfoImpl implements _AddressInfo {
             (identical(other.sigunguName, sigunguName) ||
                 other.sigunguName == sigunguName) &&
             (identical(other.eupmyeondongName, eupmyeondongName) ||
-                other.eupmyeondongName == eupmyeondongName));
+                other.eupmyeondongName == eupmyeondongName) &&
+            (identical(other.riName, riName) || other.riName == riName));
   }
 
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, bjdongCode, fullAddress,
-      sidoName, sigunguName, eupmyeondongName);
+      sidoName, sigunguName, eupmyeondongName, riName);
 
   @JsonKey(ignore: true)
   @override
@@ -1487,12 +1506,12 @@ class _$AddressInfoImpl implements _AddressInfo {
 
 abstract class _AddressInfo implements AddressInfo {
   const factory _AddressInfo(
-          {@JsonKey(name: 'bjdong_code') final String? bjdongCode,
-          @JsonKey(name: 'full_address') final String? fullAddress,
-          @JsonKey(name: 'sido_name') final String? sidoName,
-          @JsonKey(name: 'sigungu_name') final String? sigunguName,
-          @JsonKey(name: 'eupmyeondong_name') final String? eupmyeondongName}) =
-      _$AddressInfoImpl;
+      {@JsonKey(name: 'bjdong_code') final String? bjdongCode,
+      @JsonKey(name: 'full_address') final String? fullAddress,
+      @JsonKey(name: 'sido_name') final String? sidoName,
+      @JsonKey(name: 'sigungu_name') final String? sigunguName,
+      @JsonKey(name: 'eupmyeondong_name') final String? eupmyeondongName,
+      @JsonKey(name: 'ri_name') final String? riName}) = _$AddressInfoImpl;
 
   factory _AddressInfo.fromJson(Map<String, dynamic> json) =
       _$AddressInfoImpl.fromJson;
@@ -1512,6 +1531,9 @@ abstract class _AddressInfo implements AddressInfo {
   @override
   @JsonKey(name: 'eupmyeondong_name')
   String? get eupmyeondongName;
+  @override
+  @JsonKey(name: 'ri_name')
+  String? get riName;
   @override
   @JsonKey(ignore: true)
   _$$AddressInfoImplCopyWith<_$AddressInfoImpl> get copyWith =>

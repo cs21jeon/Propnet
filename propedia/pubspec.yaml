@@ -1,7 +1,7 @@
 name: propedia
 description: Propedia - 부동산백과
 publish_to: 'none'
-version: 1.0.2+10
+version: 1.0.3+11
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -58,6 +58,9 @@ dependencies:
   path_provider: ^2.1.2
   share_plus: ^7.2.1
   package_info_plus: ^9.0.0
+
+  # 파일 선택
+  file_picker: ^8.0.0
 
 dev_dependencies:
   flutter_test:

@@ -147,6 +147,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         return;
       }
 
+      if (next.status == AuthStatus.consentRequired) {
+        context.go('/consent');
+        return;
+      }
+
       final wasError = previous?.status == AuthStatus.error;
       final isError = next.status == AuthStatus.error;
 

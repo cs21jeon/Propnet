@@ -38,6 +38,8 @@ enum AuthStatus {
   authenticated,
   unauthenticated,
   guest,
+  consentRequired,
+  userTypeRequired,
   error,
 }
 
@@ -46,22 +48,30 @@ class AuthState {
   final AuthStatus status;
   final User? user;
   final String? errorMessage;
+  final List<Map<String, dynamic>> missingConsents;
+  final bool isNewUser;
 
   const AuthState({
     this.status = AuthStatus.initial,
     this.user,
     this.errorMessage,
+    this.missingConsents = const [],
+    this.isNewUser = false,
   });
 
   AuthState copyWith({
     AuthStatus? status,
     User? user,
     String? errorMessage,
+    List<Map<String, dynamic>>? missingConsents,
+    bool? isNewUser,
   }) {
     return AuthState(
       status: status ?? this.status,
       user: user ?? this.user,
       errorMessage: errorMessage,
+      missingConsents: missingConsents ?? this.missingConsents,
+      isNewUser: isNewUser ?? this.isNewUser,
     );
   }
 }
@@ -100,6 +110,31 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  /// 로그인 결과 처리 (모바일/웹 공통)
+  void _handleLoginResult(LoginResult result) {
+    if (result.consentRequired) {
+      debugPrint('[AUTH] 동의 필요: ${result.missingConsents.length}개 항목');
+      state = AuthState(
+        status: AuthStatus.consentRequired,
+        user: result.user,
+        missingConsents: result.missingConsents,
+        isNewUser: result.isNewUser,
+      );
+    } else if (result.isNewUser && result.user != null) {
+      debugPrint('[AUTH] 신규 유저 → 유저 타입 선택 필요: ${result.user!.email}');
+      state = AuthState(
+        status: AuthStatus.userTypeRequired,
+        user: result.user,
+        isNewUser: true,
+      );
+    } else if (result.user != null) {
+      debugPrint('[AUTH] 로그인 성공: ${result.user!.email} (${result.user!.name})');
+      state = AuthState(status: AuthStatus.authenticated, user: result.user);
+    } else {
+      throw Exception('로그인 응답에 사용자 정보가 없습니다');
+    }
+  }
+
   /// 웹: Google 계정 처리 (renderButton 콜백)
   Future<void> processGoogleAccount(GoogleSignInAccount account) async {
     state = state.copyWith(status: AuthStatus.loading);
@@ -114,9 +149,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
 
       debugPrint('[AUTH] 서버 로그인 요청 중...');
-      final user = await _authRepository.loginWithGoogle(idToken: idToken);
-      debugPrint('[AUTH] 로그인 성공: ${user.email} (${user.name})');
-      state = AuthState(status: AuthStatus.authenticated, user: user);
+      final result = await _authRepository.loginWithGoogle(idToken: idToken);
+      _handleLoginResult(result);
     } catch (e, stack) {
       debugPrint('[AUTH] 로그인 에러: $e');
       debugPrint('[AUTH] 스택: $stack');
@@ -153,9 +187,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       // 서버에 토큰 검증 요청
       debugPrint('[AUTH] 서버 로그인 요청 중...');
-      final user = await _authRepository.loginWithGoogle(idToken: idToken);
-      debugPrint('[AUTH] 로그인 성공: ${user.email} (${user.name})');
-      state = AuthState(status: AuthStatus.authenticated, user: user);
+      final result = await _authRepository.loginWithGoogle(idToken: idToken);
+      _handleLoginResult(result);
     } catch (e, stack) {
       debugPrint('[AUTH] 로그인 에러: $e');
       debugPrint('[AUTH] 스택: $stack');
@@ -164,6 +197,60 @@ class AuthNotifier extends StateNotifier<AuthState> {
         errorMessage: e.toString().replaceFirst('Exception: ', ''),
       );
     }
+  }
+
+  /// 동의 완료 처리
+  Future<void> submitConsent(List<Map<String, dynamic>> consents) async {
+    try {
+      debugPrint('[AUTH] 동의 제출: ${consents.length}개 항목');
+      await _authRepository.recordConsent(consents);
+      debugPrint('[AUTH] 동의 저장 성공');
+
+      // 신규 유저는 동의 후 유저 타입 선택으로 이동
+      if (state.isNewUser) {
+        debugPrint('[AUTH] 신규 유저 → 유저 타입 선택 화면으로');
+        state = AuthState(
+          status: AuthStatus.userTypeRequired,
+          user: state.user,
+          isNewUser: true,
+        );
+        return;
+      }
+
+      // 기존 유저는 동의 완료 후 인증 상태로 전환
+      if (state.user != null) {
+        state = AuthState(status: AuthStatus.authenticated, user: state.user);
+      } else {
+        // user가 없는 경우 서버에서 다시 조회
+        final user = await _authRepository.getMe();
+        if (user != null) {
+          state = AuthState(status: AuthStatus.authenticated, user: user);
+        } else {
+          throw Exception('사용자 정보를 가져올 수 없습니다');
+        }
+      }
+    } catch (e) {
+      debugPrint('[AUTH] 동의 저장 에러: $e');
+      rethrow;
+    }
+  }
+
+  /// 유저 타입 선택 완료 (일반 사용자)
+  Future<void> selectUserType() async {
+    try {
+      debugPrint('[AUTH] 유저 타입 선택: user');
+      await _authRepository.selectUserType('user');
+      debugPrint('[AUTH] 유저 타입 선택 완료');
+      state = AuthState(status: AuthStatus.authenticated, user: state.user);
+    } catch (e) {
+      debugPrint('[AUTH] 유저 타입 선택 에러: $e');
+      rethrow;
+    }
+  }
+
+  /// Agent 가입 신청 완료 후 홈으로 이동
+  void completeAgentRequest() {
+    state = AuthState(status: AuthStatus.authenticated, user: state.user);
   }
 
   /// 로그아웃

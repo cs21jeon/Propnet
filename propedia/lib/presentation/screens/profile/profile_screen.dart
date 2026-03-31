@@ -128,8 +128,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 24),
 
               // 로그아웃 버튼 (로그인한 경우에만 표시)
-              if (isAuthenticated)
+              if (isAuthenticated) ...[
                 _buildLogoutButton(),
+                const SizedBox(height: 12),
+                _buildDeleteAccountButton(),
+              ],
               const SizedBox(height: 16),
             ],
           ),
@@ -476,6 +479,94 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Future<void> _deleteAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('회원 탈퇴'),
+        content: const Text(
+          '정말 탈퇴하시겠습니까?\n\n'
+          '탈퇴 시 모든 데이터(검색 기록, 즐겨찾기 등)가 삭제되며 복구할 수 없습니다.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('탈퇴'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    // 2차 확인
+    final doubleConfirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('최종 확인'),
+        content: const Text('회원 탈퇴는 되돌릴 수 없습니다.\n정말 진행하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('탈퇴 진행'),
+          ),
+        ],
+      ),
+    );
+
+    if (doubleConfirmed != true || !mounted) return;
+
+    try {
+      final apiClient = ref.read(apiClientProvider);
+      final response = await apiClient.dio.post('/app/api/auth/delete-account');
+      if (response.data['success'] == true) {
+        ref.read(authProvider.notifier).logout();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('회원 탈퇴가 완료되었습니다.')),
+          );
+          context.go('/login');
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(response.data['message'] ?? '탈퇴 실패')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('회원 탈퇴 실패: $e')),
+        );
+      }
+    }
+  }
+
+  Widget _buildDeleteAccountButton() {
+    return TextButton(
+      onPressed: _deleteAccount,
+      child: Text(
+        '회원 탈퇴',
+        style: TextStyle(
+          color: Colors.grey[500],
+          fontSize: 13,
+          decoration: TextDecoration.underline,
+        ),
+      ),
     );
   }
 

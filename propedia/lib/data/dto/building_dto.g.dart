@@ -125,6 +125,7 @@ _$AddressInfoImpl _$$AddressInfoImplFromJson(Map<String, dynamic> json) =>
       sidoName: json['sido_name'] as String?,
       sigunguName: json['sigungu_name'] as String?,
       eupmyeondongName: json['eupmyeondong_name'] as String?,
+      riName: json['ri_name'] as String?,
     );
 
 Map<String, dynamic> _$$AddressInfoImplToJson(_$AddressInfoImpl instance) =>
@@ -134,6 +135,7 @@ Map<String, dynamic> _$$AddressInfoImplToJson(_$AddressInfoImpl instance) =>
       'sido_name': instance.sidoName,
       'sigungu_name': instance.sigunguName,
       'eupmyeondong_name': instance.eupmyeondongName,
+      'ri_name': instance.riName,
     };
 
 _$BuildingBasicInfoImpl _$$BuildingBasicInfoImplFromJson(

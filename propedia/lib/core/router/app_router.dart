@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:propedia/presentation/providers/auth_provider.dart';
 import 'package:propedia/presentation/screens/auth/login_screen.dart';
+import 'package:propedia/presentation/screens/auth/consent_screen.dart';
+import 'package:propedia/presentation/screens/auth/user_type_screen.dart';
+import 'package:propedia/presentation/screens/auth/agent_register_screen.dart';
 import 'package:propedia/presentation/screens/home/home_screen.dart';
 import 'package:propedia/presentation/screens/splash/splash_screen.dart';
 import 'package:propedia/presentation/screens/search/search_road_screen.dart';
@@ -41,14 +44,35 @@ final routerProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authProvider);
       final isAuthenticated = authState.status == AuthStatus.authenticated;
       final isGuest = authState.status == AuthStatus.guest;
+      final isConsentRequired = authState.status == AuthStatus.consentRequired;
+      final isUserTypeRequired = authState.status == AuthStatus.userTypeRequired;
       final canAccess = isAuthenticated || isGuest;
       final isLoading = authState.status == AuthStatus.loading ||
           authState.status == AuthStatus.initial;
       final isAuthRoute = state.matchedLocation == '/login';
+      final isConsentRoute = state.matchedLocation == '/consent';
+      final isUserTypeRoute = state.matchedLocation == '/user-type';
+      final isAgentRegisterRoute = state.matchedLocation == '/agent-register';
 
       // 로딩 중이면 스플래시 화면
       if (isLoading) {
         return '/';
+      }
+
+      // 동의 필요 상태 → 동의 화면으로
+      if (isConsentRequired && !isConsentRoute) {
+        return '/consent';
+      }
+
+      // 동의 화면인데 동의 필요 상태가 아니면 → 유저 타입 또는 홈
+      if (isConsentRoute && !isConsentRequired) {
+        if (isUserTypeRequired) return '/user-type';
+        return '/home';
+      }
+
+      // 유저 타입 선택 필요 → 유저 타입 화면으로
+      if (isUserTypeRequired && !isUserTypeRoute && !isAgentRegisterRoute) {
+        return '/user-type';
       }
 
       // 인증된 사용자가 인증 페이지 접근하면 홈으로 (guest는 로그인 가능)
@@ -71,6 +95,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/consent',
+        builder: (context, state) => const ConsentScreen(),
+      ),
+      GoRoute(
+        path: '/user-type',
+        builder: (context, state) => const UserTypeScreen(),
+      ),
+      GoRoute(
+        path: '/agent-register',
+        builder: (context, state) => const AgentRegisterScreen(),
       ),
       GoRoute(
         path: '/home',

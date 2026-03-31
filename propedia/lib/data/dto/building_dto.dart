@@ -115,6 +115,7 @@ class AddressInfo with _$AddressInfo {
     @JsonKey(name: 'sido_name') String? sidoName,
     @JsonKey(name: 'sigungu_name') String? sigunguName,
     @JsonKey(name: 'eupmyeondong_name') String? eupmyeondongName,
+    @JsonKey(name: 'ri_name') String? riName,
   }) = _AddressInfo;
 
   factory AddressInfo.fromJson(Map<String, dynamic> json) =>
