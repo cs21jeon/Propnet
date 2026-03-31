@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// VoiceRoom API 클라이언트
 class ApiService {
@@ -9,15 +11,23 @@ class ApiService {
   // 설정 - 실제 환경에 맞게 수정
   // ============================================================
   static const String baseUrl = 'https://goldenrabbit.biz/voiceroom';
-  
+
   String? _token;
+  String? _refreshToken;
   final http.Client _client = http.Client();
-  
-  /// JWT 토큰 설정
+
+  /// 토큰 리프레시 진행 중 여부 (중복 호출 방지)
+  bool _isRefreshing = false;
+
+  /// JWT 토큰 설정 (access token)
   void setToken(String token) => _token = token;
   String? get token => _token;
   bool get isLoggedIn => _token != null;
-  
+
+  /// Refresh 토큰 설정
+  void setRefreshToken(String? token) => _refreshToken = token;
+  String? get refreshToken => _refreshToken;
+
   /// 인증 헤더
   Map<String, String> get _headers => {
     'Content-Type': 'application/json',
@@ -42,17 +52,53 @@ class ApiService {
     );
 
     final data = _handleResponse(response);
-    _token = data['token'];
+    // 통합 인증: access_token 우선, 기존 token 호환
+    _token = data['access_token'] ?? data['token'];
+    _refreshToken = data['refresh_token'];
     return data;
+  }
+
+  /// Access token 갱신 (refresh token 사용)
+  Future<bool> refreshAccessToken() async {
+    if (_refreshToken == null || _isRefreshing) return false;
+
+    _isRefreshing = true;
+    try {
+      final response = await _client.post(
+        Uri.parse('$baseUrl/api/auth/refresh'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'refresh_token': _refreshToken}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        _token = data['access_token'] ?? data['token'];
+        if (data['refresh_token'] != null) {
+          _refreshToken = data['refresh_token'];
+        }
+
+        // SharedPreferences에 새 토큰 저장
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', _token!);
+        if (_refreshToken != null) {
+          await prefs.setString('refresh_token', _refreshToken!);
+        }
+
+        debugPrint('[ApiService] 토큰 갱신 성공');
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('[ApiService] 토큰 갱신 실패: $e');
+      return false;
+    } finally {
+      _isRefreshing = false;
+    }
   }
   
   /// 내 정보
   Future<Map<String, dynamic>> getMe() async {
-    final response = await _client.get(
-      Uri.parse('$baseUrl/api/auth/me'),
-      headers: _headers,
-    );
-    return _handleResponse(response);
+    return _authenticatedGet('$baseUrl/api/auth/me');
   }
   
   /// 프로필 이름 변경
@@ -340,21 +386,15 @@ class ApiService {
 
   /// 동의 기록 저장
   Future<Map<String, dynamic>> recordConsent(List<Map<String, String>> consents) async {
-    final response = await _client.post(
-      Uri.parse('$baseUrl/api/auth/consent'),
-      headers: _headers,
-      body: jsonEncode({'consents': consents}),
+    return _authenticatedPost(
+      '$baseUrl/api/auth/consent',
+      body: {'consents': consents},
     );
-    return _handleResponse(response);
   }
 
   /// 동의 상태 조회
   Future<Map<String, dynamic>> getConsentStatus() async {
-    final response = await _client.get(
-      Uri.parse('$baseUrl/api/auth/consent/status'),
-      headers: _headers,
-    );
-    return _handleResponse(response);
+    return _authenticatedGet('$baseUrl/api/auth/consent/status');
   }
 
   /// 동의 철회
@@ -482,6 +522,46 @@ class ApiService {
   }
 
   // ============================================================
+  // 인증된 요청 (401 시 refresh token으로 재시도)
+  // ============================================================
+
+  /// GET 요청 with auto-refresh
+  Future<Map<String, dynamic>> _authenticatedGet(String url) async {
+    var response = await _client.get(Uri.parse(url), headers: _headers);
+
+    if (response.statusCode == 401 && _refreshToken != null) {
+      final refreshed = await refreshAccessToken();
+      if (refreshed) {
+        response = await _client.get(Uri.parse(url), headers: _headers);
+      }
+    }
+
+    return _handleResponse(response);
+  }
+
+  /// POST 요청 with auto-refresh
+  Future<Map<String, dynamic>> _authenticatedPost(String url, {Object? body}) async {
+    var response = await _client.post(
+      Uri.parse(url),
+      headers: _headers,
+      body: body != null ? (body is String ? body : jsonEncode(body)) : null,
+    );
+
+    if (response.statusCode == 401 && _refreshToken != null) {
+      final refreshed = await refreshAccessToken();
+      if (refreshed) {
+        response = await _client.post(
+          Uri.parse(url),
+          headers: _headers,
+          body: body != null ? (body is String ? body : jsonEncode(body)) : null,
+        );
+      }
+    }
+
+    return _handleResponse(response);
+  }
+
+  // ============================================================
   // 응답 처리
   // ============================================================
   Map<String, dynamic> _handleResponse(http.Response response) {
@@ -502,7 +582,7 @@ class ApiService {
       response.statusCode,
     );
   }
-  
+
   void dispose() => _client.close();
 }
 

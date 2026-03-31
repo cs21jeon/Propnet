@@ -1,14 +1,71 @@
 /// Proptalk 법적 문서 (앱 내장용)
 /// 웹 버전: https://goldenrabbit.biz/proptalk/privacy
 /// 웹 버전: https://goldenrabbit.biz/proptalk/terms
+/// 통합 법적 문서: https://goldenrabbit.biz/legal/*
 
 class AppTerms {
+  /// 약관 버전 (통합 인증 시스템 적용)
+  static const String currentVersion = '2026-04-01';
+
+  // --- Proptalk 전용 URL ---
   static const String privacyPolicyUrl =
       'https://goldenrabbit.biz/proptalk/privacy';
   static const String termsOfServiceUrl =
       'https://goldenrabbit.biz/proptalk/terms';
   static const String billingTermsUrl =
       'https://goldenrabbit.biz/proptalk/payment-terms';
+
+  // --- 통합 법적 문서 URL ---
+  static const String legalTermsUrl =
+      'https://goldenrabbit.biz/legal/terms';
+  static const String legalPrivacyUrl =
+      'https://goldenrabbit.biz/legal/privacy';
+  static const String legalOverseasUrl =
+      'https://goldenrabbit.biz/legal/overseas-transfer';
+
+  /// 동의 타입별 웹 URL 매핑
+  static String? getWebUrlForType(String type) {
+    switch (type) {
+      case 'terms':
+        return termsOfServiceUrl;
+      case 'privacy':
+        return privacyPolicyUrl;
+      case 'overseas_transfer':
+        return legalOverseasUrl;
+      default:
+        return null;
+    }
+  }
+
+  /// 동의 타입별 전문 텍스트 매핑
+  static String? getFullTextForType(String type) {
+    switch (type) {
+      case 'terms':
+        return termsOfServiceFull;
+      case 'privacy':
+        return privacyPolicyFull;
+      case 'overseas_transfer':
+        return overseasTransferFull;
+      case 'proptalk_voice_data':
+        return audioUploadConsent;
+      default:
+        return null;
+    }
+  }
+
+  /// 동의 타입별 부제 텍스트
+  static String? getSubtitleForType(String type) {
+    switch (type) {
+      case 'privacy':
+        return '음성 파일, STT 변환 텍스트, AI 요약 결과 등';
+      case 'overseas_transfer':
+        return 'OpenAI(미국), Anthropic(미국), Google(미국)에 데이터 전송';
+      case 'proptalk_voice_data':
+        return '음성 파일 업로드, STT 변환, AI 요약 처리';
+      default:
+        return null;
+    }
+  }
 
   // ── 개인정보 처리방침 (요약) ──
 
@@ -330,5 +387,34 @@ class AppTerms {
 [중요] 적법하게 녹음된 파일만 업로드해 주세요. 불법 녹음물 업로드의 법적 책임은 이용자에게 있습니다.
 
 동의하시면 '동의' 버튼을 눌러주세요.
+''';
+
+  // ── 국외 이전 동의 (전문) ──
+
+  static const String overseasTransferFull = '''
+개인정보 국외 이전 동의
+
+Proptalk 서비스 제공을 위해 아래와 같이 개인정보를 국외로 이전합니다.
+
+1. OpenAI, Inc. (미국)
+   - 이전 항목: 음성 파일
+   - 이전 목적: Whisper API를 통한 음성-텍스트 변환(STT)
+   - 보유 기간: 처리 즉시 삭제 (OpenAI는 API 데이터를 학습에 사용하지 않음)
+
+2. Anthropic, PBC (미국)
+   - 이전 항목: STT 변환 텍스트
+   - 이전 목적: Claude API를 통한 대화 내용 AI 요약
+   - 보유 기간: 처리 즉시 삭제
+
+3. Google LLC (미국)
+   - 이전 항목: 인증 정보, 음성 파일 (Drive 백업 시)
+   - 이전 목적: OAuth 로그인 인증, Google Drive 파일 백업
+   - 보유 기간: Drive 백업 파일은 사용자가 직접 관리
+
+위 업체들은 각각의 보안 체계(TLS 암호화, 접근 통제 등)를 통해 데이터를 보호합니다.
+
+동의를 거부하실 수 있으나, 거부 시 음성 변환 및 AI 요약 기능을 이용할 수 없습니다.
+
+문의: cs21.jeon@gmail.com
 ''';
 }

@@ -13,16 +13,61 @@ class ConsentScreen extends StatefulWidget {
 }
 
 class _ConsentScreenState extends State<ConsentScreen> {
-  bool _termsAgreed = false;
-  bool _privacyAgreed = false;
-  bool _overseasAgreed = false;
+  /// 각 동의 항목의 체크 상태 (index 기반)
+  late List<bool> _agreed;
   bool _isSubmitting = false;
   String? _error;
 
-  bool get _allAgreed => _termsAgreed && _privacyAgreed && _overseasAgreed;
+  /// 서버에서 받은 missing_consents 항목 리스트
+  List<Map<String, dynamic>> get _consentItems {
+    final auth = context.read<AuthService>();
+    final items = auth.missingConsents;
+    // 서버 응답이 비어있으면 기본 3개 항목으로 폴백
+    if (items.isEmpty) {
+      return [
+        {'type': 'terms', 'version': AppTerms.currentVersion, 'label': '[필수] 서비스 이용약관', 'required': true},
+        {'type': 'privacy', 'version': AppTerms.currentVersion, 'label': '[필수] 개인정보 수집 및 이용 동의', 'required': true},
+        {'type': 'overseas_transfer', 'version': AppTerms.currentVersion, 'label': '[필수] 개인정보 국외 이전 동의', 'required': true},
+      ];
+    }
+    return items;
+  }
+
+  bool get _allRequiredAgreed {
+    final items = _consentItems;
+    for (int i = 0; i < items.length; i++) {
+      final isRequired = items[i]['required'] != false;
+      if (isRequired && (i >= _agreed.length || !_agreed[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool get _allAgreed {
+    if (_agreed.length != _consentItems.length) return false;
+    return _agreed.every((v) => v);
+  }
+
+  int get _agreedCount => _agreed.where((v) => v).length;
+
+  @override
+  void initState() {
+    super.initState();
+    // initState에서는 context.read 사용 불가하므로 didChangeDependencies에서 초기화
+    _agreed = [];
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_agreed.isEmpty || _agreed.length != _consentItems.length) {
+      _agreed = List.filled(_consentItems.length, false);
+    }
+  }
 
   Future<void> _submit() async {
-    if (!_allAgreed) return;
+    if (!_allRequiredAgreed) return;
 
     setState(() {
       _isSubmitting = true;
@@ -31,11 +76,20 @@ class _ConsentScreenState extends State<ConsentScreen> {
 
     try {
       final api = context.read<ApiService>();
-      await api.recordConsent([
-        {'type': 'terms', 'version': '2026-03-01'},
-        {'type': 'privacy', 'version': '2026-03-01'},
-        {'type': 'overseas_transfer', 'version': '2026-03-01'},
-      ]);
+      final items = _consentItems;
+
+      // 동의한 항목만 서버에 전송
+      final consents = <Map<String, String>>[];
+      for (int i = 0; i < items.length; i++) {
+        if (i < _agreed.length && _agreed[i]) {
+          consents.add({
+            'type': items[i]['type'] as String,
+            'version': items[i]['version'] as String? ?? AppTerms.currentVersion,
+          });
+        }
+      }
+
+      await api.recordConsent(consents);
 
       if (mounted) {
         context.read<AuthService>().markConsentCompleted();
@@ -123,11 +177,29 @@ class _ConsentScreenState extends State<ConsentScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final items = _consentItems;
 
-    return Scaffold(
+    // _agreed 길이가 items와 맞지 않으면 재초기화
+    if (_agreed.length != items.length) {
+      _agreed = List.filled(items.length, false);
+    }
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          context.read<AuthService>().signOut();
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: const Text('서비스 이용 동의'),
-        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.read<AuthService>().signOut();
+          },
+        ),
       ),
       body: SafeArea(
         child: Column(
@@ -139,7 +211,7 @@ class _ConsentScreenState extends State<ConsentScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Proptalk 서비스를 이용하시려면\n아래 항목에 동의해 주세요.',
+                      'Proptalk 서비스 이용을 위해 아래 항목에 동의해 주세요.',
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         height: 1.4,
@@ -155,7 +227,7 @@ class _ConsentScreenState extends State<ConsentScreen> {
                     const SizedBox(height: 16),
 
                     // 진행 표시
-                    _buildProgressIndicator(theme),
+                    _buildProgressIndicator(theme, items.length),
 
                     const SizedBox(height: 20),
 
@@ -164,36 +236,15 @@ class _ConsentScreenState extends State<ConsentScreen> {
 
                     const SizedBox(height: 16),
 
-                    // 개별 동의 항목
-                    _buildConsentItem(
-                      theme: theme,
-                      title: '[필수] 서비스 이용약관',
-                      value: _termsAgreed,
-                      onChanged: (v) => setState(() => _termsAgreed = v ?? false),
-                      onViewFull: () => _showFullText('서비스 이용약관', AppTerms.termsOfServiceFull),
-                      onViewWeb: () => _openUrl(AppTerms.termsOfServiceUrl),
-                    ),
-                    const SizedBox(height: 12),
-
-                    _buildConsentItem(
-                      theme: theme,
-                      title: '[필수] 개인정보 수집 및 이용 동의',
-                      subtitle: '음성 파일, STT 변환 텍스트, AI 요약 결과 등',
-                      value: _privacyAgreed,
-                      onChanged: (v) => setState(() => _privacyAgreed = v ?? false),
-                      onViewFull: () => _showFullText('개인정보 처리방침', AppTerms.privacyPolicyFull),
-                      onViewWeb: () => _openUrl(AppTerms.privacyPolicyUrl),
-                    ),
-                    const SizedBox(height: 12),
-
-                    _buildConsentItem(
-                      theme: theme,
-                      title: '[필수] 개인정보 국외 이전 동의',
-                      subtitle: 'OpenAI(미국), Anthropic(미국), Google(미국)에 데이터 전송',
-                      value: _overseasAgreed,
-                      onChanged: (v) => setState(() => _overseasAgreed = v ?? false),
-                      onViewFull: () => _showOverseasDetail(),
-                    ),
+                    // 동적 동의 항목
+                    for (int i = 0; i < items.length; i++) ...[
+                      if (i > 0) const SizedBox(height: 12),
+                      _buildDynamicConsentItem(
+                        theme: theme,
+                        index: i,
+                        item: items[i],
+                      ),
+                    ],
 
                     if (_error != null) ...[
                       const SizedBox(height: 16),
@@ -214,7 +265,7 @@ class _ConsentScreenState extends State<ConsentScreen> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: _allAgreed && !_isSubmitting ? _submit : null,
+                  onPressed: _allRequiredAgreed && !_isSubmitting ? _submit : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: theme.colorScheme.onPrimary,
@@ -241,20 +292,18 @@ class _ConsentScreenState extends State<ConsentScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 
-  Widget _buildProgressIndicator(ThemeData theme) {
-    final count = [_termsAgreed, _privacyAgreed, _overseasAgreed]
-        .where((v) => v)
-        .length;
+  Widget _buildProgressIndicator(ThemeData theme, int total) {
     return Row(
       children: [
         Expanded(
           child: ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
-              value: count / 3,
+              value: total > 0 ? _agreedCount / total : 0,
               minHeight: 6,
               backgroundColor: theme.colorScheme.surfaceContainerHighest,
               color: theme.colorScheme.primary,
@@ -263,7 +312,7 @@ class _ConsentScreenState extends State<ConsentScreen> {
         ),
         const SizedBox(width: 12),
         Text(
-          '$count/3',
+          '$_agreedCount/$total',
           style: theme.textTheme.bodySmall?.copyWith(
             fontWeight: FontWeight.w600,
             color: theme.colorScheme.primary,
@@ -282,9 +331,10 @@ class _ConsentScreenState extends State<ConsentScreen> {
         value: _allAgreed,
         onChanged: (v) {
           setState(() {
-            _termsAgreed = v ?? false;
-            _privacyAgreed = v ?? false;
-            _overseasAgreed = v ?? false;
+            final newValue = v ?? false;
+            for (int i = 0; i < _agreed.length; i++) {
+              _agreed[i] = newValue;
+            }
           });
         },
         title: Text(
@@ -297,13 +347,46 @@ class _ConsentScreenState extends State<ConsentScreen> {
     );
   }
 
+  /// 서버 missing_consents 항목을 동적으로 렌더링
+  Widget _buildDynamicConsentItem({
+    required ThemeData theme,
+    required int index,
+    required Map<String, dynamic> item,
+  }) {
+    final type = item['type'] as String;
+    final label = item['label'] as String? ?? '[필수] $type';
+    final isRequired = item['required'] != false;
+    final subtitle = item['description'] as String? ?? AppTerms.getSubtitleForType(type);
+    final fullText = AppTerms.getFullTextForType(type);
+    final webUrl = AppTerms.getWebUrlForType(type);
+
+    // 레이블에 [필수]/[선택] 이미 포함된 경우 그대로, 아니면 추가
+    final displayLabel = label.startsWith('[') ? label : (isRequired ? '[필수] $label' : '[선택] $label');
+
+    return _buildConsentItem(
+      theme: theme,
+      title: displayLabel,
+      subtitle: subtitle,
+      value: index < _agreed.length ? _agreed[index] : false,
+      onChanged: (v) => setState(() {
+        if (index < _agreed.length) {
+          _agreed[index] = v ?? false;
+        }
+      }),
+      onViewFull: fullText != null
+          ? () => _showFullText(label.replaceAll(RegExp(r'\[.+?\]\s*'), ''), fullText)
+          : null,
+      onViewWeb: webUrl != null ? () => _openUrl(webUrl) : null,
+    );
+  }
+
   Widget _buildConsentItem({
     required ThemeData theme,
     required String title,
     String? subtitle,
     required bool value,
     required ValueChanged<bool?> onChanged,
-    required VoidCallback onViewFull,
+    VoidCallback? onViewFull,
     VoidCallback? onViewWeb,
   }) {
     return Card(
@@ -326,63 +409,36 @@ class _ConsentScreenState extends State<ConsentScreen> {
                 : null,
             controlAffinity: ListTileControlAffinity.leading,
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
-            child: Row(
-              children: [
-                TextButton.icon(
-                  onPressed: onViewFull,
-                  icon: const Icon(Icons.description_outlined, size: 16),
-                  label: const Text('전문 보기'),
-                  style: TextButton.styleFrom(
-                    textStyle: const TextStyle(fontSize: 13),
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                  ),
-                ),
-                if (onViewWeb != null)
-                  TextButton.icon(
-                    onPressed: onViewWeb,
-                    icon: const Icon(Icons.open_in_new, size: 16),
-                    label: const Text('웹에서 보기'),
-                    style: TextButton.styleFrom(
-                      textStyle: const TextStyle(fontSize: 13),
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
+          if (onViewFull != null || onViewWeb != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+              child: Row(
+                children: [
+                  if (onViewFull != null)
+                    TextButton.icon(
+                      onPressed: onViewFull,
+                      icon: const Icon(Icons.description_outlined, size: 16),
+                      label: const Text('전문 보기'),
+                      style: TextButton.styleFrom(
+                        textStyle: const TextStyle(fontSize: 13),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
                     ),
-                  ),
-              ],
+                  if (onViewWeb != null)
+                    TextButton.icon(
+                      onPressed: onViewWeb,
+                      icon: const Icon(Icons.open_in_new, size: 16),
+                      label: const Text('웹에서 보기'),
+                      style: TextButton.styleFrom(
+                        textStyle: const TextStyle(fontSize: 13),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
-  }
-
-  void _showOverseasDetail() {
-    _showFullText('개인정보 국외 이전 동의', '''
-개인정보 국외 이전 동의
-
-Proptalk 서비스 제공을 위해 아래와 같이 개인정보를 국외로 이전합니다.
-
-1. OpenAI, Inc. (미국)
-   - 이전 항목: 음성 파일
-   - 이전 목적: Whisper API를 통한 음성-텍스트 변환(STT)
-   - 보유 기간: 처리 즉시 삭제 (OpenAI는 API 데이터를 학습에 사용하지 않음)
-
-2. Anthropic, PBC (미국)
-   - 이전 항목: STT 변환 텍스트
-   - 이전 목적: Claude API를 통한 대화 내용 AI 요약
-   - 보유 기간: 처리 즉시 삭제
-
-3. Google LLC (미국)
-   - 이전 항목: 인증 정보, 음성 파일 (Drive 백업 시)
-   - 이전 목적: OAuth 로그인 인증, Google Drive 파일 백업
-   - 보유 기간: Drive 백업 파일은 사용자가 직접 관리
-
-위 업체들은 각각의 보안 체계(TLS 암호화, 접근 통제 등)를 통해 데이터를 보호합니다.
-
-동의를 거부하실 수 있으나, 거부 시 음성 변환 및 AI 요약 기능을 이용할 수 없습니다.
-
-문의: cs21.jeon@gmail.com
-''');
   }
 }
