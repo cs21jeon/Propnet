@@ -1,7 +1,7 @@
 /// Proptalk 법적 문서 (앱 내장용)
-/// 웹 버전: https://goldenrabbit.biz/proptalk/privacy
-/// 웹 버전: https://goldenrabbit.biz/proptalk/terms
-/// 통합 법적 문서: https://goldenrabbit.biz/legal/*
+/// 웹 버전: https://propnet.kr/proptalk/privacy
+/// 웹 버전: https://propnet.kr/proptalk/terms
+/// 통합 법적 문서: https://propnet.kr/legal/*
 
 class AppTerms {
   /// 약관 버전 (통합 인증 시스템 적용)
@@ -9,19 +9,19 @@ class AppTerms {
 
   // --- Proptalk 전용 URL ---
   static const String privacyPolicyUrl =
-      'https://goldenrabbit.biz/proptalk/privacy';
+      'https://propnet.kr/proptalk/privacy';
   static const String termsOfServiceUrl =
-      'https://goldenrabbit.biz/proptalk/terms';
+      'https://propnet.kr/proptalk/terms';
   static const String billingTermsUrl =
-      'https://goldenrabbit.biz/proptalk/payment-terms';
+      'https://propnet.kr/proptalk/payment-terms';
 
   // --- 통합 법적 문서 URL ---
   static const String legalTermsUrl =
-      'https://goldenrabbit.biz/legal/terms';
+      'https://propnet.kr/legal/terms';
   static const String legalPrivacyUrl =
-      'https://goldenrabbit.biz/legal/privacy';
+      'https://propnet.kr/legal/privacy';
   static const String legalOverseasUrl =
-      'https://goldenrabbit.biz/legal/overseas-transfer';
+      'https://propnet.kr/legal/overseas-transfer';
 
   /// 동의 타입별 웹 URL 매핑
   static String? getWebUrlForType(String type) {

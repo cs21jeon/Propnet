@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/gestures.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/billing_service.dart';
@@ -34,7 +35,8 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _textController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
+  final ItemScrollController _itemScrollController = ItemScrollController();
+  final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
   final AudioRecorder _recorder = AudioRecorder();
 
   static IconData _getFileIcon(dynamic fileType) {
@@ -98,6 +100,10 @@ class _ChatScreenState extends State<ChatScreen> {
   // WebSocket 재연결 시 메시지 동기화용
   int? _lastMessageId;
 
+  // 답글 관련
+  Map<String, dynamic>? _replyingTo;
+  int? _savedScrollIndex; // 원문 이동 후 되돌아가기용
+
   // 검색 관련
   bool _isSearchMode = false;
   List<dynamic> _searchResults = [];
@@ -114,14 +120,17 @@ class _ChatScreenState extends State<ChatScreen> {
     super.initState();
     _auth = context.read<AuthService>();
     _roomName = widget.roomName;
-    _scrollController.addListener(_onScroll);
+    _itemPositionsListener.itemPositions.addListener(_onScroll);
     _textController.addListener(_onTextChanged);
     _loadMessages();
     _setupWebSocket();
   }
 
   void _onScroll() {
-    final show = _scrollController.hasClients && _scrollController.offset > 200;
+    final positions = _itemPositionsListener.itemPositions.value;
+    // 가장 작은 인덱스(=최신)가 0이 아니면 "아래로" 버튼 표시
+    final show = positions.isNotEmpty &&
+        positions.where((p) => p.index == 0).isEmpty;
     if (show != _showScrollToBottom) {
       setState(() => _showScrollToBottom = show);
     }
@@ -136,7 +145,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
+    _itemPositionsListener.itemPositions.removeListener(_onScroll);
     _textController.removeListener(_onTextChanged);
     _messageSub?.cancel();
     _audioStatusSub?.cancel();
@@ -145,7 +154,6 @@ class _ChatScreenState extends State<ChatScreen> {
     _reconnectSub?.cancel();
     _textController.dispose();
     _searchController.dispose();
-    _scrollController.dispose();
     _recorder.dispose();
 
     _auth.socket.leaveRoom(widget.roomId);
@@ -165,8 +173,9 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageSub = socket.onMessage.listen((msg) {
       if (!mounted) return;
       setState(() {
-        if (msg['parent_id'] != null) {
-          // 댓글 → 부모 메시지에 replies로 추가
+        final msgType = msg['type'] ?? 'text';
+        if (msg['parent_id'] != null && msgType != 'text') {
+          // 시스템/STT 댓글 → 부모 메시지에 replies로 추가
           final parentIdx =
               _messages.indexWhere((m) => m['id'] == msg['parent_id']);
           if (parentIdx >= 0) {
@@ -177,8 +186,9 @@ class _ChatScreenState extends State<ChatScreen> {
             _messages[parentIdx] = parent;
           }
         } else {
+          // 사용자 텍스트 답글 및 일반 메시지 → 독립 메시지로 표시
           // audio 타입 메시지가 오면 임시(optimistic) 메시지 제거
-          if (msg['type'] == 'audio') {
+          if (msgType == 'audio') {
             _messages.removeWhere((m) => (m['id'] as int?) != null && (m['id'] as int) < 0);
           }
           _messages.insert(0, msg);
@@ -219,9 +229,12 @@ class _ChatScreenState extends State<ChatScreen> {
       });
     });
 
-    // WebSocket 재연결 시 메시지 동기화 (폴링 대체)
+    // WebSocket 재연결 시 방 재참여 + 메시지 동기화
     _reconnectSub = socket.onReconnect.listen((_) {
-      if (mounted) _loadMessages();
+      if (mounted) {
+        socket.joinRoom(widget.roomId);
+        _loadMessages();
+      }
     });
 
     // 타이핑 표시
@@ -256,12 +269,14 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _scrollToBottom() {
-    if (_scrollController.hasClients) {
+    if (_messages.isNotEmpty && _itemScrollController.isAttached) {
       Future.delayed(const Duration(milliseconds: 100), () {
-        if (_scrollController.hasClients) {
-          _scrollController.animateTo(0,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut);
+        if (_itemScrollController.isAttached) {
+          _itemScrollController.scrollTo(
+            index: 0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
         }
       });
     }
@@ -280,12 +295,16 @@ class _ChatScreenState extends State<ChatScreen> {
     final text = _textController.text.trim();
     if (text.isEmpty || _isSending) return;
 
+    final parentId = _replyingTo?['id'] as int?;
     _textController.clear();
-    setState(() => _isSending = true);
+    setState(() {
+      _isSending = true;
+      _replyingTo = null;
+    });
 
     try {
       final api = context.read<ApiService>();
-      await api.sendMessage(widget.roomId, text);
+      await api.sendMessage(widget.roomId, text, parentId: parentId);
     } catch (e) {
       _textController.text = text;
       _showError('전송 실패: $e');
@@ -1168,12 +1187,36 @@ class _ChatScreenState extends State<ChatScreen> {
             textToCopy = textToCopy.isNotEmpty ? '$textToCopy\n\n$replyTexts' : replyTexts;
           }
         }
-        if (textToCopy.isNotEmpty) {
-          Clipboard.setData(ClipboardData(text: textToCopy));
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('메시지가 복사되었습니다'), duration: Duration(seconds: 1)),
-          );
-        }
+        showModalBottomSheet(
+          context: context,
+          builder: (ctx) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.reply),
+                  title: const Text('답글'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    setState(() => _replyingTo = msg);
+                  },
+                ),
+                if (textToCopy.isNotEmpty)
+                  ListTile(
+                    leading: const Icon(Icons.copy),
+                    title: const Text('복사'),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      Clipboard.setData(ClipboardData(text: textToCopy));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('메시지가 복사되었습니다'), duration: Duration(seconds: 1)),
+                      );
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
       },
       child: Container(
       color: _highlightedMessageId == msg['id']
@@ -1215,6 +1258,82 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 답글 원문 인용 (사용자가 보낸 답글인 경우)
+                if (msg['parent_id'] != null && type == 'text') ...[
+                  () {
+                    // 원문 메시지 찾기 (로드된 목록 또는 서버 데이터)
+                    final parentIdx = _messages.indexWhere((m) => m['id'] == msg['parent_id']);
+                    final parentContent = parentIdx >= 0
+                        ? ((_messages[parentIdx]['content'] ?? '') as String)
+                        : ((msg['parent_content'] ?? '') as String);
+                    final parentName = parentIdx >= 0
+                        ? ((_messages[parentIdx]['user_name'] ?? '') as String)
+                        : ((msg['parent_user_name'] ?? '') as String);
+                    if (parentContent.isEmpty && parentName.isEmpty) return const SizedBox.shrink();
+                    final preview = parentContent.length > 60
+                        ? '${parentContent.substring(0, 60)}...'
+                        : parentContent;
+                    return GestureDetector(
+                      onTap: () {
+                        if (parentIdx < 0) return; // 원문이 로드 범위 밖이면 스크롤 불가
+                        // 현재 메시지 인덱스 저장 후 원문으로 스크롤
+                        final parentId = _messages[parentIdx]['id'];
+                        final myIdx = _messages.indexWhere((m) => m['id'] == msg['id']);
+                        setState(() {
+                          _savedScrollIndex = myIdx >= 0 ? myIdx : 0;
+                          _highlightedMessageId = parentId;
+                        });
+                        _scrollToMessage(parentId);
+                        // 2초 후 하이라이트 해제
+                        Future.delayed(const Duration(seconds: 2), () {
+                          if (mounted) setState(() => _highlightedMessageId = null);
+                        });
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: (isMe
+                              ? theme.colorScheme.onPrimaryContainer
+                              : theme.colorScheme.primary
+                          ).withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border(
+                            left: BorderSide(
+                              color: theme.colorScheme.primary,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              parentName,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                            Text(
+                              preview,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isMe
+                                    ? theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.7)
+                                    : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }(),
+                ],
                 // 음성 메시지 아이콘
                 if (type == 'audio') ...[
                   Row(
@@ -1588,32 +1707,15 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _scrollToMessage(int messageId) {
-    // ValueKey로 해당 메시지의 BuildContext를 찾아 스크롤
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final key = ValueKey<int>(messageId);
-      final elementFinder = _findElementByKey(context, key);
-      if (elementFinder != null) {
-        Scrollable.ensureVisible(
-          elementFinder,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-          alignment: 0.4, // 화면 40% 위치에 표시
-        );
-      }
-    });
-  }
+    final idx = _messages.indexWhere((m) => m['id'] == messageId);
+    if (idx < 0 || !_itemScrollController.isAttached) return;
 
-  BuildContext? _findElementByKey(BuildContext context, ValueKey<int> key) {
-    BuildContext? result;
-    void visitor(Element element) {
-      if (element.widget.key == key) {
-        result = element;
-        return;
-      }
-      element.visitChildren(visitor);
-    }
-    (context as Element).visitChildren(visitor);
-    return result;
+    _itemScrollController.scrollTo(
+      index: idx,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+      alignment: 0.0, // 원문 상단이 화면 상단에 맞춤
+    );
   }
 
   void _exitSearch() {
@@ -1784,16 +1886,9 @@ class _ChatScreenState extends State<ChatScreen> {
                           ],
                         ),
                       )
-                    : RawScrollbar(
-                        controller: _scrollController,
-                        thumbVisibility: false,
-                        thickness: 6,
-                        radius: const Radius.circular(3),
-                        fadeDuration: const Duration(milliseconds: 300),
-                        timeToFade: const Duration(seconds: 2),
-                        padding: const EdgeInsets.only(right: 2),
-                        child: ListView.builder(
-                        controller: _scrollController,
+                    : ScrollablePositionedList.builder(
+                        itemScrollController: _itemScrollController,
+                        itemPositionsListener: _itemPositionsListener,
                         reverse: true,
                         padding: const EdgeInsets.only(top: 8, bottom: 8),
                         itemCount: _messages.length,
@@ -1840,7 +1935,29 @@ class _ChatScreenState extends State<ChatScreen> {
                           );
                         },
                       ),
-                      ),
+                // 되돌아가기 FAB (원문 이동 후 표시)
+                if (_savedScrollIndex != null)
+                  Positioned(
+                    bottom: 12,
+                    left: 12,
+                    child: FloatingActionButton.small(
+                      onPressed: () {
+                        final idx = _savedScrollIndex!;
+                        setState(() => _savedScrollIndex = null);
+                        if (_itemScrollController.isAttached) {
+                          _itemScrollController.scrollTo(
+                            index: idx,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOut,
+                          );
+                        }
+                      },
+                      heroTag: 'scrollBack',
+                      elevation: 2,
+                      backgroundColor: theme.colorScheme.secondaryContainer,
+                      child: Icon(Icons.keyboard_return, color: theme.colorScheme.onSecondaryContainer),
+                    ),
+                  ),
                 // Scroll-to-bottom FAB
                 if (_showScrollToBottom)
                   Positioned(
@@ -1859,6 +1976,56 @@ class _ChatScreenState extends State<ChatScreen> {
 
           // 배너 광고 (무료 사용자만)
           const AdBannerWidget(),
+
+          // 답글 프리뷰 바
+          if (_replyingTo != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest,
+                border: Border(
+                  top: BorderSide(color: theme.colorScheme.outlineVariant),
+                  left: BorderSide(color: theme.colorScheme.primary, width: 3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.reply, size: 18, color: theme.colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _replyingTo!['user_name'] ?? '',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                        Text(
+                          (_replyingTo!['content'] ?? '') as String,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 18),
+                    onPressed: () => setState(() => _replyingTo = null),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  ),
+                ],
+              ),
+            ),
 
           // 입력 영역
           Container(

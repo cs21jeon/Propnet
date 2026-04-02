@@ -10,7 +10,7 @@ class ApiService {
   // ============================================================
   // 설정 - 실제 환경에 맞게 수정
   // ============================================================
-  static const String baseUrl = 'https://goldenrabbit.biz/voiceroom';
+  static const String baseUrl = 'https://propnet.kr/voiceroom';
 
   String? _token;
   String? _refreshToken;

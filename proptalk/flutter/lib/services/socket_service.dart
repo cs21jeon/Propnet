@@ -31,7 +31,7 @@ class SocketService {
     if (_api.token == null) return;
 
     // baseUrl에서 /voiceroom을 제거하고 path로 설정
-    const wsBaseUrl = 'https://goldenrabbit.biz';
+    const wsBaseUrl = 'https://propnet.kr';
 
     _socket = IO.io(
       wsBaseUrl,

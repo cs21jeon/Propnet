@@ -38,11 +38,14 @@ void main() async {
 
   // 알림 탭 → 해당 채팅방으로 이동
   NotificationService().onNotificationTap = (roomId, roomName) {
-    navigatorKey.currentState?.push(
-      MaterialPageRoute(
-        builder: (_) => ChatScreen(roomId: roomId, roomName: roomName),
-      ),
-    );
+    final navigator = navigatorKey.currentState;
+    if (navigator != null) {
+      navigator.push(
+        MaterialPageRoute(
+          builder: (_) => ChatScreen(roomId: roomId, roomName: roomName),
+        ),
+      );
+    }
   };
 
   runApp(

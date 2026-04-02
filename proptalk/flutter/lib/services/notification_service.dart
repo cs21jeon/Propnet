@@ -26,7 +26,23 @@ class NotificationService {
   String? get fcmToken => _fcmToken;
 
   /// 알림 탭 콜백 (room_id, room_name 전달)
-  void Function(int roomId, String roomName)? onNotificationTap;
+  void Function(int roomId, String roomName)? _onNotificationTap;
+
+  /// 앱 초기화 전에 도착한 대기 알림 (terminated → tap 시)
+  ({int roomId, String roomName})? _pendingNotification;
+
+  /// 콜백 설정 시 대기 알림이 있으면 즉시 처리
+  set onNotificationTap(void Function(int roomId, String roomName)? callback) {
+    _onNotificationTap = callback;
+    if (callback != null && _pendingNotification != null) {
+      final pending = _pendingNotification!;
+      _pendingNotification = null;
+      // Navigator가 준비될 때까지 약간 지연
+      Future.delayed(const Duration(milliseconds: 500), () {
+        callback(pending.roomId, pending.roomName);
+      });
+    }
+  }
 
   /// 초기화
   Future<void> initialize() async {
@@ -64,7 +80,7 @@ class NotificationService {
 
     await _localNotifications.initialize(
       initSettings,
-      onDidReceiveNotificationResponse: _onNotificationTap,
+      onDidReceiveNotificationResponse: _onLocalNotificationTap,
     );
 
     // FCM 토큰 가져오기
@@ -121,14 +137,14 @@ class NotificationService {
   }
 
   /// 로컬 알림 탭 처리
-  void _onNotificationTap(NotificationResponse response) {
+  void _onLocalNotificationTap(NotificationResponse response) {
     if (response.payload == null) return;
     try {
       final data = jsonDecode(response.payload!);
       final roomId = int.tryParse(data['room_id'].toString());
       final roomName = data['room_name']?.toString() ?? '톡방';
       if (roomId != null) {
-        onNotificationTap?.call(roomId, roomName);
+        _dispatchOrQueue(roomId, roomName);
       }
     } catch (_) {}
   }
@@ -138,7 +154,16 @@ class NotificationService {
     final roomId = int.tryParse(message.data['room_id']?.toString() ?? '');
     final roomName = message.data['room_name']?.toString() ?? '톡방';
     if (roomId != null) {
-      onNotificationTap?.call(roomId, roomName);
+      _dispatchOrQueue(roomId, roomName);
+    }
+  }
+
+  /// 콜백이 준비되면 즉시 호출, 아니면 대기열에 저장
+  void _dispatchOrQueue(int roomId, String roomName) {
+    if (_onNotificationTap != null) {
+      _onNotificationTap!(roomId, roomName);
+    } else {
+      _pendingNotification = (roomId: roomId, roomName: roomName);
     }
   }
 

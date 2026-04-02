@@ -66,7 +66,7 @@ class BillingService extends ChangeNotifier {
   }
 
   /// 결제 웹 URL (사용자가 직접 브라우저에서 접속)
-  static const String billingWebUrl = 'https://goldenrabbit.biz/proptalk/billing/';
+  static const String billingWebUrl = 'https://propnet.kr/proptalk/billing/';
 
   /// 구독 해지
   Future<bool> cancelSubscription() async {

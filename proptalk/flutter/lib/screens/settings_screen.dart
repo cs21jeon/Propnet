@@ -331,7 +331,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onTap: () {
                         final api = context.read<ApiService>();
                         final token = api.token ?? '';
-                        _openUrl('https://goldenrabbit.biz/proptalk/admin/login?token=$token');
+                        _openUrl('https://propnet.kr/admin/login?token=$token');
                       },
                     ),
                   ),
