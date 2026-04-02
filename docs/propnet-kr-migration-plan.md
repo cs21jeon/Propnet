@@ -1,196 +1,103 @@
-# propnet.kr 도메인 마이그레이션 계획
+# propnet.kr 도메인 마이그레이션 (v4)
 
-> 작성일: 2026-03-25
-> 상태: 계획 수립 완료, Phase 0 일부 진행 (propnet.conf 작성, 도메인 연결 완료)
+> 최종 업데이트: 2026-04-02 — Phase 0~4 실행 완료, Phase 5 대기
 
-## Context
+## 진행 상태
 
-goldenrabbit.biz에서 운영 중인 서비스들을 propnet.kr로 이전하면서, 멀티테넌트(agent_slug) URL 구조를 도입한다. goldenrabbit.biz는 금토끼부동산 전용 홈페이지로 축소하고, propnet.kr을 플랫폼 도메인으로 사용한다.
+| Phase | 상태 | 날짜 | 내용 |
+|-------|------|------|------|
+| Phase 0 | ✅ 완료 | 2026-04-02 | SSL 발급, propnet.conf v4, Kakao SDK, Google OAuth 3개 Web Client |
+| Phase 1 | ✅ 완료 | 2026-04-02 | `/propmap/goldenrabbit/` Nginx alias, 루트(`/`) PropNet 랜딩 |
+| Phase 2 | ✅ 완료 | 2026-04-02 | agents 테이블 slug 확인, propsheet.py agent_slug 라우트, OAuth 도메인 동적 처리 |
+| Phase 3 | ✅ 완료 | 2026-04-02 | `/proppedia/` 정적 HTML, `/proppedia/landing/`, `/proppedia/api/*`, Flask 미들웨어 |
+| Phase 4 | ✅ 완료 | 2026-04-02 | `/proptalk/landing`, Flutter 앱 URL 변경 (6파일), v1.0.5+8 AAB Play Store 업로드 |
+| Phase 5 | ⏳ 대기 | - | goldenrabbit.biz 리다이렉트 (사용자 업데이트 확인 후) |
 
-## URL 매핑 요약
-
-| 현재 (goldenrabbit.biz) | 신규 (propnet.kr) | 비고 |
-|---|---|---|
-| `/` (매물지도) | `/propmap/goldenrabbit` | 멀티테넌트 |
-| `/propsheet/*` | `/propsheet/goldenrabbit/*` | 멀티테넌트 |
-| `/app/` (PWA) | `/proppedia/` | PWA 앱 |
-| `/proppedia/` (랜딩) | `/proppedia/landing/` | 마케팅 페이지 |
-| `/app/api/*` | `/proppedia/api/*` | 앱 API |
-| `/app/dashboard` | `/proppedia/dashboard` | 관리자 |
-| `/proptalk/` (랜딩) | `/proptalk/home` | 마케팅 페이지 |
-| `/proptalk/admin/*` | `/proptalk/dashboard/*` | 관리자 |
-| `/proptalk/billing/*` | `/proptalk/billing/*` | 변경 없음 |
-| `/voiceroom/*` | `/voiceroom/*` | 변경 없음 (앱 의존) |
-| `/api/*` | `/api/*` | PropNet API 유지 |
-
-## 마이그레이션 순서
-
-서버사이드만 수정하면 되는 서비스 먼저, Flutter 앱 의존 서비스는 나중에.
-
----
+## 완료된 작업 상세
 
 ### Phase 0: 인프라 준비
-
-**상태**: 진행 중 (propnet.conf 작성 완료, 도메인 연결 완료)
-
-1. ~~카페24에서 propnet.kr 도메인 연결~~ (완료)
-2. ~~propnet.conf 작성~~ (완료, `/home/webapp/goldenrabbit/config/nginx/propnet.conf`)
-3. Nginx symlink + certbot SSL 발급
-   ```bash
-   sudo ln -sf /home/webapp/goldenrabbit/config/nginx/propnet.conf /etc/nginx/sites-enabled/propnet
-   sudo nginx -t && sudo systemctl reload nginx
-   sudo certbot --nginx -d propnet.kr -d www.propnet.kr
-   ```
-4. `.env`에 `PROPNET_DOMAIN=propnet.kr` 추가
-
----
+- propnet.kr 도메인 연결 (카페24)
+- Let's Encrypt SSL 발급 (만료: 2026-07-01, 자동 갱신)
+- propnet.conf v4 전면 재작성 (통합 대시보드, 법적 문서, WebSocket timeout 반영)
+- Kakao Maps JavaScript SDK 도메인 등록 (플랫폼 키 > JavaScript 키)
+- Google Cloud Console: 3개 Web Client에 propnet.kr JavaScript 원본 + redirect URI 추가
+  - Propsheet_Web, Proppedia Web, Proptalk Web
 
 ### Phase 1: PropMap 멀티테넌트
-
-**이유**: 정적 HTML이라 가장 간단. 디렉토리 이동 + Nginx만 수정.
-
-**작업**:
-1. 서버에 디렉토리 생성: `/home/webapp/goldenrabbit/frontend/public/propmap/goldenrabbit/`
-2. 현재 root의 index.html 및 관련 파일을 해당 디렉토리로 복사
-3. HTML/JS에서 상대경로 확인 및 수정
-4. `propnet.conf`에 location 블록 추가:
-   ```nginx
-   location ~ ^/propmap/([a-zA-Z0-9_-]+)(/.*)?$ {
-       alias /home/webapp/goldenrabbit/frontend/public/propmap/$1/;
-       try_files $uri $uri/ /propmap/$1/index.html;
-       expires 1h;
-   }
-   ```
-5. propnet.kr 루트(`/`)는 현재 goldenrabbit.biz/propnet 페이지를 그대로 사용
-   - `/home/webapp/goldenrabbit/frontend/public/propnet/` 디렉토리의 기존 파일 활용
-   ```nginx
-   location / {
-       alias /home/webapp/goldenrabbit/frontend/public/propnet/;
-       try_files $uri $uri/ /index.html;
-   }
-   ```
-
-**수정 파일**:
-- `/home/webapp/goldenrabbit/config/nginx/propnet.conf`
-- `/home/webapp/goldenrabbit/frontend/public/` → `/propmap/goldenrabbit/`로 파일 이동
-
----
+- `/propmap/goldenrabbit/` → Nginx alias로 기존 `/frontend/public/` 매핑
+- HTML이 절대경로(`/images/`, `/js/`, `/propsheet/api/`) 사용 → 파일 복사 불필요
+- `propnet.kr/` 루트 → `/frontend/public/propnet/index.html` (PropNet 랜딩)
+- Proppedia 사이드메뉴 "금토끼부동산 매물정보" 링크 → `/propmap/goldenrabbit/` 수정
 
 ### Phase 2: PropSheet 멀티테넌트
-
-**이유**: 서버 렌더링(HTMX)이라 모바일 앱 의존 없음.
-
-**작업**:
-1. `agents` 테이블 생성 (slug → agent_id 매핑)
-   ```sql
-   CREATE TABLE IF NOT EXISTS agents (
-       id SERIAL PRIMARY KEY,
-       slug VARCHAR(100) UNIQUE NOT NULL,
-       name VARCHAR(200) NOT NULL,
-       created_at TIMESTAMP DEFAULT NOW()
-   );
-   INSERT INTO agents (slug, name) VALUES ('goldenrabbit', '금토끼부동산');
-   ```
-2. `routes/propsheet.py`에 `/<agent_slug>/` 프리픽스 라우트 추가
-   - `/<agent_slug>/workspaces` → agent별 워크스페이스 목록
-   - `/<agent_slug>/workspace/<ws_slug>/database/<db_slug>` → DB 뷰
-3. agent_slug로 agent_id 조회 후 세션에 저장, 기존 `_get_filtered_workspaces()` 필터 활용
-4. 기존 `/propsheet/workspaces` 라우트는 호환성을 위해 유지
-
-**수정 파일**:
-- `/home/webapp/goldenrabbit/backend/property-manager/routes/propsheet.py` - agent_slug 라우트 추가
-- DB: `agents` 테이블 생성
-
----
+- agents 테이블에 goldenrabbit slug 이미 존재 확인 (id=1, slug='goldenrabbit')
+- propsheet.py에 agent_slug 라우트 추가 (3개):
+  - `/<agent_slug>/` → 기본 WS DB 목록
+  - `/<agent_slug>/<db_slug>` → 기본 WS 특정 DB
+  - `/<agent_slug>/w/<ws_slug>/<db_slug>` → 추가 WS DB
+- `_RESERVED_SLUGS`로 기존 라우트 충돌 방지
+- google_auth_service.py: 도메인별 동적 redirect URI (`_get_redirect_uri(host)`)
+- oauth.py: `request.host` 전달
 
 ### Phase 3: Proppedia URL 변경
-
-**이유**: Flutter PWA + 모바일 앱 URL 변경 필요. 가장 복잡.
-
-**작업**:
-1. **Nginx (propnet.conf)**: `/app/*` 블록을 `/proppedia/*`로 변경
-   ```nginx
-   # Proppedia API
-   location /proppedia/api/ {
-       proxy_pass http://127.0.0.1:5010/api/;
-       ...
-   }
-   # Proppedia Dashboard
-   location /proppedia/dashboard {
-       proxy_pass http://127.0.0.1:5010/dashboard;
-       ...
-   }
-   # Proppedia Landing (정적)
-   location /proppedia/landing/ {
-       alias /home/webapp/goldenrabbit/frontend/public/proppedia/;
-       try_files $uri $uri/ /proppedia/landing/index.html;
-   }
-   # Proppedia PWA (Flutter web)
-   location /proppedia/ {
-       alias /home/webapp/goldenrabbit/frontend/public/app/;
-       try_files $uri $uri/ /proppedia/index.html;
-   }
-   ```
-2. **Flask (port 5010)**: AppPrefixMiddleware에서 `/proppedia`도 지원
-3. **Flutter Web**: `flutter build web --base-href /proppedia/`로 리빌드
-4. **Flutter App (Android)**: 4개 파일 URL 변경
-   - `propedia/lib/core/network/api_client.dart` → baseUrl을 `https://propnet.kr`로
-   - `propedia/lib/presentation/widgets/property/property_image.dart` → 이미지 URL
-   - `propedia/lib/presentation/screens/property/property_detail_screen.dart` → 공유 URL
-   - `propedia/lib/presentation/widgets/common/app_drawer.dart` → 링크 URL
-
-**중요**: goldenrabbit.biz의 `/app/api/*` 프록시는 **삭제하지 않고 유지** (구버전 앱 호환)
-
----
+- AppPrefixMiddleware: `/proppedia` 프리픽스 지원 추가 (기존 `/app` 호환 유지)
+- Nginx: `/proppedia/api/*`, `/proppedia/landing/`, `/proppedia/` 라우트 추가
+- `/proppedia/landing/` → 마케팅 랜딩 (기존 proppedia/ 디렉토리)
+- `/proppedia/` → 정적 HTML 웹앱 (기존 app/ 디렉토리, **flutter build web 금지**)
 
 ### Phase 4: Proptalk URL 변경
+- billing_web.py: `/proptalk/landing` 라우트 추가 (기존 `/proptalk/`도 유지)
+- Flutter 앱 URL 변경 (6개 파일):
+  - api_service.dart: baseUrl → `propnet.kr/voiceroom`
+  - socket_service.dart: wsBaseUrl → `propnet.kr` (별도 변수)
+  - billing_service.dart: billingWebUrl → `propnet.kr/proptalk/billing/`
+  - terms.dart: 모든 URL 6개 → `propnet.kr`
+  - settings_screen.dart: 관리자 → `propnet.kr/admin/`
+- v1.0.5+8 AAB 빌드 → Play Store 업로드 완료
 
-**작업**:
-1. **Flask 라우트 변경**:
-   - `/proptalk/` (랜딩) → `/proptalk/home`
-   - `/proptalk/admin/*` → `/proptalk/dashboard/*`
-2. **Flutter App**: 5개 파일 URL 변경
-   - `proptalk/flutter/lib/services/api_service.dart` → baseUrl
-   - `proptalk/flutter/lib/services/socket_service.dart` → 소켓 URL
-   - `proptalk/flutter/lib/services/billing_service.dart` → 결제 URL
-   - `proptalk/flutter/lib/constants/terms.dart` → 약관 URL
-   - `proptalk/flutter/lib/screens/settings_screen.dart` → 관리자 URL
-3. `/voiceroom/*` 경로는 양쪽 도메인 모두 유지 (변경 없음)
+## 남은 작업 (TODO)
 
----
+### 즉시 (이번 주)
+- [ ] Proptalk 사용자 2-3명에게 업데이트 연락
+- [ ] Proptalk 사용자 전원 업데이트 확인
 
-### Phase 5: 리다이렉트 및 정리
+### 단기 (2주 내)
+- [ ] Proppedia Flutter 앱 URL 변경 (4파일: api_client.dart, property_image.dart, property_detail_screen.dart, app_drawer.dart)
+- [ ] Proppedia v1.0.4 AAB 빌드 + Play Store 배포
+- [ ] Proppedia 앱 내 공지 (`/app/api/notices`): "서비스 주소가 propnet.kr로 변경됩니다"
+- [ ] Proppedia 웹페이지 마이그레이션 배너 추가
 
-goldenrabbit.biz의 `goldenrabbit.conf`를 리다이렉트 중심으로 전환:
+### 중기 (1개월 내)
+- [ ] Phase 5: goldenrabbit.biz 웹페이지 301 리다이렉트 적용
+  - `/propsheet/` → `propnet.kr/propsheet/goldenrabbit/`
+  - `/proppedia/` → `propnet.kr/proppedia/landing/`
+  - `/proptalk/` → `propnet.kr/proptalk/landing`
+  - `/` → `propnet.kr/propmap/goldenrabbit`
+  - **API 프록시는 유지**: `/app/api/*`, `/voiceroom/*`
+- [ ] 강제 업데이트 알림 기능 구현 (Proppedia + Proptalk 공통)
+- [ ] 네이버 블로그 도메인 변경 공지 포스팅
+- [ ] SEO: canonical URL, sitemap.xml, robots.txt 업데이트
 
-```nginx
-# 웹 사용자 리다이렉트
-location = / { return 301 https://propnet.kr/propmap/goldenrabbit; }
-location /propsheet/ { return 301 https://propnet.kr/propsheet/goldenrabbit$request_uri; }
-location /proppedia/ { return 301 https://propnet.kr/proppedia/landing/; }
-location /proptalk/ { return 301 https://propnet.kr/proptalk/home; }
+### 장기 (6개월 후)
+- [ ] goldenrabbit.biz API 프록시 제거 (`/app/api/*`, `/voiceroom/*`)
+- [ ] Google Cloud Console에서 goldenrabbit.biz redirect URI 제거
+- [ ] Kakao SDK에서 goldenrabbit.biz 도메인 제거
 
-# 구버전 앱 API는 유지 (301은 POST에 불안정)
-location /app/api/ { proxy_pass http://127.0.0.1:5010; ... }
-location /voiceroom/ { proxy_pass http://127.0.0.1:5030; ... }
-```
+## 발견된 주의사항
 
-**정적 리소스** (`/airtable_backup/`, `/uploads/`) 도 양쪽에서 계속 서빙.
+- **Kakao Maps API**: propnet.kr은 JavaScript SDK 도메인에 등록해야 함 (플랫폼 키 > JavaScript 키)
+- **PropMap HTML 절대경로**: 파일 복사 대신 Nginx alias 방식이 적합
+- **propnet.conf certbot 라인**: `managed by Certbot` 라인 수동 편집 시 보존 필수
+- **Google OAuth 전파 시간**: redirect URI 변경 후 5분~수시간 소요
+- **PropSheet 쿠키 도메인**: goldenrabbit.biz 쿠키는 propnet.kr에서 무효 → 도메인별 재로그인 필요
+- **Proptalk wsBaseUrl**: API baseUrl과 별도 변수로 하드코딩 → 함께 수정 필수
+- **Propedia 웹 = 정적 HTML**: `flutter build web` 사용 금지 (CLAUDE.md Rule 12)
 
----
+## 서버 설정 파일
 
-## 검증 방법
-
-각 Phase 완료 후:
-1. `sudo nginx -t` → Nginx 문법 검증
-2. `curl -I https://propnet.kr/<path>` → HTTP 상태 확인
-3. 브라우저에서 실제 접속 테스트
-4. goldenrabbit.biz 구 URL → 301 리다이렉트 확인
-5. Flutter 앱 API 호출 테스트 (구/신 도메인 모두)
-
-## 주의사항
-
-- **구버전 Flutter 앱**: goldenrabbit.biz의 API 프록시(`/app/api/`, `/voiceroom/`)는 최소 6개월 유지
-- **세션 쿠키**: propnet.kr용 SESSION_COOKIE_DOMAIN 설정 필요
-- **OG 메타태그/SEO**: 각 랜딩 페이지의 canonical URL, og:url 업데이트
-- **서버 RAM 956MB**: 새 서비스 추가 아닌 라우팅 변경이므로 부하 없음
+- Nginx (propnet.kr): `/home/webapp/goldenrabbit/config/nginx/propnet.conf`
+- Nginx (goldenrabbit.biz): `/home/webapp/goldenrabbit/config/nginx/goldenrabbit.conf`
+- PropSheet 라우트: `/home/webapp/goldenrabbit/backend/property-manager/routes/propsheet.py`
+- PropSheet OAuth: `/home/webapp/goldenrabbit/backend/property-manager/services/google_auth_service.py`
+- Proppedia 미들웨어: `/home/webapp/goldenrabbit/backend/proppedia/app.py`
+- Proptalk 랜딩: `/home/webapp/goldenrabbit/chat_stt/server/billing_web.py`
