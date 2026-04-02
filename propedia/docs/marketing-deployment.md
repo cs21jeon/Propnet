@@ -1,14 +1,19 @@
 # 마케팅 파일 배포 가이드
 
-## 배포 현황 (2026-03-02 업데이트)
+## 배포 현황 (2026-04-02 업데이트)
 
 | URL | 설명 | 상태 |
 |-----|------|------|
-| https://goldenrabbit.biz/ | 메인 사이트 (금토끼부동산) | ✅ 완료 |
-| https://goldenrabbit.biz/proppedia/ | 앱 소개 랜딩 페이지 | ✅ 완료 |
-| https://goldenrabbit.biz/robots.txt | 크롤링 규칙 | ✅ 완료 |
-| https://goldenrabbit.biz/sitemap.xml | 사이트맵 | ✅ 완료 |
-| https://goldenrabbit.biz/app-ads.txt | AdMob app-ads.txt (광고 인증) | ✅ 완료 (2026-03-10) |
+| https://propnet.kr/ | PropNet 메인 랜딩 | ✅ 완료 |
+| https://propnet.kr/proppedia/landing/ | Proppedia 앱 소개 랜딩 페이지 | ✅ 완료 |
+| https://propnet.kr/proppedia/ | Proppedia 웹앱 | ✅ 완료 |
+| https://propnet.kr/propmap/goldenrabbit/ | 금토끼부동산 매물지도 | ✅ 완료 |
+| https://propnet.kr/proptalk/landing | Proptalk 랜딩 페이지 | ✅ 완료 |
+| https://propnet.kr/robots.txt | 크롤링 규칙 | ✅ 완료 |
+| https://propnet.kr/sitemap.xml | 사이트맵 | ✅ 완료 |
+| https://propnet.kr/app-ads.txt | AdMob app-ads.txt (광고 인증) | ✅ 완료 (2026-03-10) |
+
+> 이전 도메인 (goldenrabbit.biz)은 Phase 5에서 301 리다이렉트 예정
 
 ### 랜딩 페이지 업데이트 이력
 
@@ -17,6 +22,7 @@
 | 2026-02-20 | 최초 배포 (앱 미리보기, 기능 소개) |
 | 2026-02-22 | 섹션 분리 및 PDF 기능 추가 |
 | 2026-03-02 | SEO 개선: canonical 태그, OG 태그, Schema.org, description 추가, sitemap/robots.txt 정리 |
+| 2026-04-02 | 도메인 마이그레이션: 전체 SEO URL을 goldenrabbit.biz → propnet.kr로 변경 |
 
 ### 2026-02-22 업데이트 내용
 - **앱 미리보기 섹션** (6개 이미지): 홈, 도로명/지번/지도 검색, 검색 결과
@@ -142,10 +148,10 @@ scp -r build/web/* root@175.119.224.71:/home/webapp/goldenrabbit/frontend/public
 
 ## 검증 체크리스트
 
-- [x] https://goldenrabbit.biz/proppedia/ 접속 확인 ✅
-- [x] https://goldenrabbit.biz/proppedia-app/ 접속 확인 ✅
-- [x] https://goldenrabbit.biz/robots.txt 확인 ✅
-- [x] https://goldenrabbit.biz/sitemap.xml 확인 ✅
+- [x] https://propnet.kr/proppedia/landing/ 접속 확인 ✅
+- [x] https://propnet.kr/proppedia/ 웹앱 접속 확인 ✅
+- [x] https://propnet.kr/robots.txt 확인 ✅
+- [x] https://propnet.kr/sitemap.xml 확인 ✅
 - [ ] [Google Mobile-Friendly Test](https://search.google.com/test/mobile-friendly)
 - [ ] [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/)
 - [ ] [Google Rich Results Test](https://search.google.com/test/rich-results)
@@ -157,7 +163,7 @@ scp -r build/web/* root@175.119.224.71:/home/webapp/goldenrabbit/frontend/public
 
 ## Google Search Console 설정
 
-### 소유권 확인 (2026-02-21 완료)
+### goldenrabbit.biz 소유권 확인 (2026-02-21 완료)
 
 **중요**: 도메인은 가비아에서 구매했지만, 네임서버가 **Cafe24**로 설정되어 있음
 - 가비아 DNS 설정이 아닌 **Cafe24 DNS 관리**에서 TXT 레코드 추가해야 함
@@ -169,14 +175,13 @@ scp -r build/web/* root@175.119.224.71:/home/webapp/goldenrabbit/frontend/public
 | 값 | google-site-verification=XXXXX... |
 | TTL | 600 |
 
-### 설정 단계
+### propnet.kr 속성 추가 (2026-04-02)
 
 1. https://search.google.com/search-console 접속
-2. 속성 추가: https://goldenrabbit.biz (도메인 방식)
-3. DNS TXT 레코드 추가 (Cafe24에서)
-4. 소유권 확인
-5. sitemap.xml 제출
-6. URL 검사로 /proppedia/ 색인 요청
+2. 속성 추가: https://propnet.kr
+3. DNS TXT 레코드 또는 HTML 파일 방식으로 소유권 확인
+4. sitemap.xml 제출: https://propnet.kr/sitemap.xml
+5. 주요 URL 색인 요청: `/proppedia/landing/`, `/propmap/goldenrabbit/`, `/proptalk/landing`
 
 ## 네이버 서치어드바이저 설정
 
@@ -191,11 +196,13 @@ scp -r build/web/* root@175.119.224.71:/home/webapp/goldenrabbit/frontend/public
 **대시보드**: https://searchadvisor.naver.com/console/board
 
 ### 사이트맵 제출 완료
-- 요청 → 사이트맵 제출 → `https://goldenrabbit.biz/sitemap.xml`
+- goldenrabbit.biz: `https://goldenrabbit.biz/sitemap.xml` (2026-02-21)
+- propnet.kr: `https://propnet.kr/sitemap.xml` (2026-04-02)
 
 ### 웹페이지 수집 요청 완료
-- `https://goldenrabbit.biz`
-- `https://goldenrabbit.biz/proppedia/`
+- `https://propnet.kr`
+- `https://propnet.kr/proppedia/landing/`
+- `https://propnet.kr/propmap/goldenrabbit/`
 
 ## SEO 개선 (2026-03-02)
 

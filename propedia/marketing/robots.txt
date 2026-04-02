@@ -1,16 +1,19 @@
-# robots.txt for goldenrabbit.biz
-# Updated: 2026-02-20
+# robots.txt for propnet.kr
+# Updated: 2026-04-02
 
 User-agent: *
 Allow: /
 Allow: /proppedia/
-Allow: /proppedia-app/
+Allow: /proppedia/landing/
+Allow: /propmap/
+Allow: /proptalk/
 Allow: /app/
 
 # Block API and admin endpoints
 Disallow: /api/
 Disallow: /admin/
 Disallow: /*.json$
+Disallow: /voiceroom/api/
 
 # Block temporary and private files
 Disallow: /tmp/
@@ -20,7 +23,7 @@ Disallow: /private/
 Crawl-delay: 1
 
 # Sitemap location
-Sitemap: https://goldenrabbit.biz/sitemap.xml
+Sitemap: https://propnet.kr/sitemap.xml
 
 # Additional rules for specific bots
 User-agent: Googlebot

@@ -76,7 +76,7 @@
   - **API 프록시는 유지**: `/app/api/*`, `/voiceroom/*`
 - [ ] 강제 업데이트 알림 기능 구현 (Proppedia + Proptalk 공통)
 - [ ] 네이버 블로그 도메인 변경 공지 포스팅
-- [ ] SEO: canonical URL, sitemap.xml, robots.txt 업데이트
+- [x] SEO: canonical URL, sitemap.xml, robots.txt 업데이트 (2026-04-02 완료)
 
 ### 장기 (6개월 후)
 - [ ] goldenrabbit.biz API 프록시 제거 (`/app/api/*`, `/voiceroom/*`)
