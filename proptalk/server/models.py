@@ -259,42 +259,48 @@ class Message:
         if before_id:
             return query_all(
                 """SELECT m.*, u.name as user_name, u.avatar_url as user_avatar,
-                          af.id as audio_id, af.drive_url, af.drive_file_id, af.status as audio_status,
+                          af.id as audio_id, af.original_filename as audio_filename, af.duration_seconds, af.transcript_summary, af.transcript_text, af.drive_url, af.drive_file_id, af.status as audio_status,
                           fa.id as file_id, fa.original_filename as file_name,
                           fa.file_size as file_size, fa.file_type as file_type,
                           fa.drive_url as file_drive_url, fa.status as file_status,
+                          pm.content as parent_content, pu.name as parent_user_name,
                           (SELECT json_agg(json_build_object(
                               'id', r.id, 'type', r.type, 'content', r.content,
                               'user_name', ru.name, 'created_at', r.created_at
                           ) ORDER BY r.created_at)
                           FROM messages r JOIN users ru ON r.user_id = ru.id
-                          WHERE r.parent_id = m.id) as replies
+                          WHERE r.parent_id = m.id AND r.type != 'text') as replies
                    FROM messages m
                    JOIN users u ON m.user_id = u.id
                    LEFT JOIN audio_files af ON af.message_id = m.id
                    LEFT JOIN file_attachments fa ON fa.message_id = m.id
-                   WHERE m.room_id = %s AND m.id < %s AND m.parent_id IS NULL
+                   LEFT JOIN messages pm ON pm.id = m.parent_id
+                   LEFT JOIN users pu ON pu.id = pm.user_id
+                   WHERE m.room_id = %s AND m.id < %s AND (m.parent_id IS NULL OR m.type = 'text')
                    ORDER BY m.created_at DESC
                    LIMIT %s""",
                 (room_id, before_id, limit)
             )
         return query_all(
             """SELECT m.*, u.name as user_name, u.avatar_url as user_avatar,
-                      af.id as audio_id, af.drive_url, af.drive_file_id, af.status as audio_status,
+                      af.id as audio_id, af.original_filename as audio_filename, af.duration_seconds, af.transcript_summary, af.transcript_text, af.drive_url, af.drive_file_id, af.status as audio_status,
                       fa.id as file_id, fa.original_filename as file_name,
                       fa.file_size as file_size, fa.file_type as file_type,
                       fa.drive_url as file_drive_url, fa.status as file_status,
+                      pm.content as parent_content, pu.name as parent_user_name,
                       (SELECT json_agg(json_build_object(
                           'id', r.id, 'type', r.type, 'content', r.content,
                           'user_name', ru.name, 'created_at', r.created_at
                       ) ORDER BY r.created_at)
                       FROM messages r JOIN users ru ON r.user_id = ru.id
-                      WHERE r.parent_id = m.id) as replies
+                      WHERE r.parent_id = m.id AND r.type != 'text') as replies
                FROM messages m
                JOIN users u ON m.user_id = u.id
                LEFT JOIN audio_files af ON af.message_id = m.id
                LEFT JOIN file_attachments fa ON fa.message_id = m.id
-               WHERE m.room_id = %s AND m.parent_id IS NULL
+               LEFT JOIN messages pm ON pm.id = m.parent_id
+               LEFT JOIN users pu ON pu.id = pm.user_id
+               WHERE m.room_id = %s AND (m.parent_id IS NULL OR m.type = 'text')
                ORDER BY m.created_at DESC
                LIMIT %s""",
             (room_id, limit)
@@ -316,21 +322,30 @@ class Message:
         """메시지 내용 + 음성파일명 + 변환/요약 텍스트 검색"""
         like_pattern = f'%{query}%'
         return query_all(
-            """SELECT DISTINCT m.id, m.room_id, m.user_id, m.type, m.content,
-                      m.parent_id, m.created_at,
-                      u.name as user_name, u.avatar_url as user_avatar
-               FROM messages m
-               JOIN users u ON m.user_id = u.id
-               LEFT JOIN audio_files af ON af.message_id = m.id
-               LEFT JOIN messages r ON r.parent_id = m.id
-               WHERE m.room_id = %s AND m.parent_id IS NULL
-                 AND (m.content ILIKE %s
-                      OR af.original_filename ILIKE %s
-                      OR af.transcript_text ILIKE %s
-                      OR af.transcript_summary ILIKE %s
-                      OR r.content ILIKE %s)
-               ORDER BY m.created_at DESC
-               LIMIT %s""",
+            """SELECT sub.*, af.id as audio_id,
+                      af.original_filename as audio_filename,
+                      af.duration_seconds, af.transcript_summary,
+                      af.transcript_text, af.drive_url,
+                      af.drive_file_id, af.status as audio_status
+               FROM (
+                   SELECT DISTINCT m.id, m.room_id, m.user_id, m.type, m.content,
+                          m.parent_id, m.created_at,
+                          u.name as user_name, u.avatar_url as user_avatar
+                   FROM messages m
+                   JOIN users u ON m.user_id = u.id
+                   LEFT JOIN audio_files af ON af.message_id = m.id
+                   LEFT JOIN messages r ON r.parent_id = m.id
+                   WHERE m.room_id = %s AND m.parent_id IS NULL
+                     AND (m.content ILIKE %s
+                          OR af.original_filename ILIKE %s
+                          OR af.transcript_text ILIKE %s
+                          OR af.transcript_summary ILIKE %s
+                          OR r.content ILIKE %s)
+                   ORDER BY m.created_at DESC
+                   LIMIT %s
+               ) sub
+               LEFT JOIN audio_files af ON af.message_id = sub.id
+               ORDER BY sub.created_at DESC""",
             (room_id, like_pattern, like_pattern, like_pattern,
              like_pattern, like_pattern, limit)
         )

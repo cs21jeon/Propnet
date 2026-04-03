@@ -60,6 +60,7 @@ from routes_billing import register_billing_routes
 from billing_web import register_billing_web_routes
 from routes_admin import register_admin_routes
 from routes_audio import register_audio_routes
+from web_app import register_web_app_routes
 from websocket import register_websocket
 
 register_auth_routes(app)
@@ -69,6 +70,7 @@ register_billing_routes(app)
 register_billing_web_routes(app)
 register_admin_routes(app)
 register_audio_routes(app)
+register_web_app_routes(app)
 register_websocket(socketio)
 
 # ============================================================

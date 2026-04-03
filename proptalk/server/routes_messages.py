@@ -8,6 +8,7 @@ import time
 import shutil
 import logging
 import threading
+from urllib.parse import quote as url_quote
 from datetime import datetime, date
 from flask import request, jsonify, g, send_file
 from werkzeug.utils import secure_filename
@@ -478,14 +479,16 @@ def register_message_routes(app, socketio):
         return jsonify({'audio': audio})
 
     # ============================================================
-    # 음성 파일 다운로드
+    # 음성 파일 다운로드 (서버 프록시 — CORS 회피)
     # ============================================================
     @app.route('/api/audio/<int:audio_id>/download', methods=['GET'])
     @login_required
     def download_audio(audio_id):
         """
         음성 파일 다운로드
-        24시간 내에만 다운로드 가능
+        1) 로컬 파일이 있으면 직접 서빙
+        2) 없으면 Drive API로 서버가 다운로드하여 클라이언트에 스트리밍
+           (Drive URL 302 리다이렉트 시 CORS 에러 발생하므로 프록시 필수)
         """
         audio = AudioFile.find_by_id(audio_id)
         if not audio:
@@ -494,19 +497,62 @@ def register_message_routes(app, socketio):
         if not Room.is_member(audio['room_id'], g.user_id):
             return jsonify({'error': '접근 권한이 없습니다'}), 403
 
-        # 파일 경로 확인
         original_filename = audio['original_filename']
         ext = original_filename.rsplit('.', 1)[1].lower() if '.' in original_filename else 'mp3'
         filepath = os.path.join(Config.AUDIO_FOLDER, f"{audio_id}.{ext}")
 
-        if not os.path.exists(filepath):
-            return jsonify({'error': '파일이 만료되었거나 존재하지 않습니다'}), 404
+        # 1) 로컬 파일 우선
+        if os.path.exists(filepath):
+            return send_file(
+                filepath,
+                as_attachment=True,
+                download_name=original_filename
+            )
 
-        return send_file(
-            filepath,
-            as_attachment=True,
-            download_name=original_filename
-        )
+        # 2) Drive 파일이 있으면 서버가 프록시로 다운로드
+        drive_file_id = audio.get('drive_file_id')
+        if drive_file_id:
+            try:
+                from models import Room as RoomModel, User
+                room = RoomModel.find_by_id(audio['room_id'])
+                if not room:
+                    return jsonify({'error': '방 정보를 찾을 수 없습니다'}), 404
+
+                owner = User.find_by_id(room['created_by'])
+                if not owner or not owner.get('google_tokens'):
+                    return jsonify({'error': 'Drive 인증 정보가 없습니다'}), 403
+
+                from drive_service import download_from_drive
+                file_bytes, updated_tokens = download_from_drive(
+                    owner['google_tokens'], drive_file_id
+                )
+
+                # 토큰이 갱신되었으면 DB 업데이트
+                if updated_tokens:
+                    User.update_google_tokens(owner['id'], updated_tokens)
+
+                # MIME 타입 결정
+                mime_map = {
+                    'mp3': 'audio/mpeg', 'wav': 'audio/wav', 'm4a': 'audio/mp4',
+                    'ogg': 'audio/ogg', 'flac': 'audio/flac', 'webm': 'audio/webm',
+                    'aac': 'audio/aac', 'amr': 'audio/amr', '3gp': 'audio/3gpp',
+                }
+                mime_type = mime_map.get(ext, 'application/octet-stream')
+
+                from flask import Response
+                return Response(
+                    file_bytes,
+                    mimetype=mime_type,
+                    headers={
+                        'Content-Disposition': "attachment; filename=\"audio.{}\"; filename*=UTF-8''{}".format(ext, url_quote(original_filename)),
+                        'Content-Length': str(len(file_bytes)),
+                    }
+                )
+            except Exception as e:
+                logger.error(f"[Download] Drive 프록시 실패: audio_id={audio_id}, error={e}")
+                return jsonify({'error': '파일 다운로드에 실패했습니다'}), 500
+
+        return jsonify({'error': '파일이 만료되었거나 존재하지 않습니다'}), 404
 
 
 # ============================================================

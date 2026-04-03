@@ -1,0 +1,25 @@
+{
+    "name": "Proptalk",
+    "short_name": "Proptalk",
+    "description": "세상 쉬운 업무 공유 - 음성 채팅 & AI 요약",
+    "start_url": "/proptalk/web/",
+    "scope": "/proptalk/web/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#ffffff",
+    "orientation": "any",
+    "icons": [
+        {
+            "src": "/proptalk/web/static/icon-192.png?v=5",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/proptalk/web/static/icon-512.png?v=5",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}

@@ -117,6 +117,10 @@ def login_required(f):
         if auth_header and auth_header.startswith('Bearer '):
             token = auth_header.split(' ')[1]
 
+        # query parameter fallback (audio/file download 등 브라우저 직접 요청용)
+        if not token:
+            token = request.args.get('token')
+
         if not token:
             return jsonify({'error': '인증 토큰이 필요합니다'}), 401
 
