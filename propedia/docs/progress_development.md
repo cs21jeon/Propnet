@@ -1,4 +1,20 @@
-업데이트 현황 (2026-02-10)
+업데이트 현황 (2026-04-03)
+
+## 2026-04-03: PropNet 통합 브랜딩 + 가이드 페이지
+
+- Proppedia 가이드 페이지 생성 및 배포 (`/proppedia/guide/`)
+  - 10개 섹션: 시작하기(QR코드), 로그인, 3가지 검색, 결과, 즐겨찾기, 기록, PDF, 프로필/다크모드
+  - 최신 스크린샷 5종 반영 (로그인 진입, 체험모드 홈, 로그인 후 홈, 프로필 라이트/다크)
+  - PC/모바일 분기 UI (QR코드는 PC만, Play Store 배지는 모바일만)
+- Proppedia 웹앱 사이드 메뉴에 "사용가이드" 버튼 추가
+- Flutter 앱 `app_drawer.dart` 웹사이트 URL: goldenrabbit.biz → propnet.kr
+- Flutter 앱 `terms.dart` PropNet 통합 약관으로 전면 재작성
+  - 서비스 정의: Proppedia + Proptalk + Propsheet + PropMap 4개 서비스
+  - 회원 유형: 일반/중개사(Agent) 구분, 중개사 추가 수집 정보 반영
+  - 약관 버전: 2026-04-03
+- `consent_screen.dart` fallback 버전 2026-04-03 동기화
+- about.html 웹사이트 링크 propnet.kr로 변경
+- PWA 설치 프롬프트 비활성화 (manifest.json display→browser, sw.js 비활성화)
 
 &nbsp; ## Phase 1:  ✅ 완료
 

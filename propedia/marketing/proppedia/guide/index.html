@@ -9,19 +9,19 @@
     <title>사용 가이드 - Proppedia 부동산백과</title>
     <meta name="description" content="Proppedia 부동산백과 사용 가이드. 회원가입, 검색 방법, 즐겨찾기, PDF 저장 등 모든 기능을 안내합니다.">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://propnet.kr/proppedia/landing/guide/">
+    <link rel="canonical" href="https://propnet.kr/proppedia/guide/">
 
     <!-- Open Graph -->
     <meta property="og:type" content="article">
-    <meta property="og:url" content="https://propnet.kr/proppedia/landing/guide/">
+    <meta property="og:url" content="https://propnet.kr/proppedia/guide/">
     <meta property="og:title" content="사용 가이드 - Proppedia 부동산백과">
     <meta property="og:description" content="부동산백과 앱의 모든 기능을 쉽게 알려드립니다.">
     <meta property="og:image" content="https://propnet.kr/proppedia/landing/og-image.png">
     <meta property="og:locale" content="ko_KR">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="../favicon.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="/proppedia/landing/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/proppedia/landing/apple-touch-icon.png">
 
     <style>
         :root {
@@ -112,6 +112,7 @@
             font-weight: 600;
             font-size: 0.9rem;
             transition: background 0.3s;
+            white-space: nowrap;
         }
 
         .nav-back {
@@ -130,6 +131,15 @@
 
         .nav-cta:hover {
             background: var(--primary-dark);
+        }
+
+        .nav-app {
+            background: #34A853;
+            color: white;
+        }
+
+        .nav-app:hover {
+            background: #2d9249;
         }
 
         /* Main content */
@@ -284,6 +294,11 @@
             color: var(--primary-dark);
         }
 
+        .tip a {
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
         /* Step list */
         .steps {
             counter-reset: step;
@@ -314,6 +329,101 @@
             font-weight: 700;
         }
 
+        /* Install Box */
+        .install-box {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 20px 0;
+        }
+
+        .install-box-inner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 32px;
+        }
+
+        .install-qr {
+            text-align: center;
+        }
+
+        .install-qr img {
+            width: 150px;
+            height: 150px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+
+        .install-qr p {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .install-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* CTA Banner */
+        .cta-banner {
+            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .cta-banner h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            border-left: none;
+            padding-left: 0;
+        }
+
+        .cta-banner p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .cta-btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .cta-btn-app {
+            background: #34A853;
+            color: white;
+        }
+
         /* Footer */
         footer {
             background: #212121;
@@ -331,6 +441,9 @@
         footer a:hover {
             color: white;
         }
+
+        /* PC/Mobile detection */
+        .pc-only, .mobile-only { display: none; }
 
         /* Responsive */
         @media (max-width: 600px) {
@@ -357,23 +470,50 @@
             .header-nav .nav-back span {
                 display: none;
             }
+
+            .cta-btn {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+
+            .cta-banner {
+                padding: 30px 20px;
+            }
         }
     </style>
+
+    <script>
+    function isMobileDevice() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+            .test(navigator.userAgent);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const isMobile = isMobileDevice();
+        document.querySelectorAll('.pc-only').forEach(el => {
+            el.style.display = isMobile ? 'none' : 'block';
+        });
+        document.querySelectorAll('.mobile-only').forEach(el => {
+            el.style.display = isMobile ? 'block' : 'none';
+        });
+    });
+    </script>
 </head>
 <body>
     <!-- Header -->
     <header>
         <div class="header-content">
             <a href="/proppedia/" class="logo">
-                <img src="../screenshots/logo.png" alt="부동산백과 로고">
+                <img src="/proppedia/landing/screenshots/logo.png" alt="부동산백과 로고">
                 <div class="logo-text">
                     <span class="title">Proppedia</span>
                     <span class="subtitle">부동산백과</span>
                 </div>
             </a>
             <div class="header-nav">
-                <a href="/proppedia/" class="nav-back"><span>홈으로</span></a>
-                <a href="/app/" class="nav-cta">웹에서 체험</a>
+                <a href="/proppedia/" class="nav-back"><span>서비스 바로가기</span></a>
+                <a href="https://play.google.com/store/apps/details?id=com.proppedia.app" class="nav-app mobile-only">앱 다운로드</a>
+                <a href="/proppedia/" class="nav-cta pc-only">웹에서 시작</a>
             </div>
         </div>
     </header>
@@ -398,6 +538,7 @@
                 <li><a href="#favorites">즐겨찾기</a></li>
                 <li><a href="#history">검색 기록</a></li>
                 <li><a href="#pdf">PDF 저장 / 인쇄</a></li>
+                <li><a href="#profile">프로필 / 다크 모드</a></li>
             </ol>
         </nav>
 
@@ -412,13 +553,33 @@
                 <li>설치가 완료되면 앱을 실행합니다.</li>
             </ol>
 
+            <div class="install-box pc-only">
+                <div class="install-box-inner">
+                    <div class="install-qr">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.proppedia.app%26pcampaignid%3Dweb_share" alt="Google Play 다운로드 QR 코드">
+                        <p>스마트폰으로 QR 코드를 스캔하세요</p>
+                    </div>
+                    <div class="install-badge">
+                        <a href="https://play.google.com/store/apps/details?id=com.proppedia.app&pcampaignid=web_share">
+                            <img src="https://play.google.com/intl/en_us/badges/static/images/badges/ko_badge_web_generic.png" alt="Google Play에서 다운로드" style="height: 60px;">
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mobile-only" style="text-align: center; margin: 20px 0;">
+                <a href="https://play.google.com/store/apps/details?id=com.proppedia.app&pcampaignid=web_share" style="display: inline-block;">
+                    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/ko_badge_web_generic.png" alt="Google Play에서 다운로드" style="height: 60px;">
+                </a>
+            </div>
+
             <div class="tip">
-                <strong>TIP:</strong> PC에서는 <a href="/app/">goldenrabbit.biz/app</a> 으로 접속하여 웹 버전을 바로 사용할 수 있습니다. 설치가 필요 없습니다.
+                <strong>TIP:</strong> PC에서는 <a href="/proppedia/">propnet.kr/proppedia</a>로 접속하여 웹 버전을 바로 사용할 수 있습니다. 설치가 필요 없습니다.
             </div>
 
             <div class="screenshot">
-                <img src="../screenshots/01_home.png" alt="홈 화면">
-                <p class="screenshot-caption">앱 홈 화면</p>
+                <img src="/proppedia/landing/screenshots/01_home.jpg" alt="홈 화면 (체험 모드)">
+                <p class="screenshot-caption">앱 홈 화면 (체험 모드)</p>
             </div>
         </section>
 
@@ -431,6 +592,7 @@
             <h3>Google 계정으로 로그인</h3>
             <ol class="steps">
                 <li>홈 화면에서 <strong>"Google 계정으로 로그인"</strong> 버튼을 탭합니다.</li>
+                <li>로그인 화면에서 <strong>"Google 계정으로 시작하기"</strong>를 탭합니다.</li>
                 <li>Google 계정을 선택하면 자동으로 로그인됩니다.</li>
                 <li>별도의 회원가입 절차가 없으며, Google 계정으로 바로 가입과 로그인이 동시에 처리됩니다.</li>
             </ol>
@@ -441,12 +603,16 @@
 
             <div class="screenshot-row">
                 <div class="screenshot">
-                    <img src="../screenshots/09_login.png" alt="로그인 화면">
+                    <img src="/proppedia/landing/screenshots/01_home.jpg" alt="체험 모드 홈">
+                    <p class="screenshot-caption">체험 모드 (비로그인)</p>
+                </div>
+                <div class="screenshot">
+                    <img src="/proppedia/landing/screenshots/09_login_entry.jpg" alt="로그인 진입 화면">
                     <p class="screenshot-caption">로그인 화면</p>
                 </div>
                 <div class="screenshot">
-                    <img src="../screenshots/10_profile.png" alt="프로필 화면">
-                    <p class="screenshot-caption">로그인 후 프로필</p>
+                    <img src="/proppedia/landing/screenshots/01_home_loggedin.jpg" alt="로그인 후 홈">
+                    <p class="screenshot-caption">로그인 후 홈 화면</p>
                 </div>
             </div>
         </section>
@@ -464,11 +630,11 @@
 
             <div class="screenshot-row">
                 <div class="screenshot">
-                    <img src="../screenshots/02_road_search.png" alt="도로명 검색">
+                    <img src="/proppedia/landing/screenshots/02_road_search.png" alt="도로명 검색">
                     <p class="screenshot-caption">도로명 주소 입력</p>
                 </div>
                 <div class="screenshot">
-                    <img src="../screenshots/04_result_1.png" alt="검색 결과">
+                    <img src="/proppedia/landing/screenshots/04_result_1.png" alt="검색 결과">
                     <p class="screenshot-caption">검색 결과</p>
                 </div>
             </div>
@@ -490,7 +656,7 @@
             </div>
 
             <div class="screenshot">
-                <img src="../screenshots/03_jibun_search.png" alt="지번 검색">
+                <img src="/proppedia/landing/screenshots/03_jibun_search.png" alt="지번 검색">
                 <p class="screenshot-caption">지번 주소 검색</p>
             </div>
         </section>
@@ -513,11 +679,11 @@
 
             <div class="screenshot-row">
                 <div class="screenshot">
-                    <img src="../screenshots/12_location_permission.png" alt="위치 권한 요청">
+                    <img src="/proppedia/landing/screenshots/12_location_permission.png" alt="위치 권한 요청">
                     <p class="screenshot-caption">위치 정보 접근 권한 요청</p>
                 </div>
                 <div class="screenshot">
-                    <img src="../screenshots/06_map_search.png" alt="지도 검색">
+                    <img src="/proppedia/landing/screenshots/06_map_search.png" alt="지도 검색">
                     <p class="screenshot-caption">지도에서 위치를 선택하여 검색</p>
                 </div>
             </div>
@@ -539,15 +705,15 @@
 
             <div class="screenshot-row">
                 <div class="screenshot">
-                    <img src="../screenshots/04_result_1.png" alt="검색 결과 개요">
+                    <img src="/proppedia/landing/screenshots/04_result_1.png" alt="검색 결과 개요">
                     <p class="screenshot-caption">건물 개요</p>
                 </div>
                 <div class="screenshot">
-                    <img src="../screenshots/05_result_2.png" alt="상세 정보">
+                    <img src="/proppedia/landing/screenshots/05_result_2.png" alt="상세 정보">
                     <p class="screenshot-caption">상세 정보</p>
                 </div>
                 <div class="screenshot">
-                    <img src="../screenshots/11_result_detail.png" alt="동/호 선택">
+                    <img src="/proppedia/landing/screenshots/11_result_detail.png" alt="동/호 선택">
                     <p class="screenshot-caption">동/호 선택 및 상세 조회</p>
                 </div>
             </div>
@@ -559,7 +725,7 @@
 
             <h3>즐겨찾기 추가</h3>
             <ol class="steps">
-                <li>검색 결과 화면 상단의 <strong>별(★) 아이콘</strong>을 탭합니다.</li>
+                <li>검색 결과 화면 상단의 <strong>별 아이콘</strong>을 탭합니다.</li>
                 <li>"즐겨찾기에 등록되었습니다" 메시지가 표시됩니다.</li>
             </ol>
 
@@ -576,11 +742,11 @@
 
             <div class="screenshot-row">
                 <div class="screenshot">
-                    <img src="../screenshots/11_result_detail.png" alt="즐겨찾기 추가">
+                    <img src="/proppedia/landing/screenshots/11_result_detail.png" alt="즐겨찾기 추가">
                     <p class="screenshot-caption">별 아이콘으로 즐겨찾기 추가</p>
                 </div>
                 <div class="screenshot">
-                    <img src="../screenshots/08_favorites.png" alt="즐겨찾기 목록">
+                    <img src="/proppedia/landing/screenshots/08_favorites.png" alt="즐겨찾기 목록">
                     <p class="screenshot-caption">즐겨찾기 목록</p>
                 </div>
             </div>
@@ -599,7 +765,7 @@
             </ol>
 
             <div class="screenshot">
-                <img src="../screenshots/07_history.png" alt="검색 기록">
+                <img src="/proppedia/landing/screenshots/07_history.png" alt="검색 기록">
                 <p class="screenshot-caption">검색 기록 화면</p>
             </div>
         </section>
@@ -625,19 +791,57 @@
             </ol>
 
             <div class="screenshot">
-                <img src="../screenshots/KakaoTalk_20260221_232554552.jpg" alt="PDF 저장 (모바일)">
+                <img src="/proppedia/landing/screenshots/KakaoTalk_20260221_232554552.jpg" alt="PDF 저장 (모바일)">
                 <p class="screenshot-caption">모바일에서 PDF 저장</p>
             </div>
 
             <div class="screenshot-row">
                 <div class="screenshot wide">
-                    <img src="../screenshots/print pdf 002.png" alt="PDF 결과물">
+                    <img src="/proppedia/landing/screenshots/print pdf 002.png" alt="PDF 결과물">
                     <p class="screenshot-caption">PDF 결과물 미리보기</p>
                 </div>
                 <div class="screenshot wide">
-                    <img src="../screenshots/print pdf 001.png" alt="PDF 인쇄">
+                    <img src="/proppedia/landing/screenshots/print pdf 001.png" alt="PDF 인쇄">
                     <p class="screenshot-caption">PC에서 인쇄/저장</p>
                 </div>
+            </div>
+        </section>
+
+        <!-- 10. 프로필 / 다크 모드 -->
+        <section class="guide-section" id="profile">
+            <h2>10. 프로필 / 다크 모드</h2>
+
+            <h3>프로필 확인</h3>
+            <p>하단 탭 바에서 <strong>"프로필"</strong>을 탭하면 내 계정 정보와 사용 통계를 확인할 수 있습니다.</p>
+            <ul>
+                <li><strong>계정 정보</strong> - 이름, 이메일 주소</li>
+                <li><strong>사용 통계</strong> - 검색 기록 건수, 즐겨찾기 개수</li>
+                <li><strong>앱 버전</strong> - 현재 설치된 앱 버전 확인</li>
+            </ul>
+
+            <h3>다크 모드</h3>
+            <p>프로필 화면의 <strong>다크 모드</strong> 토글을 활성화하면 어두운 테마로 전환됩니다. 야간 사용 시 눈의 피로를 줄여줍니다.</p>
+
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <img src="/proppedia/landing/screenshots/10_profile.jpg" alt="프로필 (라이트 모드)">
+                    <p class="screenshot-caption">프로필 (라이트 모드)</p>
+                </div>
+                <div class="screenshot">
+                    <img src="/proppedia/landing/screenshots/10_profile_dark.jpg" alt="프로필 (다크 모드)">
+                    <p class="screenshot-caption">프로필 (다크 모드)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Banner -->
+        <section class="cta-banner">
+            <h2>지금 바로 시작해보세요</h2>
+            <p>부동산 정보 조회, 더 이상 복잡하지 않습니다</p>
+            <div class="cta-buttons">
+                <a href="/proppedia/" class="cta-btn cta-btn-primary pc-only">웹에서 바로 시작하기</a>
+                <a href="https://play.google.com/store/apps/details?id=com.proppedia.app" class="cta-btn cta-btn-app mobile-only">Google Play에서 다운로드</a>
+                <a href="/proppedia/" class="cta-btn cta-btn-primary mobile-only">웹에서 체험하기</a>
             </div>
         </section>
     </main>
@@ -645,9 +849,9 @@
     <!-- Footer -->
     <footer>
         <p>
-            <a href="/proppedia/">홈</a> &middot;
-            <a href="/app/">웹에서 체험</a> &middot;
-            <a href="https://play.google.com/store/apps/details?id=com.proppedia.app">Google Play</a>
+            <a href="/proppedia/">서비스 바로가기</a> &middot;
+            <a href="https://play.google.com/store/apps/details?id=com.proppedia.app">Google Play</a> &middot;
+            <a href="https://propnet.kr">PropNet</a>
         </p>
         <p style="margin-top: 10px;">&copy; 2026 프롭넷 (PropNet). All rights reserved.</p>
     </footer>

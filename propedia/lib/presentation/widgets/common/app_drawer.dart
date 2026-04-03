@@ -307,7 +307,7 @@ class AppDrawer extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 12),
-            _buildInfoColumn('웹사이트', 'https://goldenrabbit.biz/propnet', isDark),
+            _buildInfoColumn('웹사이트', 'https://propnet.kr', isDark),
             const SizedBox(height: 8),
             _buildInfoColumn('문의', 'cs21.jeon@gmail.com', isDark),
           ],

@@ -54,19 +54,19 @@ class _ConsentScreenState extends ConsumerState<ConsentScreen> {
       {
         'type': 'terms',
         'label': '[필수] 서비스 이용약관',
-        'version': '2026-04-01',
+        'version': '2026-04-03',
         'required': true,
       },
       {
         'type': 'privacy',
         'label': '[필수] 개인정보 수집 및 이용 동의',
-        'version': '2026-04-01',
+        'version': '2026-04-03',
         'required': true,
       },
       {
         'type': 'overseas_transfer',
         'label': '[필수] 개인정보 국외 이전 동의',
-        'version': '2026-04-01',
+        'version': '2026-04-03',
         'required': true,
       },
     ];
@@ -114,7 +114,7 @@ class _ConsentScreenState extends ConsumerState<ConsentScreen> {
         if (_agreements[type] == true) {
           consents.add({
             'type': type,
-            'version': consent['version'] ?? '2026-04-01',
+            'version': consent['version'] ?? '2026-04-03',
           });
         }
       }
