@@ -166,7 +166,7 @@ class AuthService extends ChangeNotifier {
         // 기존 서버 호환: 문자열 리스트 → 객체로 변환
         return {
           'type': item.toString(),
-          'version': '2026-04-01',
+          'version': '2026-04-03',
           'label': _defaultLabelForType(item.toString()),
           'required': true,
         };

@@ -155,13 +155,21 @@
         }
 
         .header-cta {
-            background: var(--text-secondary) !important;
             color: white !important;
             padding: 10px 20px;
             border-radius: 8px;
             font-weight: 600 !important;
-            cursor: default;
-            opacity: 0.7;
+            text-decoration: none;
+        }
+        .header-cta-active {
+            background: var(--primary-color) !important;
+            cursor: pointer;
+            opacity: 1;
+            transition: background 0.3s, transform 0.2s;
+        }
+        .header-cta-active:hover {
+            background: var(--primary-dark) !important;
+            transform: translateY(-1px);
         }
 
         /* Hero Section */
@@ -200,23 +208,34 @@
             margin-bottom: 30px;
         }
 
-        .coming-soon-badge {
+        /* coming-soon-badge removed - replaced with action buttons */
+
+        .hero-btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: var(--secondary-color);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-weight: 600;
+            padding: 14px 28px;
+            border-radius: 12px;
             font-size: 1rem;
-            animation: pulse 2s ease-in-out infinite;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.03); }
+        .hero-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
         }
+        .hero-btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        .hero-btn-primary:hover { background: var(--primary-dark); }
+        .hero-btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid #e0e0e0;
+        }
+        .hero-btn-secondary:hover { border-color: var(--primary-color); }
 
         .hero-sub-text {
             margin-top: 16px;
@@ -821,9 +840,9 @@
             </a>
             <nav class="header-nav">
                 <a href="#features">기능</a>
-                <a href="#pricing">요금제</a>
+                <a href="/billing/">요금제</a>
                 <a href="/proptalk/guide">사용가이드</a>
-                <span class="header-cta">Coming Soon</span>
+                <a href="/proptalk/web/" class="header-cta header-cta-active">웹앱 바로가기</a>
             </nav>
         </div>
     </header>
@@ -840,10 +859,17 @@
                     음성 파일 올리면 자동 텍스트 변환 + 핵심 요약.<br>
                     팀 채팅방에서 실시간 공유까지.
                 </p>
-                <div class="coming-soon-badge">
-                    Coming Soon &mdash; 곧 Google Play에서 만나보세요
+                <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+                    <a href="/proptalk/web/" class="hero-btn hero-btn-primary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                        PC 웹앱 바로 사용하기
+                    </a>
+                    <a href="https://play.google.com/store/apps/details?id=biz.goldenrabbit.proptalk&pcampaignid=web_share" target="_blank" class="hero-btn hero-btn-secondary">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.61 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.5,12.92 20.16,13.19L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/></svg>
+                        Google Play 앱 설치
+                    </a>
                 </div>
-                <p class="hero-sub-text">Android 앱으로 출시 준비 중입니다</p>
+                <p class="hero-sub-text">PC에서 바로 사용하거나, 앱을 설치하세요</p>
             </div>
             <div class="hero-image">
                 <div class="phone-mockup">
@@ -1091,19 +1117,31 @@
             </div>
 
             <p class="pricing-note">출시 후 충전 · 구독이 가능합니다. 요금제는 변경될 수 있습니다.</p>
+            <div style="text-align: center; margin-top: 24px;">
+                <a href="/billing/" style="display: inline-flex; align-items: center; gap: 8px; background: #1A73E8; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; transition: background 0.3s;">요금제 가입하기 →</a>
+            </div>
         </div>
     </section>
 
     <!-- CTA Section -->
     <section class="cta">
         <div class="cta-content">
-            <h2>곧 만나보실 수 있습니다</h2>
-            <p>Proptalk이 Google Play에 출시되면 바로 사용해 보세요.</p>
-            <div class="cta-badge">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.61 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.5,12.92 20.16,13.19L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
-                </svg>
-                Google Play 출시 준비 중
+            <h2>지금 바로 시작하세요</h2>
+            <p>PC에서 웹앱으로 바로 사용하거나, 모바일 앱을 설치하세요.</p>
+            <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:32px;">
+                <a href="/proptalk/web/" class="hero-btn" style="background:white;color:#1976D2;font-weight:700;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                    웹앱 바로가기
+                </a>
+                <a href="https://play.google.com/store/apps/details?id=biz.goldenrabbit.proptalk&pcampaignid=web_share" target="_blank" class="hero-btn" style="background:rgba(255,255,255,0.15);color:white;border:2px solid rgba(255,255,255,0.4);">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.61 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.5,12.92 20.16,13.19L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/></svg>
+                    Google Play 설치
+                </a>
+            </div>
+            <!-- [fix #10] QR Code for Google Play -->
+            <div style="background:white;display:inline-block;padding:16px;border-radius:16px;">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dbiz.goldenrabbit.proptalk%26pcampaignid%3Dweb_share" alt="Proptalk Google Play QR 코드" width="160" height="160" style="display:block;">
+                <p style="color:#666;font-size:0.8rem;margin-top:8px;text-align:center;">모바일로 QR 스캔하여 앱 설치</p>
             </div>
         </div>
     </section>
@@ -1123,7 +1161,7 @@
                 <ul>
                     <li><a href="#features">핵심 기능</a></li>
                     <li><a href="#screenshots">앱 미리보기</a></li>
-                    <li><a href="#pricing">요금제</a></li>
+                    <li><a href="/billing/">요금제</a></li>
                 <li><a href="/proptalk/guide">사용가이드</a></li>
                 </ul>
             </div>
