@@ -293,3 +293,77 @@
 
 ### 백업
 - `/home/webapp/goldenrabbit/backend/backups/20260404/` 에 전체 백업 보관
+
+---
+
+## 6차: 데이터 보안 강화 + 자동 백업 체계 구축 (2026-04-04)
+
+### 배경
+- 매물 데이터에 소유주 개인정보(성명, 주소, 생년월일, 연락처) 포함
+- 개인정보보호법상 생년월일·연락처는 암호화 저장 의무
+- 서버 단일 구성으로 데이터 유실 리스크 존재
+- 개인정보처리방침에 소유주 정보 수집·위탁 관계 미명시
+
+### 1. 소유주 개인정보 필드 암호화
+
+**암호화 대상 필드**:
+| 필드 | 변경 전 타입 | 변경 후 |
+|------|-------------|---------|
+| `소유자생년월일` | BIGINT | TEXT (Fernet 암호화, `ENC:` 접두사) |
+| `소유주연락처` | VARCHAR(30~100) | TEXT (Fernet 암호화, `ENC:` 접두사) |
+
+**신규 파일**:
+- `backend/property-manager/utils/encryption.py`: Fernet 암호화/복호화 모듈
+- `backend/property-manager/utils/__init__.py`: 패키지 init
+- `backend/scripts/migration/encrypt_existing_data.py`: 기존 데이터 마이그레이션 (롤백 지원)
+
+**수정된 파일**:
+- `services/database_service.py`: 저장 시 encrypt, 조회 시 decrypt
+- `routes/database.py`: 인라인 수정, CSV 내보내기, 되돌리기에 암복호화 적용
+- `services/propsheet_save_service.py`: INSERT/UPDATE 시 암호화
+- `requirements.txt`: cryptography>=41.0.0 추가
+
+**설계 결정**:
+- Fernet (AES-CBC + HMAC-SHA256) 사용 — 간편하고 인증된 암호화
+- `ENC:` 접두사로 암호화 여부 판별 → 마이그레이션 중 평문/암호문 공존 가능
+- 암호화 키: `.env`의 `FIELD_ENCRYPTION_KEY`에 보관 (DB와 분리)
+- audit_log에는 평문 저장 (사용성 우선)
+- 홈페이지 공개 API는 개인정보 필드 미노출 → 복호화 불필요
+
+### 2. 서버 자동 백업 체계
+
+**매일 새벽 3시 cron 실행**:
+1. `pg_dumpall` → `backups/daily/db_all_YYYYMMDD.sql.gz` (약 2.6MB)
+2. `/uploads/` tar.gz → `backups/daily/uploads_YYYYMMDD.tar.gz` (약 832MB)
+3. rclone으로 Google Drive `서버백업/YYYYMMDD/` 폴더에 전송
+4. 서버 로컬 3일치, Google Drive 14일치 보관
+
+**신규 파일**:
+- `scripts/daily_backup.sh`: 일일 자동 백업 스크립트
+- `scripts/setup_rclone_gdrive.sh`: rclone 설치/설정 안내
+- `scripts/BACKUP_RESTORE_GUIDE.md`: 복원 가이드
+
+**인프라 설정**:
+- rclone 설치 + Google Drive 리모트(`gdrive`) 연동 완료
+- crontab 등록: `0 3 * * * daily_backup.sh`
+- `.env` EMAIL_PASSWORD 따옴표 추가 (source 시 공백 파싱 오류 수정)
+- `pg_dumpall` → `sudo -u postgres pg_dumpall` (superuser 권한 필요)
+
+### 3. 개인정보처리방침 / 이용약관 업데이트
+
+**개인정보처리방침** (privacy-policy.html):
+- 제1조: PropSheet 수집항목에 `매물 소유자 정보(성명, 주소, 생년월일, 연락처)` 추가
+- 제7조 신설: 개인정보 처리 위탁 (중개사=수집주체, PropNet=수탁자)
+- 제8조: 안전성 확보 조치 — AES-256 암호화, 감사 로그, 정기 백업 명시
+- 시행일: 2026-04-04
+
+**이용약관** (terms-of-service.html):
+- 제4조: PropSheet 기능에 `매물 소유자 정보 관리` 추가
+- 제8조: 중개사의 소유자 정보 적법 수집 책임 조항 신설
+- 제9조: 회사의 소유자 정보 암호화 저장 의무 추가
+- 시행일: 2026-04-04
+
+### 서버 상태
+- `property-manager`, `propsheet`, `proppedia` 재시작 완료
+- 암호화 마이그레이션 완료 (backup 테이블: `encryption_migration_backup`)
+- 롤백 명령: `python scripts/migration/encrypt_existing_data.py --rollback`
