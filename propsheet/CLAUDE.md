@@ -47,7 +47,8 @@ sudo systemctl restart propsheet   # 5020만 재시작하면 됨
 
 ### Services
 - `services/workspace_service.py` — 워크스페이스 관리 + DB 뷰 복제
-- `services/database_service.py` — PostgreSQL 동적 CRUD + DB 연결 관리
+- `services/database_service.py` — PostgreSQL 동적 CRUD + DB 연결 관리 + `geocode_address()` (VWorld API)
+- `services/propsheet_save_service.py` — Proppedia 앱 → PropSheet 저장 (좌표 자동 변환 포함)
 - `services/formula_service.py` — 수식 → SQL 변환
 - `services/schema_service.py` — 필드 정의/스키마 관리
 - `services/view_service.py` — 뷰 CRUD (grid/calendar)
@@ -127,6 +128,7 @@ DB 대표사진 필드: "파일명.jpg (/uploads/propsheet/39/1069/파일명.jpg
   → 파일 저장: /uploads/propsheet/{db_id}/{record_id}/{safe_filename}
   → INSERT INTO file_attachments
   → _rebuild_cell_value(): 대표사진 필드 자동 업데이트
+  → 용량 제한: 2GB/데이터베이스 (MAX_DB_SIZE in database.py)
 
 삭제: DELETE /database/{db_id}/file/{file_id}
   → 물리 파일 삭제 + DELETE FROM file_attachments
@@ -155,7 +157,7 @@ https://goldenrabbit.biz/property/recXXX
 - `id` (integer): 내부 PK
 - `record_id` (varchar): 고유 레코드 ID (recXXX)
 - `대표사진`: `"파일명 (/uploads/propsheet/39/{id}/파일명)"` 형식
-- `coordinates_lat`, `coordinates_lon`: 좌표
+- `coordinates_lat`, `coordinates_lon`: 좌표 (Proppedia 저장 시 VWorld API로 자동 변환)
 
 ### file_attachments
 - `database_id`, `record_id`, `field_name`, `file_path` 등 메타데이터

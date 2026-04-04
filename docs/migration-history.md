@@ -133,6 +133,44 @@
 
 ---
 
+## 1.8차 마이그레이션: 상담신청 Airtable → PropSheet DB 전환 (2026-04-01)
+
+### 배경
+- 1.7차에서 매물 데이터는 모두 PropSheet DB로 전환 완료
+- 그러나 상담신청(`/api/submit-inquiry`)만 여전히 Airtable API 사용 중이었음
+- 이번에 상담 문의도 PropSheet DB로 전환하여 Airtable 의존성 완전 제거
+
+### 변경 내용
+
+| 항목 | 변경 전 | 변경 후 |
+|------|---------|---------|
+| 상담 데이터 저장 | Airtable API POST | PropSheet DB INSERT (`inquiry` 테이블, db_id=11) |
+| 이메일발송 상태 | Airtable API PATCH | PropSheet DB UPDATE |
+| 이메일 발송 | Gmail SMTP (변경 없음) | Gmail SMTP (변경 없음) |
+| 프론트엔드 | 변경 없음 | 변경 없음 |
+
+### 수정 파일
+- `/backend/property-manager/routes/propnet_api.py`
+  - `submit_inquiry()`: Airtable API → `get_db_connection()` + `ensure_unique_record_id()` 사용한 DB INSERT
+  - `send_email_and_update_airtable()` → `send_email_and_update_db()`: Airtable PATCH → DB UPDATE
+  - `send_consultation_email()`: 변경 없음 (SMTP만 사용)
+
+### DB 구조
+- 워크스페이스: 금토끼부동산 (workspace_id=11, slug=goldenrabbit)
+- 데이터베이스: 상담 문의 (db_id=11, slug=inquiry, table=inquiry)
+- 기존 Airtable 데이터 3건 batch_import.py로 마이그레이션 완료
+
+### 제거된 환경변수 의존성
+- `AIRTABLE_INQUIRY_KEY` — 더 이상 사용하지 않음
+- `AIRTABLE_INQUIRY_BASE_ID` — 더 이상 사용하지 않음
+- `AIRTABLE_INQUIRY_TABLE_ID` — 더 이상 사용하지 않음
+
+### 서버 상태
+- `property-manager` 서비스 재시작 완료
+- PropSheet UI에서 상담 문의 내역 조회/관리 가능
+
+---
+
 ## 2차 마이그레이션 예정: PropMap + URL 변경
 
 ### 계획
@@ -187,3 +225,71 @@
 - 네이버 검색 등록은 별도 신청 필요
 - 앱 업데이트 없이 baseUrl 변경하려면 remote config 또는 서버 리다이렉트 활용
 - OAuth redirect URI 변경 전에 새 도메인 SSL 인증 완료 필수
+
+---
+
+## 5차: PropSheet 관리비 필드 + Formula-Trigger 동기화 아키텍처 (2026-04-04)
+
+### 배경
+- 공인중개사법 시행령에 따라 관리비 세부내역 표시 의무 (2024.4.1 시행)
+- PropSheet의 formula 필드와 PostgreSQL 트리거가 이중관리 → 불일치 문제
+
+### 1. 관리비 관련 필드 추가
+
+| DB | 추가 필드 | 타입 | 비고 |
+|----|----------|------|------|
+| 단일부동산(39) | `매물종류` | single-select | 주택/비주택/토지 (주용도 기반 자동분류) |
+| 단일(39) | `관리비` | number | 주택 310건에 9만원 기본값 |
+| 단일(39)/집합(38)/부분(43) | `부과방식` | single-select | 정액/확인불가/평균관리비 |
+| 단일(39)/집합(38)/부분(43) | `포함항목` | multi-select | 공용/전기/가스/수도/난방/인터넷/TV/기타 |
+| 단일(39)/집합(38)/부분(43) | `부과사유` | single-select | 5개 옵션 |
+
+- 광고(자동완성) 트리거에 관리비 블록 추가 (두칸 들여쓰기)
+- formula와 트리거 양쪽 동기화 완료
+
+### 2. Formula-Trigger 동기화 아키텍처
+
+**이전 구조 (문제)**:
+- formula: SELECT 시에만 계산 (DB 미저장)
+- trigger: INSERT/UPDATE 시 실제 컬럼에 저장
+- 웹에서 formula 수정해도 trigger 변경 안 됨 → 불일치
+
+**변경 후 구조 (Single Source of Truth)**:
+```
+웹에서 formula 수정 → 저장
+  ① field_definitions.formula 저장
+  ② formula_previous에 이전 값 보관 (Undo)
+  ③ formula_history에 이력 기록
+  ④ validate_formula()로 유효성 검증
+  ⑤ regenerate_trigger()로 트리거 자동 재생성
+  ⑥ recalculate_all_records()로 전체 레코드 재계산
+```
+
+**신규 파일/테이블**:
+- `services/formula_trigger_service.py`: formula→trigger 변환/재생성/재계산 서비스
+- `formula_history` 테이블: formula 변경 이력
+- `field_definitions.formula_previous` 컬럼: 직전 수식 (Undo용)
+
+**수정된 파일**:
+- `routes/database.py`: update_field_definition() — formula 저장 시 트리거 동기화
+- `services/schema_service.py`: formula_previous를 프론트엔드에 전달
+- `templates/propsheet/database_list.html`: 되돌리기 버튼 추가
+- `static/js/propsheet/database_list.js`: revertFormula() + 저장 결과 표시 + 컬럼 순서 뷰 DB 저장
+
+**트리거 전환**:
+| 이전 트리거 | 새 트리거 |
+|-----------|----------|
+| `format_ad_text()` | `trig_formula_39_광고_자동완성_` |
+| `format_ad_text_multi()` | `trig_formula_38_광고_자동완성_` |
+| `format_ad_text_partial()` | `trig_formula_43_광고_자동완성_` |
+
+### 3. 중복 파일 첨부 정리
+- DB 39 단일부동산에서 건축물대장/대표사진 중복 331건 삭제
+- 159개 매물의 셀 값 재구성
+
+### 4. 컬럼 순서 저장 버그 수정
+- 이전: 드래그 순서가 localStorage에만 저장 → 새로고침 시 뷰 DB 순서로 원복
+- 수정: saveColumnOrder()에서 뷰 DB에도 동시 저장
+
+### 백업
+- `/home/webapp/goldenrabbit/backend/backups/20260404/` 에 전체 백업 보관
