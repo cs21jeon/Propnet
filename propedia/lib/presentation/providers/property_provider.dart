@@ -294,27 +294,43 @@ final propertySearchProvider =
 });
 
 // =============================================================================
-// 이미지 확인 Provider
+// 지도 데이터 Provider (마커 + 좌표 통합)
 // =============================================================================
-final propertyImageProvider = FutureProvider.family<ImageCheckResponse, String>(
-  (ref, recordId) async {
-    final repository = ref.watch(propertyRepositoryProvider);
-    return repository.checkImage(recordId);
-  },
-);
-
-// =============================================================================
-// 좌표 데이터 Provider
-// =============================================================================
-final coordinatesProvider = FutureProvider<Map<String, PropertyCoordinate>>((ref) async {
-  final repository = ref.watch(propertyRepositoryProvider);
-  return repository.getCoordinates();
+final mapDataProvider = FutureProvider<MapDataResponse>((ref) async {
+  final api = ref.watch(propertyApiProvider);
+  return api.getMapData();
 });
 
-// =============================================================================
-// 전체 매물 목록 Provider (지도용)
-// =============================================================================
+// 좌표 데이터 Provider (map-data에서 추출)
+final coordinatesProvider = FutureProvider<Map<String, PropertyCoordinate>>((ref) async {
+  final mapData = await ref.watch(mapDataProvider.future);
+  final coords = <String, PropertyCoordinate>{};
+  for (final marker in mapData.markers) {
+    if (marker.recordId != null) {
+      coords[marker.recordId!] = PropertyCoordinate(
+        lat: marker.lat,
+        lon: marker.lon,
+        address: marker.address,
+      );
+    }
+  }
+  debugPrint('📍 좌표 로드 완료: ${coords.length}개');
+  return coords;
+});
+
+// 전체 매물 목록 Provider (지도용 - map-data 마커를 PropertyRecord로 변환)
 final allPropertiesProvider = FutureProvider<List<PropertyRecord>>((ref) async {
-  final repository = ref.watch(propertyRepositoryProvider);
-  return repository.getPropertyList();
+  final mapData = await ref.watch(mapDataProvider.future);
+  return mapData.markers.map((m) => PropertyRecord(
+    id: m.recordId ?? m.markerId,
+    fields: PropertyFields(
+      address: m.address,
+      price: m.price?.toInt(),
+      yieldRate: m.yieldRate,
+      landArea: m.area,
+      floors: m.floors,
+      mainUsage: m.usage,
+      approvalDate: m.approvalDate,
+    ),
+  )).toList();
 });

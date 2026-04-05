@@ -2797,16 +2797,20 @@ mixin _$PropertyMapMarker {
   String? get address => throw _privateConstructorUsedError;
   @JsonKey(fromJson: _doubleFromDynamic)
   double? get price => throw _privateConstructorUsedError;
-  @JsonKey(name: 'price_display')
+  @JsonKey(name: 'price_display', readValue: _readPriceDisplay)
   String? get priceDisplay => throw _privateConstructorUsedError;
-  @JsonKey(name: 'yield', fromJson: _doubleFromDynamic)
+  @JsonKey(name: 'yield_rate', fromJson: _doubleFromDynamic)
   double? get yieldRate => throw _privateConstructorUsedError;
-  @JsonKey(fromJson: _doubleFromDynamic)
+  @JsonKey(name: 'land_area', fromJson: _doubleFromDynamic)
   double? get area => throw _privateConstructorUsedError;
   @JsonKey(name: 'approval_date')
   String? get approvalDate => throw _privateConstructorUsedError;
   @JsonKey(name: 'record_id')
   String? get recordId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'db_id')
+  int? get dbId => throw _privateConstructorUsedError;
+  String? get floors => throw _privateConstructorUsedError;
+  String? get usage => throw _privateConstructorUsedError;
   String? get popup => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -2826,11 +2830,16 @@ abstract class $PropertyMapMarkerCopyWith<$Res> {
       double lon,
       String? address,
       @JsonKey(fromJson: _doubleFromDynamic) double? price,
-      @JsonKey(name: 'price_display') String? priceDisplay,
-      @JsonKey(name: 'yield', fromJson: _doubleFromDynamic) double? yieldRate,
-      @JsonKey(fromJson: _doubleFromDynamic) double? area,
+      @JsonKey(name: 'price_display', readValue: _readPriceDisplay)
+      String? priceDisplay,
+      @JsonKey(name: 'yield_rate', fromJson: _doubleFromDynamic)
+      double? yieldRate,
+      @JsonKey(name: 'land_area', fromJson: _doubleFromDynamic) double? area,
       @JsonKey(name: 'approval_date') String? approvalDate,
       @JsonKey(name: 'record_id') String? recordId,
+      @JsonKey(name: 'db_id') int? dbId,
+      String? floors,
+      String? usage,
       String? popup});
 }
 
@@ -2856,6 +2865,9 @@ class _$PropertyMapMarkerCopyWithImpl<$Res, $Val extends PropertyMapMarker>
     Object? area = freezed,
     Object? approvalDate = freezed,
     Object? recordId = freezed,
+    Object? dbId = freezed,
+    Object? floors = freezed,
+    Object? usage = freezed,
     Object? popup = freezed,
   }) {
     return _then(_value.copyWith(
@@ -2895,6 +2907,18 @@ class _$PropertyMapMarkerCopyWithImpl<$Res, $Val extends PropertyMapMarker>
           ? _value.recordId
           : recordId // ignore: cast_nullable_to_non_nullable
               as String?,
+      dbId: freezed == dbId
+          ? _value.dbId
+          : dbId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      floors: freezed == floors
+          ? _value.floors
+          : floors // ignore: cast_nullable_to_non_nullable
+              as String?,
+      usage: freezed == usage
+          ? _value.usage
+          : usage // ignore: cast_nullable_to_non_nullable
+              as String?,
       popup: freezed == popup
           ? _value.popup
           : popup // ignore: cast_nullable_to_non_nullable
@@ -2916,11 +2940,16 @@ abstract class _$$PropertyMapMarkerImplCopyWith<$Res>
       double lon,
       String? address,
       @JsonKey(fromJson: _doubleFromDynamic) double? price,
-      @JsonKey(name: 'price_display') String? priceDisplay,
-      @JsonKey(name: 'yield', fromJson: _doubleFromDynamic) double? yieldRate,
-      @JsonKey(fromJson: _doubleFromDynamic) double? area,
+      @JsonKey(name: 'price_display', readValue: _readPriceDisplay)
+      String? priceDisplay,
+      @JsonKey(name: 'yield_rate', fromJson: _doubleFromDynamic)
+      double? yieldRate,
+      @JsonKey(name: 'land_area', fromJson: _doubleFromDynamic) double? area,
       @JsonKey(name: 'approval_date') String? approvalDate,
       @JsonKey(name: 'record_id') String? recordId,
+      @JsonKey(name: 'db_id') int? dbId,
+      String? floors,
+      String? usage,
       String? popup});
 }
 
@@ -2944,6 +2973,9 @@ class __$$PropertyMapMarkerImplCopyWithImpl<$Res>
     Object? area = freezed,
     Object? approvalDate = freezed,
     Object? recordId = freezed,
+    Object? dbId = freezed,
+    Object? floors = freezed,
+    Object? usage = freezed,
     Object? popup = freezed,
   }) {
     return _then(_$PropertyMapMarkerImpl(
@@ -2983,6 +3015,18 @@ class __$$PropertyMapMarkerImplCopyWithImpl<$Res>
           ? _value.recordId
           : recordId // ignore: cast_nullable_to_non_nullable
               as String?,
+      dbId: freezed == dbId
+          ? _value.dbId
+          : dbId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      floors: freezed == floors
+          ? _value.floors
+          : floors // ignore: cast_nullable_to_non_nullable
+              as String?,
+      usage: freezed == usage
+          ? _value.usage
+          : usage // ignore: cast_nullable_to_non_nullable
+              as String?,
       popup: freezed == popup
           ? _value.popup
           : popup // ignore: cast_nullable_to_non_nullable
@@ -2999,11 +3043,15 @@ class _$PropertyMapMarkerImpl extends _PropertyMapMarker {
       required this.lon,
       this.address,
       @JsonKey(fromJson: _doubleFromDynamic) this.price,
-      @JsonKey(name: 'price_display') this.priceDisplay,
-      @JsonKey(name: 'yield', fromJson: _doubleFromDynamic) this.yieldRate,
-      @JsonKey(fromJson: _doubleFromDynamic) this.area,
+      @JsonKey(name: 'price_display', readValue: _readPriceDisplay)
+      this.priceDisplay,
+      @JsonKey(name: 'yield_rate', fromJson: _doubleFromDynamic) this.yieldRate,
+      @JsonKey(name: 'land_area', fromJson: _doubleFromDynamic) this.area,
       @JsonKey(name: 'approval_date') this.approvalDate,
       @JsonKey(name: 'record_id') this.recordId,
+      @JsonKey(name: 'db_id') this.dbId,
+      this.floors,
+      this.usage,
       this.popup})
       : super._();
 
@@ -3020,13 +3068,13 @@ class _$PropertyMapMarkerImpl extends _PropertyMapMarker {
   @JsonKey(fromJson: _doubleFromDynamic)
   final double? price;
   @override
-  @JsonKey(name: 'price_display')
+  @JsonKey(name: 'price_display', readValue: _readPriceDisplay)
   final String? priceDisplay;
   @override
-  @JsonKey(name: 'yield', fromJson: _doubleFromDynamic)
+  @JsonKey(name: 'yield_rate', fromJson: _doubleFromDynamic)
   final double? yieldRate;
   @override
-  @JsonKey(fromJson: _doubleFromDynamic)
+  @JsonKey(name: 'land_area', fromJson: _doubleFromDynamic)
   final double? area;
   @override
   @JsonKey(name: 'approval_date')
@@ -3035,11 +3083,18 @@ class _$PropertyMapMarkerImpl extends _PropertyMapMarker {
   @JsonKey(name: 'record_id')
   final String? recordId;
   @override
+  @JsonKey(name: 'db_id')
+  final int? dbId;
+  @override
+  final String? floors;
+  @override
+  final String? usage;
+  @override
   final String? popup;
 
   @override
   String toString() {
-    return 'PropertyMapMarker(lat: $lat, lon: $lon, address: $address, price: $price, priceDisplay: $priceDisplay, yieldRate: $yieldRate, area: $area, approvalDate: $approvalDate, recordId: $recordId, popup: $popup)';
+    return 'PropertyMapMarker(lat: $lat, lon: $lon, address: $address, price: $price, priceDisplay: $priceDisplay, yieldRate: $yieldRate, area: $area, approvalDate: $approvalDate, recordId: $recordId, dbId: $dbId, floors: $floors, usage: $usage, popup: $popup)';
   }
 
   @override
@@ -3060,13 +3115,29 @@ class _$PropertyMapMarkerImpl extends _PropertyMapMarker {
                 other.approvalDate == approvalDate) &&
             (identical(other.recordId, recordId) ||
                 other.recordId == recordId) &&
+            (identical(other.dbId, dbId) || other.dbId == dbId) &&
+            (identical(other.floors, floors) || other.floors == floors) &&
+            (identical(other.usage, usage) || other.usage == usage) &&
             (identical(other.popup, popup) || other.popup == popup));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, lat, lon, address, price,
-      priceDisplay, yieldRate, area, approvalDate, recordId, popup);
+  int get hashCode => Object.hash(
+      runtimeType,
+      lat,
+      lon,
+      address,
+      price,
+      priceDisplay,
+      yieldRate,
+      area,
+      approvalDate,
+      recordId,
+      dbId,
+      floors,
+      usage,
+      popup);
 
   @JsonKey(ignore: true)
   @override
@@ -3089,12 +3160,17 @@ abstract class _PropertyMapMarker extends PropertyMapMarker {
       required final double lon,
       final String? address,
       @JsonKey(fromJson: _doubleFromDynamic) final double? price,
-      @JsonKey(name: 'price_display') final String? priceDisplay,
-      @JsonKey(name: 'yield', fromJson: _doubleFromDynamic)
+      @JsonKey(name: 'price_display', readValue: _readPriceDisplay)
+      final String? priceDisplay,
+      @JsonKey(name: 'yield_rate', fromJson: _doubleFromDynamic)
       final double? yieldRate,
-      @JsonKey(fromJson: _doubleFromDynamic) final double? area,
+      @JsonKey(name: 'land_area', fromJson: _doubleFromDynamic)
+      final double? area,
       @JsonKey(name: 'approval_date') final String? approvalDate,
       @JsonKey(name: 'record_id') final String? recordId,
+      @JsonKey(name: 'db_id') final int? dbId,
+      final String? floors,
+      final String? usage,
       final String? popup}) = _$PropertyMapMarkerImpl;
   const _PropertyMapMarker._() : super._();
 
@@ -3111,13 +3187,13 @@ abstract class _PropertyMapMarker extends PropertyMapMarker {
   @JsonKey(fromJson: _doubleFromDynamic)
   double? get price;
   @override
-  @JsonKey(name: 'price_display')
+  @JsonKey(name: 'price_display', readValue: _readPriceDisplay)
   String? get priceDisplay;
   @override
-  @JsonKey(name: 'yield', fromJson: _doubleFromDynamic)
+  @JsonKey(name: 'yield_rate', fromJson: _doubleFromDynamic)
   double? get yieldRate;
   @override
-  @JsonKey(fromJson: _doubleFromDynamic)
+  @JsonKey(name: 'land_area', fromJson: _doubleFromDynamic)
   double? get area;
   @override
   @JsonKey(name: 'approval_date')
@@ -3125,6 +3201,13 @@ abstract class _PropertyMapMarker extends PropertyMapMarker {
   @override
   @JsonKey(name: 'record_id')
   String? get recordId;
+  @override
+  @JsonKey(name: 'db_id')
+  int? get dbId;
+  @override
+  String? get floors;
+  @override
+  String? get usage;
   @override
   String? get popup;
   @override
@@ -3965,4 +4048,190 @@ abstract class _PropertySearchResponse implements PropertySearchResponse {
   @JsonKey(ignore: true)
   _$$PropertySearchResponseImplCopyWith<_$PropertySearchResponseImpl>
       get copyWith => throw _privateConstructorUsedError;
+}
+
+MapDataResponse _$MapDataResponseFromJson(Map<String, dynamic> json) {
+  return _MapDataResponse.fromJson(json);
+}
+
+/// @nodoc
+mixin _$MapDataResponse {
+  List<PropertyMapMarker> get markers => throw _privateConstructorUsedError;
+  int get total => throw _privateConstructorUsedError;
+  bool get success => throw _privateConstructorUsedError;
+
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  @JsonKey(ignore: true)
+  $MapDataResponseCopyWith<MapDataResponse> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $MapDataResponseCopyWith<$Res> {
+  factory $MapDataResponseCopyWith(
+          MapDataResponse value, $Res Function(MapDataResponse) then) =
+      _$MapDataResponseCopyWithImpl<$Res, MapDataResponse>;
+  @useResult
+  $Res call({List<PropertyMapMarker> markers, int total, bool success});
+}
+
+/// @nodoc
+class _$MapDataResponseCopyWithImpl<$Res, $Val extends MapDataResponse>
+    implements $MapDataResponseCopyWith<$Res> {
+  _$MapDataResponseCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? markers = null,
+    Object? total = null,
+    Object? success = null,
+  }) {
+    return _then(_value.copyWith(
+      markers: null == markers
+          ? _value.markers
+          : markers // ignore: cast_nullable_to_non_nullable
+              as List<PropertyMapMarker>,
+      total: null == total
+          ? _value.total
+          : total // ignore: cast_nullable_to_non_nullable
+              as int,
+      success: null == success
+          ? _value.success
+          : success // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$MapDataResponseImplCopyWith<$Res>
+    implements $MapDataResponseCopyWith<$Res> {
+  factory _$$MapDataResponseImplCopyWith(_$MapDataResponseImpl value,
+          $Res Function(_$MapDataResponseImpl) then) =
+      __$$MapDataResponseImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({List<PropertyMapMarker> markers, int total, bool success});
+}
+
+/// @nodoc
+class __$$MapDataResponseImplCopyWithImpl<$Res>
+    extends _$MapDataResponseCopyWithImpl<$Res, _$MapDataResponseImpl>
+    implements _$$MapDataResponseImplCopyWith<$Res> {
+  __$$MapDataResponseImplCopyWithImpl(
+      _$MapDataResponseImpl _value, $Res Function(_$MapDataResponseImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? markers = null,
+    Object? total = null,
+    Object? success = null,
+  }) {
+    return _then(_$MapDataResponseImpl(
+      markers: null == markers
+          ? _value._markers
+          : markers // ignore: cast_nullable_to_non_nullable
+              as List<PropertyMapMarker>,
+      total: null == total
+          ? _value.total
+          : total // ignore: cast_nullable_to_non_nullable
+              as int,
+      success: null == success
+          ? _value.success
+          : success // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$MapDataResponseImpl implements _MapDataResponse {
+  const _$MapDataResponseImpl(
+      {final List<PropertyMapMarker> markers = const [],
+      this.total = 0,
+      this.success = false})
+      : _markers = markers;
+
+  factory _$MapDataResponseImpl.fromJson(Map<String, dynamic> json) =>
+      _$$MapDataResponseImplFromJson(json);
+
+  final List<PropertyMapMarker> _markers;
+  @override
+  @JsonKey()
+  List<PropertyMapMarker> get markers {
+    if (_markers is EqualUnmodifiableListView) return _markers;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_markers);
+  }
+
+  @override
+  @JsonKey()
+  final int total;
+  @override
+  @JsonKey()
+  final bool success;
+
+  @override
+  String toString() {
+    return 'MapDataResponse(markers: $markers, total: $total, success: $success)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$MapDataResponseImpl &&
+            const DeepCollectionEquality().equals(other._markers, _markers) &&
+            (identical(other.total, total) || other.total == total) &&
+            (identical(other.success, success) || other.success == success));
+  }
+
+  @JsonKey(ignore: true)
+  @override
+  int get hashCode => Object.hash(runtimeType,
+      const DeepCollectionEquality().hash(_markers), total, success);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$MapDataResponseImplCopyWith<_$MapDataResponseImpl> get copyWith =>
+      __$$MapDataResponseImplCopyWithImpl<_$MapDataResponseImpl>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$MapDataResponseImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _MapDataResponse implements MapDataResponse {
+  const factory _MapDataResponse(
+      {final List<PropertyMapMarker> markers,
+      final int total,
+      final bool success}) = _$MapDataResponseImpl;
+
+  factory _MapDataResponse.fromJson(Map<String, dynamic> json) =
+      _$MapDataResponseImpl.fromJson;
+
+  @override
+  List<PropertyMapMarker> get markers;
+  @override
+  int get total;
+  @override
+  bool get success;
+  @override
+  @JsonKey(ignore: true)
+  _$$MapDataResponseImplCopyWith<_$MapDataResponseImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }

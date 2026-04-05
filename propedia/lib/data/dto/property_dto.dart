@@ -65,8 +65,13 @@ List<String> _statusFromDynamic(dynamic value) {
   return [];
 }
 
+/// price_display 또는 price_label 필드 읽기
+Object? _readPriceDisplay(Map<dynamic, dynamic> json, String key) {
+  return json['price_display'] ?? json['price_label'];
+}
+
 // =============================================================================
-// 매물 목록 아이템 (Airtable fields 직접 매핑)
+// 매물 목록 아이템 (PropSheet fields 매핑)
 // =============================================================================
 @freezed
 class PropertyRecord with _$PropertyRecord {
@@ -271,11 +276,14 @@ class PropertyMapMarker with _$PropertyMapMarker {
     required double lon,
     String? address,
     @JsonKey(fromJson: _doubleFromDynamic) double? price,
-    @JsonKey(name: 'price_display') String? priceDisplay,
-    @JsonKey(name: 'yield', fromJson: _doubleFromDynamic) double? yieldRate,
-    @JsonKey(fromJson: _doubleFromDynamic) double? area,
+    @JsonKey(name: 'price_display', readValue: _readPriceDisplay) String? priceDisplay,
+    @JsonKey(name: 'yield_rate', fromJson: _doubleFromDynamic) double? yieldRate,
+    @JsonKey(name: 'land_area', fromJson: _doubleFromDynamic) double? area,
     @JsonKey(name: 'approval_date') String? approvalDate,
     @JsonKey(name: 'record_id') String? recordId,
+    @JsonKey(name: 'db_id') int? dbId,
+    String? floors,
+    String? usage,
     String? popup,
   }) = _PropertyMapMarker;
 
@@ -346,14 +354,27 @@ class PropertySearchResponse with _$PropertySearchResponse {
 // 카테고리 정의
 // =============================================================================
 
-/// 매물 카테고리
+/// 매물 카테고리 (PropSheet view_id)
 enum PropertyCategory {
-  reconstruction('재건축용 토지', 'viwzEVzrr47fCbDNU'),
-  highYield('고수익률 건물', 'viwxS4dKAcQWmB0Be'),
-  lowCost('저가단독주택', 'viwUKnawSP8SkV9Sx');
+  reconstruction('재건축용 토지', '70'),
+  highYield('고수익률 건물', '71'),
+  lowCost('저가단독주택', '72');
 
   final String label;
   final String? viewId;
 
   const PropertyCategory(this.label, this.viewId);
+}
+
+/// 지도 데이터 응답 (map-data API)
+@freezed
+class MapDataResponse with _$MapDataResponse {
+  const factory MapDataResponse({
+    @Default([]) List<PropertyMapMarker> markers,
+    @Default(0) int total,
+    @Default(false) bool success,
+  }) = _MapDataResponse;
+
+  factory MapDataResponse.fromJson(Map<String, dynamic> json) =>
+      _$MapDataResponseFromJson(json);
 }

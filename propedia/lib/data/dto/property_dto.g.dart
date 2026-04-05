@@ -252,11 +252,14 @@ _$PropertyMapMarkerImpl _$$PropertyMapMarkerImplFromJson(
       lon: (json['lon'] as num).toDouble(),
       address: json['address'] as String?,
       price: _doubleFromDynamic(json['price']),
-      priceDisplay: json['price_display'] as String?,
-      yieldRate: _doubleFromDynamic(json['yield']),
-      area: _doubleFromDynamic(json['area']),
+      priceDisplay: _readPriceDisplay(json, 'price_display') as String?,
+      yieldRate: _doubleFromDynamic(json['yield_rate']),
+      area: _doubleFromDynamic(json['land_area']),
       approvalDate: json['approval_date'] as String?,
       recordId: json['record_id'] as String?,
+      dbId: (json['db_id'] as num?)?.toInt(),
+      floors: json['floors'] as String?,
+      usage: json['usage'] as String?,
       popup: json['popup'] as String?,
     );
 
@@ -268,10 +271,13 @@ Map<String, dynamic> _$$PropertyMapMarkerImplToJson(
       'address': instance.address,
       'price': instance.price,
       'price_display': instance.priceDisplay,
-      'yield': instance.yieldRate,
-      'area': instance.area,
+      'yield_rate': instance.yieldRate,
+      'land_area': instance.area,
       'approval_date': instance.approvalDate,
       'record_id': instance.recordId,
+      'db_id': instance.dbId,
+      'floors': instance.floors,
+      'usage': instance.usage,
       'popup': instance.popup,
     };
 
@@ -348,4 +354,24 @@ Map<String, dynamic> _$$PropertySearchResponseImplToJson(
       'markers': instance.markers,
       'statistics': instance.statistics,
       'error': instance.error,
+    };
+
+_$MapDataResponseImpl _$$MapDataResponseImplFromJson(
+        Map<String, dynamic> json) =>
+    _$MapDataResponseImpl(
+      markers: (json['markers'] as List<dynamic>?)
+              ?.map(
+                  (e) => PropertyMapMarker.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      total: (json['total'] as num?)?.toInt() ?? 0,
+      success: json['success'] as bool? ?? false,
+    );
+
+Map<String, dynamic> _$$MapDataResponseImplToJson(
+        _$MapDataResponseImpl instance) =>
+    <String, dynamic>{
+      'markers': instance.markers,
+      'total': instance.total,
+      'success': instance.success,
     };
