@@ -23,10 +23,13 @@ class PropertyApi {
     }
   }
 
-  /// 전체 매물 지도 데이터 조회 (마커 + 좌표)
+  /// 전체 매물 지도 데이터 조회 (마커 + 좌표, 등록 상태만)
   Future<MapDataResponse> getMapData() async {
-    debugPrint('📍 지도 데이터 API 호출');
-    final response = await _dio.get('/propsheet/api/propsheet/map-data');
+    debugPrint('📍 지도 데이터 API 호출 (status=등록)');
+    final response = await _dio.get(
+      '/propsheet/api/propsheet/map-data',
+      queryParameters: {'status': '등록'},
+    );
     return MapDataResponse.fromJson(response.data);
   }
 

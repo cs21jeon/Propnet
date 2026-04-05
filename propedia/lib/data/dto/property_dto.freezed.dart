@@ -2809,6 +2809,12 @@ mixin _$PropertyMapMarker {
   String? get recordId => throw _privateConstructorUsedError;
   @JsonKey(name: 'db_id')
   int? get dbId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'property_type')
+  String? get propertyType => throw _privateConstructorUsedError;
+  @JsonKey(name: 'transaction_type')
+  String? get transactionType => throw _privateConstructorUsedError;
+  @JsonKey(name: 'property_subtype')
+  String? get propertySubtype => throw _privateConstructorUsedError;
   String? get floors => throw _privateConstructorUsedError;
   String? get usage => throw _privateConstructorUsedError;
   String? get popup => throw _privateConstructorUsedError;
@@ -2838,6 +2844,9 @@ abstract class $PropertyMapMarkerCopyWith<$Res> {
       @JsonKey(name: 'approval_date') String? approvalDate,
       @JsonKey(name: 'record_id') String? recordId,
       @JsonKey(name: 'db_id') int? dbId,
+      @JsonKey(name: 'property_type') String? propertyType,
+      @JsonKey(name: 'transaction_type') String? transactionType,
+      @JsonKey(name: 'property_subtype') String? propertySubtype,
       String? floors,
       String? usage,
       String? popup});
@@ -2866,6 +2875,9 @@ class _$PropertyMapMarkerCopyWithImpl<$Res, $Val extends PropertyMapMarker>
     Object? approvalDate = freezed,
     Object? recordId = freezed,
     Object? dbId = freezed,
+    Object? propertyType = freezed,
+    Object? transactionType = freezed,
+    Object? propertySubtype = freezed,
     Object? floors = freezed,
     Object? usage = freezed,
     Object? popup = freezed,
@@ -2911,6 +2923,18 @@ class _$PropertyMapMarkerCopyWithImpl<$Res, $Val extends PropertyMapMarker>
           ? _value.dbId
           : dbId // ignore: cast_nullable_to_non_nullable
               as int?,
+      propertyType: freezed == propertyType
+          ? _value.propertyType
+          : propertyType // ignore: cast_nullable_to_non_nullable
+              as String?,
+      transactionType: freezed == transactionType
+          ? _value.transactionType
+          : transactionType // ignore: cast_nullable_to_non_nullable
+              as String?,
+      propertySubtype: freezed == propertySubtype
+          ? _value.propertySubtype
+          : propertySubtype // ignore: cast_nullable_to_non_nullable
+              as String?,
       floors: freezed == floors
           ? _value.floors
           : floors // ignore: cast_nullable_to_non_nullable
@@ -2948,6 +2972,9 @@ abstract class _$$PropertyMapMarkerImplCopyWith<$Res>
       @JsonKey(name: 'approval_date') String? approvalDate,
       @JsonKey(name: 'record_id') String? recordId,
       @JsonKey(name: 'db_id') int? dbId,
+      @JsonKey(name: 'property_type') String? propertyType,
+      @JsonKey(name: 'transaction_type') String? transactionType,
+      @JsonKey(name: 'property_subtype') String? propertySubtype,
       String? floors,
       String? usage,
       String? popup});
@@ -2974,6 +3001,9 @@ class __$$PropertyMapMarkerImplCopyWithImpl<$Res>
     Object? approvalDate = freezed,
     Object? recordId = freezed,
     Object? dbId = freezed,
+    Object? propertyType = freezed,
+    Object? transactionType = freezed,
+    Object? propertySubtype = freezed,
     Object? floors = freezed,
     Object? usage = freezed,
     Object? popup = freezed,
@@ -3019,6 +3049,18 @@ class __$$PropertyMapMarkerImplCopyWithImpl<$Res>
           ? _value.dbId
           : dbId // ignore: cast_nullable_to_non_nullable
               as int?,
+      propertyType: freezed == propertyType
+          ? _value.propertyType
+          : propertyType // ignore: cast_nullable_to_non_nullable
+              as String?,
+      transactionType: freezed == transactionType
+          ? _value.transactionType
+          : transactionType // ignore: cast_nullable_to_non_nullable
+              as String?,
+      propertySubtype: freezed == propertySubtype
+          ? _value.propertySubtype
+          : propertySubtype // ignore: cast_nullable_to_non_nullable
+              as String?,
       floors: freezed == floors
           ? _value.floors
           : floors // ignore: cast_nullable_to_non_nullable
@@ -3050,6 +3092,9 @@ class _$PropertyMapMarkerImpl extends _PropertyMapMarker {
       @JsonKey(name: 'approval_date') this.approvalDate,
       @JsonKey(name: 'record_id') this.recordId,
       @JsonKey(name: 'db_id') this.dbId,
+      @JsonKey(name: 'property_type') this.propertyType,
+      @JsonKey(name: 'transaction_type') this.transactionType,
+      @JsonKey(name: 'property_subtype') this.propertySubtype,
       this.floors,
       this.usage,
       this.popup})
@@ -3086,6 +3131,15 @@ class _$PropertyMapMarkerImpl extends _PropertyMapMarker {
   @JsonKey(name: 'db_id')
   final int? dbId;
   @override
+  @JsonKey(name: 'property_type')
+  final String? propertyType;
+  @override
+  @JsonKey(name: 'transaction_type')
+  final String? transactionType;
+  @override
+  @JsonKey(name: 'property_subtype')
+  final String? propertySubtype;
+  @override
   final String? floors;
   @override
   final String? usage;
@@ -3094,7 +3148,7 @@ class _$PropertyMapMarkerImpl extends _PropertyMapMarker {
 
   @override
   String toString() {
-    return 'PropertyMapMarker(lat: $lat, lon: $lon, address: $address, price: $price, priceDisplay: $priceDisplay, yieldRate: $yieldRate, area: $area, approvalDate: $approvalDate, recordId: $recordId, dbId: $dbId, floors: $floors, usage: $usage, popup: $popup)';
+    return 'PropertyMapMarker(lat: $lat, lon: $lon, address: $address, price: $price, priceDisplay: $priceDisplay, yieldRate: $yieldRate, area: $area, approvalDate: $approvalDate, recordId: $recordId, dbId: $dbId, propertyType: $propertyType, transactionType: $transactionType, propertySubtype: $propertySubtype, floors: $floors, usage: $usage, popup: $popup)';
   }
 
   @override
@@ -3116,6 +3170,12 @@ class _$PropertyMapMarkerImpl extends _PropertyMapMarker {
             (identical(other.recordId, recordId) ||
                 other.recordId == recordId) &&
             (identical(other.dbId, dbId) || other.dbId == dbId) &&
+            (identical(other.propertyType, propertyType) ||
+                other.propertyType == propertyType) &&
+            (identical(other.transactionType, transactionType) ||
+                other.transactionType == transactionType) &&
+            (identical(other.propertySubtype, propertySubtype) ||
+                other.propertySubtype == propertySubtype) &&
             (identical(other.floors, floors) || other.floors == floors) &&
             (identical(other.usage, usage) || other.usage == usage) &&
             (identical(other.popup, popup) || other.popup == popup));
@@ -3135,6 +3195,9 @@ class _$PropertyMapMarkerImpl extends _PropertyMapMarker {
       approvalDate,
       recordId,
       dbId,
+      propertyType,
+      transactionType,
+      propertySubtype,
       floors,
       usage,
       popup);
@@ -3169,6 +3232,9 @@ abstract class _PropertyMapMarker extends PropertyMapMarker {
       @JsonKey(name: 'approval_date') final String? approvalDate,
       @JsonKey(name: 'record_id') final String? recordId,
       @JsonKey(name: 'db_id') final int? dbId,
+      @JsonKey(name: 'property_type') final String? propertyType,
+      @JsonKey(name: 'transaction_type') final String? transactionType,
+      @JsonKey(name: 'property_subtype') final String? propertySubtype,
       final String? floors,
       final String? usage,
       final String? popup}) = _$PropertyMapMarkerImpl;
@@ -3204,6 +3270,15 @@ abstract class _PropertyMapMarker extends PropertyMapMarker {
   @override
   @JsonKey(name: 'db_id')
   int? get dbId;
+  @override
+  @JsonKey(name: 'property_type')
+  String? get propertyType;
+  @override
+  @JsonKey(name: 'transaction_type')
+  String? get transactionType;
+  @override
+  @JsonKey(name: 'property_subtype')
+  String? get propertySubtype;
   @override
   String? get floors;
   @override
