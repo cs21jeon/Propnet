@@ -229,6 +229,16 @@
                                     <!-- Text message -->
                                     <div class="msg-bubble" x-show="msg.type === 'text'" x-html="renderContent(msg.content)"></div>
 
+                                    <!-- File message -->
+                                    <div class="msg-file-card" x-show="msg.type === 'file'"
+                                         @click="msg.file_drive_url && window.open(msg.file_drive_url, '_blank')">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                                        <div style="min-width:0;flex:1;">
+                                            <div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" x-text="msg.file_name || (msg.content || '파일').replace(/^[^\s]*\s*/, '').split(' (')[0]"></div>
+                                            <div style="font-size:11px;color:var(--primary);" x-text="msg.file_drive_url ? 'Google Drive에서 보기' : '저장 완료'"></div>
+                                        </div>
+                                    </div>
+
                                     <!-- Transcript message (expandable via vanilla JS) -->
                                     <div class="msg-bubble" x-show="msg.type === 'transcript'">
                                             <div class="transcript-collapsed" x-html="renderContent(msg.content)"
@@ -238,7 +248,10 @@
                                                     onclick="var t=this.previousElementSibling;var c=t.classList.contains('transcript-collapsed');t.classList.toggle('transcript-collapsed');this.textContent=c?'접기':'더보기';">더보기</button>
                                     </div>
 
-                                    <div class="msg-time" x-text="formatTime(msg.created_at)"></div>
+                                    <div class="msg-time">
+                                        <span class="msg-unread" x-show="getUnreadCount(msg) > 0" x-text="getUnreadCount(msg)"></span>
+                                        <span x-text="formatTime(msg.created_at)"></span>
+                                    </div>
                                 </div>
                         </div>
                     </div>
@@ -274,6 +287,20 @@
             </div>
 
             <!-- Chat input -->
+            <!-- 클립보드 이미지 미리보기 -->
+            <div class="paste-preview" x-show="pastePreview" x-cloak>
+                <div class="paste-preview-inner">
+                    <img :src="pastePreview" alt="붙여넣기 이미지">
+                    <div class="paste-preview-actions">
+                        <span style="font-size:13px;color:var(--text-muted);">클립보드 이미지</span>
+                        <div>
+                            <button class="btn-cancel" @click="cancelPaste()">취소</button>
+                            <button class="btn-paste-send" @click="sendPastedImage()">전송</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="chat-input-area" x-show="!isRecording">
                 <div class="chat-input-row">
                     <div class="chat-input-actions">
@@ -288,6 +315,7 @@
                         <textarea class="chat-input" x-ref="chatInput" x-model="inputText"
                                   placeholder="메시지 입력... (Enter 전송, Shift+Enter 줄바꿈)"
                                   rows="1"
+                                  @paste="handlePaste($event)"
                                   @input="autoResize($el); sendTyping()"></textarea>
                     </div>
                     <button class="btn-send" @click="sendMessage()" :disabled="!inputText.trim()">

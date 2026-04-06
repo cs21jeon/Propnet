@@ -71,6 +71,14 @@ function ProptalkApp() {
         // ── Uploads ──
         uploads: [],
 
+        // ── Clipboard Paste ──
+        pastePreview: null,
+        _pasteFile: null,
+
+        // ── Read Status ──
+        _readStatus: {},  // user_id -> last_read_message_id
+        _memberCount: 0,
+
         // ── Recording ──
         isRecording: false,
         recordingTime: '00:00',
@@ -268,6 +276,7 @@ function ProptalkApp() {
 
             await this.loadMessages();
             this.loadMembers();
+            this.loadReadStatus(room.id);
 
             // Join room via WebSocket
             if (this.socket) {
@@ -413,20 +422,30 @@ function ProptalkApp() {
         },
 
         _enrichMessage(msg) {
-            msg._userName = msg.user_name || msg.user?.name || '알 수 없음';
-            msg._avatar = msg.user_avatar || msg.user?.avatar_url || '';
-            msg._showDate = false;
-            msg._dateStr = '';
-            msg._expanded = false;
-            msg._audioExpanded = false;
-            msg._audioPlaying = false;
-            msg._audioLoading = false;
-            msg._audioLoaded = false;
+            // 모든 메시지에 기본 필드 설정 (Alpine 반응형 보장)
+            const defaults = {
+                _userName: msg.user_name || msg.user?.name || '알 수 없음',
+                _avatar: msg.user_avatar || msg.user?.avatar_url || '',
+                _showDate: false,
+                _dateStr: '',
+                _expanded: false,
+                _audioExpanded: false,
+                _audioPlaying: false,
+                _audioLoading: false,
+                _audioLoaded: false,
+                // file 필드 기본값 (반응형 위해 항상 존재해야 함)
+                file_id: msg.file_id || null,
+                file_name: msg.file_name || null,
+                file_type: msg.file_type || null,
+                file_size: msg.file_size || 0,
+                file_drive_url: msg.file_drive_url || null,
+                file_status: msg.file_status || 'completed',
+            };
+            msg = Object.assign(defaults, msg);
 
             // API가 flat 구조로 반환: audio_id, audio_status, audio_filename 등
             // -> 템플릿이 사용하는 nested msg.audio 객체로 변환
             if (msg.audio_id && !msg.audio) {
-                // audio_filename 우선, 없으면 content에서 파일명 추출
                 const filename = msg.audio_filename
                     || (msg.content || '').replace(/^🎙️\s*/, '').trim()
                     || '녹음';
@@ -439,6 +458,11 @@ function ProptalkApp() {
                     transcript_summary: msg.transcript_summary || null,
                     drive_url: msg.drive_url || null,
                 };
+            }
+
+            // file 타입: content에서 파일명 추출
+            if (msg.type === 'file' && !msg.file_name) {
+                msg.file_name = (msg.content || '').replace(/^[^\s]*\s*/, '').split(' (')[0] || '파일';
             }
 
             // replies에서 파일정보(system) 추출
@@ -653,7 +677,13 @@ function ProptalkApp() {
 
             // File status
             this.socket.on('file_status', (data) => {
-                console.log('[WS] file_status:', data);
+                for (const msg of this.messages) {
+                    if (msg.id === data.message_id) {
+                        msg.file_status = data.status;
+                        if (data.drive_url) msg.file_drive_url = data.drive_url;
+                        break;
+                    }
+                }
             });
 
             // Typing
@@ -673,9 +703,9 @@ function ProptalkApp() {
 
             // Read update
             this.socket.on('read_update', (data) => {
-                // Update unread count for room list
+                // 현재 방이면 읽음 상태 실시간 업데이트
                 if (data.room_id === this.currentRoom?.id) {
-                    // Someone read messages in the current room - could update UI
+                    this._readStatus[data.user_id] = data.last_read_message_id;
                 }
                 // Reload rooms to refresh unread counts
                 this.loadRooms();
@@ -691,6 +721,29 @@ function ProptalkApp() {
                 this.rooms = [room, ...this.rooms.filter(r => r.id !== room.id)];
                 this.filterRooms();
             }
+        },
+
+        async loadReadStatus(roomId) {
+            const res = await this.api(`/api/rooms/${roomId}/read-status`);
+            if (res?.ok) {
+                const data = await res.json();
+                const status = data.read_status || [];
+                this._memberCount = status.length;
+                this._readStatus = {};
+                for (const s of status) {
+                    this._readStatus[s.user_id] = s.last_read_message_id;
+                }
+            }
+        },
+
+        getUnreadCount(msg) {
+            if (!msg.id || msg.id < 0 || this._memberCount <= 1) return 0;
+            let readCount = 0;
+            for (const uid in this._readStatus) {
+                if (this._readStatus[uid] >= msg.id) readCount++;
+            }
+            const unread = this._memberCount - readCount;
+            return unread > 0 ? unread : 0;
         },
 
         async markRead(roomId) {
@@ -742,6 +795,52 @@ function ProptalkApp() {
             }
             const files = e.dataTransfer?.files;
             if (files?.length) this.uploadFiles(files);
+        },
+
+        handlePaste(e) {
+            if (!this.currentRoom) return;
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (!file) return;
+
+                    // 미리보기 생성
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        this.pastePreview = ev.target.result;
+                        this._pasteFile = file;
+                    };
+                    reader.readAsDataURL(file);
+                    return;
+                }
+            }
+        },
+
+        cancelPaste() {
+            this.pastePreview = null;
+            this._pasteFile = null;
+        },
+
+        sendPastedImage() {
+            if (!this._pasteFile || !this.currentRoom) return;
+            // 파일명 생성: clipboard_YYYYMMDD_HHmmss.png
+            const now = new Date();
+            const ts = now.getFullYear().toString() +
+                String(now.getMonth() + 1).padStart(2, '0') +
+                String(now.getDate()).padStart(2, '0') + '_' +
+                String(now.getHours()).padStart(2, '0') +
+                String(now.getMinutes()).padStart(2, '0') +
+                String(now.getSeconds()).padStart(2, '0');
+            const ext = this._pasteFile.type.split('/')[1] || 'png';
+            const named = new File([this._pasteFile], `clipboard_${ts}.${ext}`, { type: this._pasteFile.type });
+
+            this.uploadFile(named);
+            this.pastePreview = null;
+            this._pasteFile = null;
         },
 
         handleFileSelect(e) {

@@ -212,8 +212,23 @@ body {
 .message-row:not(.own) .msg-bubble { background: var(--bg-white); border: 1px solid var(--border); }
 .message-row.own .msg-bubble { background: var(--primary); color: #fff; }
 
-.msg-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-.message-row.own .msg-time { text-align: right; }
+.msg-file-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    max-width: 320px;
+}
+.msg-file-card:hover { background: var(--bg-white); }
+.message-row.own .msg-file-card { margin-left: auto; }
+
+.msg-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; display: flex; gap: 4px; }
+.message-row.own .msg-time { justify-content: flex-end; }
+.msg-unread { color: var(--primary); font-weight: bold; font-size: 11px; }
 
 /* Audio message */
 .msg-audio {
@@ -323,6 +338,56 @@ body {
 }
 
 /* ── Chat Input ── */
+/* Clipboard paste preview */
+.paste-preview {
+    padding: 8px 20px;
+    background: var(--bg-white);
+    border-top: 1px solid var(--border);
+}
+.paste-preview-inner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    background: var(--bg-card);
+    border-radius: 8px;
+}
+.paste-preview img {
+    max-width: 120px;
+    max-height: 80px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid var(--border);
+}
+.paste-preview-actions {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.paste-preview-actions div { display: flex; gap: 6px; }
+.btn-cancel {
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-white);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 12px;
+}
+.btn-paste-send {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 6px;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+}
+.btn-cancel:hover { background: var(--bg-card); }
+.btn-paste-send:hover { opacity: 0.9; }
+
 .chat-input-area {
     padding: 12px 20px;
     background: var(--bg-white);
