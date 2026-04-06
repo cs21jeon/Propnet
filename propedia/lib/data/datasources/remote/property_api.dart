@@ -43,10 +43,10 @@ class PropertyApi {
   }
 
   /// 매물 상세 조회 (PropSheet 형식 → PropertyRecord 변환)
-  Future<PropertyDetailResponse> getPropertyDetail(String recordId) async {
+  Future<PropertyDetailResponse> getPropertyDetail(String recordId, {int? dbId}) async {
     final response = await _dio.get(
       '/propsheet/api/propsheet/property-detail',
-      queryParameters: {'id': recordId, 'db_id': defaultDbId},
+      queryParameters: {'id': recordId, 'db_id': dbId ?? defaultDbId},
     );
     final data = response.data as Map<String, dynamic>;
     final propData = data['property'] as Map<String, dynamic>?;

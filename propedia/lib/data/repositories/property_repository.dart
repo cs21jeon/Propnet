@@ -34,10 +34,10 @@ class PropertyRepository {
   }
 
   /// 매물 상세 조회
-  Future<PropertyRecord?> getPropertyDetail(String recordId) async {
+  Future<PropertyRecord?> getPropertyDetail(String recordId, {int? dbId}) async {
     try {
-      debugPrint('📡 API 호출: getPropertyDetail($recordId)');
-      final response = await _propertyApi.getPropertyDetail(recordId);
+      debugPrint('📡 API 호출: getPropertyDetail($recordId, dbId=$dbId)');
+      final response = await _propertyApi.getPropertyDetail(recordId, dbId: dbId);
       debugPrint('📡 API 응답: property=${response.property?.id}');
       return response.property;
     } on DioException catch (e) {

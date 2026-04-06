@@ -149,12 +149,12 @@ class PropertyDetailNotifier extends StateNotifier<PropertyDetailState> {
   PropertyDetailNotifier(this._repository) : super(const PropertyDetailState());
 
   /// 매물 상세 로드
-  Future<void> loadDetail(String recordId) async {
+  Future<void> loadDetail(String recordId, {int? dbId}) async {
     state = const PropertyDetailState(status: SearchStatus.loading);
-    debugPrint('🏠 매물 상세 로드: $recordId');
+    debugPrint('🏠 매물 상세 로드: $recordId (dbId=$dbId)');
 
     try {
-      final property = await _repository.getPropertyDetail(recordId);
+      final property = await _repository.getPropertyDetail(recordId, dbId: dbId);
       if (property != null) {
         state = PropertyDetailState(
           status: SearchStatus.success,

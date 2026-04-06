@@ -1,4 +1,15 @@
-업데이트 현황 (2026-04-03)
+업데이트 현황 (2026-04-06)
+
+## 2026-04-06: 집합/부분 부동산 상세보기 버그 수정 + 파비콘 통일
+
+- 매물 상세보기에서 db_id를 전달하도록 수정 (집합=38, 부분=43 부동산 상세 표시 안 되던 버그)
+  - property_api.dart: getPropertyDetail()에 dbId 파라미터 추가
+  - property_repository.dart: dbId 전달 파이프라인 추가
+  - property_provider.dart: loadDetail()에 dbId 파라미터 추가
+  - property_detail_screen.dart: dbId 필드 추가 + API 호출 시 전달
+  - app_router.dart: URL 쿼리 파라미터(?db_id=) 파싱 추가
+  - 5개 화면의 네비게이션 호출에서 marker.dbId 전달 (home, map, search, search_map, list)
+- propnet.kr 파비콘 통일: /admin/login, propnet.kr 랜딩 → /admin과 동일한 propnet-icon.png 사용
 
 ## 2026-04-03: PropNet 통합 브랜딩 + 가이드 페이지
 

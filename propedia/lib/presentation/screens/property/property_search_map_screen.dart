@@ -261,7 +261,7 @@ class _PropertySearchMapScreenState
                     onPressed: () {
                       final recordId = marker.recordId;
                       if (recordId != null) {
-                        context.push('/property/detail/$recordId');
+                        context.push('/property/detail/$recordId?db_id=${marker.dbId ?? 39}');
                       }
                     },
                     style: ElevatedButton.styleFrom(

@@ -156,7 +156,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/property/detail/:recordId',
         builder: (context, state) {
           final recordId = state.pathParameters['recordId']!;
-          return PropertyDetailScreen(recordId: recordId);
+          final dbIdStr = state.uri.queryParameters['db_id'];
+          final dbId = dbIdStr != null ? int.tryParse(dbIdStr) : null;
+          return PropertyDetailScreen(recordId: recordId, dbId: dbId);
         },
       ),
       GoRoute(

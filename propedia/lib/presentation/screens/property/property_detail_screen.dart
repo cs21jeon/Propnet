@@ -10,10 +10,12 @@ import 'package:url_launcher/url_launcher.dart';
 /// 매물 상세 화면 (웹페이지 구조와 동일)
 class PropertyDetailScreen extends ConsumerStatefulWidget {
   final String recordId;
+  final int? dbId;
 
   const PropertyDetailScreen({
     super.key,
     required this.recordId,
+    this.dbId,
   });
 
   @override
@@ -26,7 +28,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(propertyDetailProvider.notifier).loadDetail(widget.recordId);
+      ref.read(propertyDetailProvider.notifier).loadDetail(widget.recordId, dbId: widget.dbId);
     });
   }
 
@@ -72,7 +74,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                 onPressed: () {
                   ref
                       .read(propertyDetailProvider.notifier)
-                      .loadDetail(widget.recordId);
+                      .loadDetail(widget.recordId, dbId: widget.dbId);
                 },
                 child: const Text('다시 시도'),
               ),

@@ -434,7 +434,7 @@ class _PropertySearchScreenState extends ConsumerState<PropertySearchScreen> {
           onTap: () {
             final recordId = marker.recordId;
             if (recordId != null) {
-              context.push('/property/detail/$recordId');
+              context.push('/property/detail/$recordId?db_id=${marker.dbId ?? 39}');
             }
           },
           borderRadius: BorderRadius.circular(12),

@@ -494,7 +494,7 @@ class _PropertyHomeScreenState extends ConsumerState<PropertyHomeScreen> {
         const SizedBox(height: 10),
         Row(children: [
           Expanded(child: OutlinedButton(
-            onPressed: () { if (m.recordId != null) context.push('/property/detail/${m.recordId}'); },
+            onPressed: () { if (m.recordId != null) context.push('/property/detail/${m.recordId}?db_id=${m.dbId ?? 39}'); },
             style: OutlinedButton.styleFrom(foregroundColor: typeColor, side: BorderSide(color: typeColor), padding: const EdgeInsets.symmetric(vertical: 8)),
             child: const Text('상세보기', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)))),
           const SizedBox(width: 8),
@@ -661,7 +661,7 @@ class _PropertyHomeScreenState extends ConsumerState<PropertyHomeScreen> {
 
   Widget _buildSearchResultCard(PropertyMapMarker m) {
     return GestureDetector(
-      onTap: () { if (m.recordId != null) context.push('/property/detail/${m.recordId}'); },
+      onTap: () { if (m.recordId != null) context.push('/property/detail/${m.recordId}?db_id=${m.dbId ?? 39}'); },
       child: Container(margin: const EdgeInsets.only(bottom: 10), padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.grey.shade200)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

@@ -24,6 +24,7 @@ class _PropertyMapScreenState extends ConsumerState<PropertyMapScreen> {
   bool _isLoading = true;
   bool _markersAdded = false;
   List<PropertyRecord> _allProperties = [];
+  Map<String, int> _dbIdMap = {};
   Map<String, PropertyCoordinate>? _coordinates;
 
   @override
@@ -41,6 +42,18 @@ class _PropertyMapScreenState extends ConsumerState<PropertyMapScreen> {
       next.whenData((coords) {
         _coordinates = coords;
         _tryAddMarkersWithData();
+      });
+    });
+
+    ref.listenManual(mapDataProvider, (previous, next) {
+      next.whenData((mapData) {
+        final map = <String, int>{};
+        for (final m in mapData.markers) {
+          if (m.recordId != null && m.dbId != null) {
+            map[m.recordId!] = m.dbId!;
+          }
+        }
+        _dbIdMap = map;
       });
     });
 
@@ -334,7 +347,8 @@ class _PropertyMapScreenState extends ConsumerState<PropertyMapScreen> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      context.push('/property/detail/${property.id}');
+                      final dbId = _dbIdMap[property.id] ?? 39;
+                      context.push('/property/detail/${property.id}?db_id=$dbId');
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey[100],
