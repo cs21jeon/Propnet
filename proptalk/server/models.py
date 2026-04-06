@@ -152,9 +152,10 @@ class Room:
     @staticmethod
     def list_for_user(user_id):
         return query_all(
-            """SELECT r.*, rm.role,
+            """SELECT r.*, rm.role, rm.last_read_message_id,
                       (SELECT COUNT(*) FROM room_members WHERE room_id = r.id) as member_count,
-                      (SELECT content FROM messages WHERE room_id = r.id ORDER BY created_at DESC LIMIT 1) as last_message
+                      (SELECT content FROM messages WHERE room_id = r.id ORDER BY created_at DESC LIMIT 1) as last_message,
+                      (SELECT COUNT(*) FROM messages WHERE room_id = r.id AND id > rm.last_read_message_id AND parent_id IS NULL) as unread_count
                FROM rooms r
                JOIN room_members rm ON r.id = rm.room_id
                WHERE rm.user_id = %s
@@ -183,6 +184,28 @@ class Room:
             (room_id,)
         )
     
+    @staticmethod
+    def mark_read(room_id, user_id, message_id):
+        """마지막으로 읽은 메시지 ID 업데이트"""
+        return execute(
+            """UPDATE room_members
+               SET last_read_message_id = GREATEST(last_read_message_id, %s)
+               WHERE room_id = %s AND user_id = %s
+               RETURNING last_read_message_id""",
+            (message_id, room_id, user_id)
+        )
+
+    @staticmethod
+    def get_read_status(room_id):
+        """방의 모든 멤버의 last_read_message_id 조회"""
+        return query_all(
+            """SELECT rm.user_id, rm.last_read_message_id, u.name
+               FROM room_members rm
+               JOIN users u ON rm.user_id = u.id
+               WHERE rm.room_id = %s""",
+            (room_id,)
+        )
+
     @staticmethod
     def is_member(room_id, user_id):
         result = query_one(

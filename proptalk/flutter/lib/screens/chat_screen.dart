@@ -96,6 +96,11 @@ class _ChatScreenState extends State<ChatScreen> {
   StreamSubscription? _fileStatusSub;
   StreamSubscription? _typingSub;
   StreamSubscription? _reconnectSub;
+  StreamSubscription? _readUpdateSub;
+
+  // 읽음 상태: user_id -> last_read_message_id
+  Map<int, int> _readStatus = {};
+  int _memberCount = 0;
 
   // WebSocket 재연결 시 메시지 동기화용
   int? _lastMessageId;
@@ -124,6 +129,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _textController.addListener(_onTextChanged);
     _loadMessages();
     _setupWebSocket();
+    _loadReadStatus();
   }
 
   void _onScroll() {
@@ -152,12 +158,62 @@ class _ChatScreenState extends State<ChatScreen> {
     _fileStatusSub?.cancel();
     _typingSub?.cancel();
     _reconnectSub?.cancel();
+    _readUpdateSub?.cancel();
     _textController.dispose();
     _searchController.dispose();
     _recorder.dispose();
 
     _auth.socket.leaveRoom(widget.roomId);
     super.dispose();
+  }
+
+  // ============================================================
+  // 읽음 상태
+  // ============================================================
+  Future<void> _loadReadStatus() async {
+    try {
+      final api = context.read<ApiService>();
+      final status = await api.getReadStatus(widget.roomId);
+      if (mounted) {
+        setState(() {
+          _memberCount = status.length;
+          _readStatus = {
+            for (var s in status)
+              s['user_id'] as int: s['last_read_message_id'] as int
+          };
+        });
+      }
+    } catch (_) {}
+  }
+
+  void _markRead() {
+    final auth = context.read<AuthService>();
+    final socket = auth.socket;
+    if (_messages.isNotEmpty) {
+      final latestId = _messages.first['id'] as int?;
+      if (latestId != null && latestId > 0) {
+        socket.markRead(widget.roomId, messageId: latestId);
+        // 로컬에서도 즉시 업데이트 + UI 갱신
+        final myId = auth.currentUser?['id'] as int?;
+        if (myId != null) {
+          setState(() {
+            _readStatus[myId] = latestId;
+          });
+        }
+      }
+    }
+  }
+
+  /// 특정 메시지를 아직 안 읽은 멤버 수 계산
+  int _getUnreadCount(int messageId) {
+    if (_memberCount <= 1) return 0;
+    int readCount = 0;
+    for (final lastRead in _readStatus.values) {
+      if (lastRead >= messageId) readCount++;
+    }
+    // 전원 읽었으면 0
+    final unread = _memberCount - readCount;
+    return unread > 0 ? unread : 0;
   }
 
   // ============================================================
@@ -195,6 +251,7 @@ class _ChatScreenState extends State<ChatScreen> {
         }
       });
       _scrollToBottom();
+      _markRead();
     });
 
     // 음성 변환 상태
@@ -211,6 +268,12 @@ class _ChatScreenState extends State<ChatScreen> {
           };
         }
       });
+      // 완료 시 메시지 새로고침 (요약 댓글이 WebSocket으로 유실될 수 있으므로)
+      if (data['status'] == 'completed') {
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) _loadMessages();
+        });
+      }
     });
 
     // 파일 업로드 상태
@@ -248,6 +311,16 @@ class _ChatScreenState extends State<ChatScreen> {
         });
       }
     });
+
+    // 읽음 상태 업데이트
+    _readUpdateSub = socket.onReadUpdate.listen((data) {
+      if (!mounted) return;
+      setState(() {
+        final userId = data['user_id'] as int;
+        final lastReadId = data['last_read_message_id'] as int;
+        _readStatus[userId] = lastReadId;
+      });
+    });
   }
 
   // ============================================================
@@ -265,7 +338,10 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       _showError('메시지 로딩 실패: $e');
     }
-    if (mounted) setState(() => _isLoading = false);
+    if (mounted) {
+      setState(() => _isLoading = false);
+      _markRead();
+    }
   }
 
   void _scrollToBottom() {
@@ -1524,13 +1600,52 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           ),
 
-          // 시간
+          // 시간 + 안 읽은 수
           Padding(
             padding: const EdgeInsets.only(top: 2, left: 4, right: 4),
-            child: Text(
-              _formatTime(msg['created_at']),
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colorScheme.outline, fontSize: 11),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isMe && (msg['id'] as int?) != null && (msg['id'] as int) > 0) ...[
+                  () {
+                    final unread = _getUnreadCount(msg['id'] as int);
+                    if (unread <= 0) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 4),
+                      child: Text(
+                        '$unread',
+                        style: TextStyle(
+                          color: theme.colorScheme.primary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    );
+                  }(),
+                ],
+                Text(
+                  _formatTime(msg['created_at']),
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colorScheme.outline, fontSize: 11),
+                ),
+                if (!isMe && (msg['id'] as int?) != null && (msg['id'] as int) > 0) ...[
+                  () {
+                    final unread = _getUnreadCount(msg['id'] as int);
+                    if (unread <= 0) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Text(
+                        '$unread',
+                        style: TextStyle(
+                          color: theme.colorScheme.primary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    );
+                  }(),
+                ],
+              ],
             ),
           ),
 

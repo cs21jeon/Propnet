@@ -362,6 +362,26 @@ class ApiService {
     return _handleResponse(response);
   }
 
+  /// 읽음 처리
+  Future<Map<String, dynamic>> markRead(int roomId, {int? messageId}) async {
+    final response = await _client.post(
+      Uri.parse('$baseUrl/api/rooms/$roomId/mark-read'),
+      headers: _headers,
+      body: messageId != null ? '{"message_id": $messageId}' : '{}',
+    );
+    return _handleResponse(response);
+  }
+
+  /// 읽음 상태 조회
+  Future<List<dynamic>> getReadStatus(int roomId) async {
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/rooms/$roomId/read-status'),
+      headers: _headers,
+    );
+    final data = _handleResponse(response);
+    return data['read_status'] ?? [];
+  }
+
   /// 멤버 승인
   Future<Map<String, dynamic>> approveMember(int roomId, int userId) async {
     final response = await _client.post(

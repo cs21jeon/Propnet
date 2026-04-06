@@ -109,8 +109,46 @@ def register_websocket(socketio):
             'user_name': user['name'],
             'room_id': room_id,
         }, room=room_key)
-    
-    
+
+
+    @socketio.on('mark_read')
+    def handle_mark_read(data):
+        """읽음 처리 + 상대방에게 실시간 전파"""
+        token = data.get('token')
+        room_id = data.get('room_id')
+        message_id = data.get('message_id')
+
+        if not token or not room_id:
+            return
+
+        user_id = _resolve_user_id(token)
+        if not user_id:
+            return
+
+        if not Room.is_member(room_id, user_id):
+            return
+
+        # DB 업데이트
+        if message_id:
+            Room.mark_read(room_id, user_id, message_id)
+        else:
+            from models import query_one
+            latest = query_one(
+                "SELECT id FROM messages WHERE room_id = %s ORDER BY id DESC LIMIT 1",
+                (room_id,)
+            )
+            message_id = latest['id'] if latest else 0
+            Room.mark_read(room_id, user_id, message_id)
+
+        # 같은 방의 다른 사람들에게 읽음 상태 전파
+        room_key = f'room_{room_id}'
+        emit('read_update', {
+            'user_id': user_id,
+            'room_id': room_id,
+            'last_read_message_id': message_id,
+        }, room=room_key, include_self=False)
+
+
     @socketio.on('leave_room')
     def handle_leave_room(data):
         """채팅방 퇴장"""

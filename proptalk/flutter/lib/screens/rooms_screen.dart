@@ -563,6 +563,23 @@ class _RoomsScreenState extends State<RoomsScreen> {
                                       style: TextStyle(fontSize: 10, color: appColors.onWarning, fontWeight: FontWeight.bold)),
                                   ),
                               ],
+                              if (!isPending && (room['unread_count'] ?? 0) > 0)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 4),
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.error,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    '${room['unread_count']}',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: theme.colorScheme.onError,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
                         ],

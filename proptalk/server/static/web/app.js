@@ -274,6 +274,9 @@ function ProptalkApp() {
                 this.socket.emit('join_room', { token: this.token, room_id: room.id });
             }
 
+            // Mark as read
+            this.markRead(room.id);
+
             this.$nextTick(() => this.scrollToBottom());
         },
 
@@ -624,6 +627,8 @@ function ProptalkApp() {
                     this.messages.push(msg);
                     this._markDateSeparators();
                     this.$nextTick(() => this.scrollToBottom());
+                    // Mark as read since user is viewing this room
+                    this.markRead(this.currentRoom.id);
                 }
                 // Update room list
                 this._updateRoomLastMessage(msg);
@@ -665,6 +670,16 @@ function ProptalkApp() {
             this.socket.on('user_joined', (data) => {
                 // Could refresh members
             });
+
+            // Read update
+            this.socket.on('read_update', (data) => {
+                // Update unread count for room list
+                if (data.room_id === this.currentRoom?.id) {
+                    // Someone read messages in the current room - could update UI
+                }
+                // Reload rooms to refresh unread counts
+                this.loadRooms();
+            });
         },
 
         _updateRoomLastMessage(msg) {
@@ -674,6 +689,17 @@ function ProptalkApp() {
                 room._timeStr = this.formatTimeShort(msg.created_at);
                 // Move to top
                 this.rooms = [room, ...this.rooms.filter(r => r.id !== room.id)];
+                this.filterRooms();
+            }
+        },
+
+        async markRead(roomId) {
+            if (!this.socket || !this.token) return;
+            this.socket.emit('mark_read', { token: this.token, room_id: roomId });
+            // Update local unread count
+            const room = this.rooms.find(r => r.id === roomId);
+            if (room) {
+                room.unread_count = 0;
                 this.filterRooms();
             }
         },

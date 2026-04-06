@@ -14,6 +14,7 @@ class SocketService {
   final _typingController = StreamController<Map<String, dynamic>>.broadcast();
   final _userJoinedController = StreamController<Map<String, dynamic>>.broadcast();
   final _reconnectController = StreamController<void>.broadcast();
+  final _readUpdateController = StreamController<Map<String, dynamic>>.broadcast();
 
   Stream<Map<String, dynamic>> get onMessage => _messageController.stream;
   Stream<Map<String, dynamic>> get onAudioStatus => _audioStatusController.stream;
@@ -21,6 +22,7 @@ class SocketService {
   Stream<Map<String, dynamic>> get onTyping => _typingController.stream;
   Stream<Map<String, dynamic>> get onUserJoined => _userJoinedController.stream;
   Stream<void> get onReconnect => _reconnectController.stream;
+  Stream<Map<String, dynamic>> get onReadUpdate => _readUpdateController.stream;
   
   bool get isConnected => _socket?.connected ?? false;
   
@@ -83,6 +85,11 @@ class SocketService {
     _socket!.on('user_joined', (data) {
       _userJoinedController.add(Map<String, dynamic>.from(data));
     });
+
+    // 읽음 상태 업데이트
+    _socket!.on('read_update', (data) {
+      _readUpdateController.add(Map<String, dynamic>.from(data));
+    });
   }
   
   /// 채팅방 입장
@@ -98,6 +105,15 @@ class SocketService {
     _socket?.emit('leave_room', {'room_id': roomId});
   }
   
+  /// 읽음 처리
+  void markRead(int roomId, {int? messageId}) {
+    _socket?.emit('mark_read', {
+      'token': _api.token,
+      'room_id': roomId,
+      'message_id': messageId,
+    });
+  }
+
   /// 타이핑 알림
   void sendTyping(int roomId, String userName, bool isTyping) {
     _socket?.emit('typing', {
@@ -122,5 +138,6 @@ class SocketService {
     _typingController.close();
     _userJoinedController.close();
     _reconnectController.close();
+    _readUpdateController.close();
   }
 }

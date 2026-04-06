@@ -70,6 +70,7 @@
                         </div>
                         <div class="room-meta">
                             <span class="room-time" x-text="room._timeStr || ''"></span>
+                            <span class="room-unread" x-show="(room.unread_count || 0) > 0" x-text="room.unread_count"></span>
                         </div>
                     </div>
                 </template>

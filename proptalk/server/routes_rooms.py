@@ -315,3 +315,35 @@ def register_room_routes(app):
         logger.info(f"채팅방 삭제: room={room_id} (by {g.user['email']})")
 
         return jsonify({'message': '채팅방이 삭제되었습니다.'}), 200
+
+    @app.route('/api/rooms/<int:room_id>/mark-read', methods=['POST'])
+    @login_required
+    def mark_read(room_id):
+        """채팅방 읽음 처리"""
+        if not Room.is_member(room_id, g.user_id):
+            return jsonify({'error': '접근 권한이 없습니다'}), 403
+
+        data = request.get_json() or {}
+        message_id = data.get('message_id')
+
+        if not message_id:
+            latest = query_one(
+                "SELECT id FROM messages WHERE room_id = %s ORDER BY id DESC LIMIT 1",
+                (room_id,)
+            )
+            message_id = latest['id'] if latest else 0
+
+        result = Room.mark_read(room_id, g.user_id, message_id)
+        return jsonify({
+            'last_read_message_id': result['last_read_message_id'] if result else message_id
+        })
+
+    @app.route('/api/rooms/<int:room_id>/read-status', methods=['GET'])
+    @login_required
+    def get_read_status(room_id):
+        """방 멤버별 읽음 상태 조회"""
+        if not Room.is_member(room_id, g.user_id):
+            return jsonify({'error': '접근 권한이 없습니다'}), 403
+
+        status = Room.get_read_status(room_id)
+        return jsonify({'read_status': status})
