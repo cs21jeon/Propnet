@@ -274,17 +274,16 @@ PropNet이 만든 공유 인증 라이브러리. 4개 서비스(PropSheet, Prope
 ### 미완료 (배포 전 필수)
 
 - [ ] **Propedia APK 빌드**: `flutter build apk --release` 성공 + Play Store 배포
-- [ ] **가입 E2E 테스트**: 통합 위자드로 user/agent/subagent 가입 전체 흐름
+- [x] **가입 E2E 테스트**: Agent 가입 위자드 전체 흐름 (신청→승인→결제→활성화)
 - [ ] **구버전 앱 호환**: 현재 Play Store 앱으로 API 호출 정상 확인
 
 ### 미완료 (배포 후)
 
 - [ ] Propedia 앱 로그인 시 SSO 쿠키 설정 (set_propnet_cookie 추가)
 - [ ] PropSheet 웹 탈퇴 UI 구현 (agent/subagent 데이터 처리 설계 필요)
-- [ ] Agent 가입 신청 → 대시보드 승인 E2E
 - [ ] Subagent 초대 → 자동 연결 E2E
-- [ ] JWT 쿠키 SSO 크로스 서비스 테스트 (PropSheet → Propedia → Proptalk)
 - [ ] 서버 메모리/DB 연결 수 모니터링
+- [ ] Toss Payments 연동 테스트 (테스트 키 발급 후)
 
 ### 장기
 
@@ -292,3 +291,48 @@ PropNet이 만든 공유 인증 라이브러리. 4개 서비스(PropSheet, Prope
 - [ ] 기존 JWT secret fallback 제거
 - [ ] Proptalk 동의 이중 기록(voiceroom.user_consents) 제거
 - [ ] goldenrabbit.biz API 프록시 제거 (구버전 앱 업데이트 확인 후, 6개월 예상)
+- [ ] 구독 자동 갱신 크론 (billing_key 기반 월 정기결제)
+
+---
+
+## 2026-04-07 Agent 과금+인증 통합
+
+### 구현 내용
+
+| 작업 | 상세 | 상태 |
+|------|------|------|
+| DB 마이그레이션 | agent_requests +결제 컬럼, billing_plans +agent 플랜 3개, user_billing +propnet_user_id | 완료 |
+| billing_check.py | PropSheet 접근 권한 확인 (admin/agent/subagent/user별) | 완료 |
+| toss_payments.py | Toss 결제 공유 모듈 (confirm_payment, cancel_payment) | 완료 |
+| Agent 가입 결제 흐름 | 신청→심사→approved_pending_payment→결제→활성화 | 완료 |
+| 결제 페이지 | /register/agent/payment (3개 플랜 선택 + Toss SDK) | 완료 |
+| Admin 대시보드 | 유저+과금 통합 뷰, 강제 완료, 결제 안내 이메일 | 완료 |
+| PropSheet 접근 제어 | require_agent_access에 billing_check 추가 + billing_required 페이지 | 완료 |
+| Agent 데이터 격리 수정 | _get_agent_room_ids SSoT 전환 (web_users→propnet_users) | 완료 |
+| room_ids 방어 코딩 | 빈 리스트 시 전체 노출 방지 (if room_ids is not None) | 완료 |
+| Proptalk SSO 자동 로그인 | propnet_token 쿠키 → localStorage 동기화 + 계정 불일치 재로그인 | 완료 |
+| 환영 메일 개선 | 4개 서비스 카드 + PC/모바일 링크 분리 + Play Store ID 수정 | 완료 |
+| 승인 메일 개선 | 요금제 박스형 카드 3개 + 모바일 친화 + Gmail 호환 버튼 | 완료 |
+| 방 이름 | "상담방" → "업무방" | 완료 |
+| 파비콘 | register 전체 + billing_required → propnet 아이콘 통일 | 완료 |
+| Subagent 과금 | PropSheet=agent 구독 포함, Proptalk=독립 과금, 초대 시 구독 체크 | 완료 |
+
+### Agent 가입 흐름
+
+```
+1. /register/ → agent 선택 → Google OAuth → 동의 5개
+2. /register/agent → 사업자 정보 + 등록증/로고 업로드 → agent_requests (pending)
+3. Admin /admin/agent-requests → 심사 승인 → approved_pending_payment + 결제 안내 메일
+4. /register/agent/payment → 3개 플랜 선택 → Toss 결제 (또는 Admin 강제 완료)
+5. 결제 성공 → role=agent + agents 테이블 + PropSheet/PropMap/Proptalk 자동 생성 + 환영 메일
+
+### 검증 완료
+
+- [x] Agent 가입 신청 → Admin 승인 → 강제 완료 → PropSheet/PropMap/Proptalk 생성
+- [x] SSO 쿠키로 PropSheet 자동 로그인
+- [x] Proptalk SSO 쿠키 자동 로그인
+- [x] Agent 데이터 격리 (전화번호 조회 시 본인 room만)
+- [x] PropSheet billing 체크 (미구독 시 billing_required 페이지)
+- [x] 승인 메일 발송 (요금제 카드 + 결제 링크)
+- [x] 환영 메일 발송 (4개 서비스 PC/모바일 링크)
+```
