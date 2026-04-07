@@ -273,6 +273,8 @@ function ProptalkApp() {
             this.searchQuery = '';
             this.searchResultIds = [];
             this.searchResultIndex = -1;
+            this.showSummaries = false;
+            this.summaries = [];
 
             await this.loadMessages();
             this.loadMembers();
@@ -994,7 +996,7 @@ function ProptalkApp() {
             if (res?.ok) {
                 const data = await res.json();
                 // API가 { summaries: [...], items: [...] } 형태로 반환
-                this.summaries = data.summaries || data.items || [];
+                this.summaries = data.audio_files || data.summaries || data.items || [];
                 // 빈 배열이면 메시지에서 audio가 있는 것들을 fallback으로 표시
                 if (this.summaries.length === 0) {
                     this.summaries = this.messages
