@@ -124,7 +124,7 @@ journalctl -u proptalk -f
 ## CRITICAL 규칙
 
 1. **Proptalk Whisper**: 반드시 OpenAI Whisper API 사용. 로컬 whisper 모델 절대 금지 (서버 RAM 956MB)
-2. **서버 배포 후 반드시 서비스 재시작**: `systemctl restart <서비스명>`
+2. **서버 코드 수정 후 관련 서비스 모두 재시작**: `/backend/property-manager/`의 routes/services 코드는 5000, 5010, 5020이 `sys.path`로 공유함. 따라서 `routes/propsheet.py`, `routes/database.py`, `services/*.py` 등을 수정하면 **반드시 3개 서비스 모두 재시작**: `sudo systemctl restart property-manager proppedia propsheet`
 3. **Nginx 수정 후**: `sudo nginx -t && sudo systemctl reload nginx`
 4. **Nginx config 동기화**: `config/nginx/goldenrabbit.conf` 수정 시 반드시 `/etc/nginx/sites-enabled/goldenrabbit`에도 반영
 5. **Airtable 완전 제거됨**: 새 코드에서 Airtable 관련 코드 작성 금지. `backend/scripts/deprecated/`는 참조 전용, 호출 금지
@@ -139,6 +139,10 @@ journalctl -u proptalk -f
    - 서버 리포(`goldenrabbit`)에 pre-commit hook 설치됨 — 하드코딩 비밀번호/API 키 자동 차단
 9. **비밀번호/API 키는 반드시 환경변수로**: DB 접속, 외부 API 키 등은 `os.environ.get()` 사용. 절대 소스코드에 직접 작성 금지. `.env` 파일에서 로드
 10. **ID 체계 매핑 주의**: `app_users.id` ≠ `propnet_users.id` ≠ `voiceroom.users.id`. JWT의 user_id를 다른 테이블의 ID로 직접 사용 금지. 반드시 `service_user_links`를 통해 변환
+16. **propnet_users가 Single Source of Truth**: role, agent_id는 반드시 `propnet_users`에서 읽기. `web_users.role`/`web_users.agent_id`/`app_users.role` 직접 참조 금지 (컬럼은 레거시로 남아있으나 사용 안 함). 인증 관련 코드는 반드시 `propnet_auth` 라이브러리 사용
+17. **웹 로그인 시 SSO 쿠키 필수**: 모든 웹 로그인 경로에서 `set_propnet_cookie(response, access_token)` 호출하여 `propnet_token`(HttpOnly) + `propnet_uid`(JS용) 쿠키 설정. 로그아웃 시 `clear_propnet_cookie(response)` 호출
+18. **Gmail 점 정규화 필수**: 유저 조회 시 이메일 정확 매칭 → Gmail 점 정규화 → google_id 매칭 3단계로. `cs21.jeon@gmail.com` == `cs21jeon@gmail.com` (Gmail은 점을 무시)
+19. **삭제된 레거시 파일**: `routes/auth.py`, `routes/airtable.py`, `services/airtable_service.py`, `routes/instagram.py`, `services/instagram_service.py`, `templates/admin_dashboard.html`, `templates/admin_login.html` — 백업: `/backend/backup_deprecated_20260407/`. 이 파일들을 import하거나 참조하는 코드 작성 금지
 11. **서버 코드 수정 전 변수명 확인 필수**: Blueprint, 함수명, 클래스명 등을 grep으로 반드시 확인 후 사용. 추정하여 코드 작성 금지
 12. **Propedia 웹 = 정적 HTML**: Propedia 웹페이지는 `/app/*.html` 정적 파일. `flutter build web` 사용 금지. 앱 수정 시 HTML 웹도 함께 수정
 13. **서비스 수정 후 기동 검증 필수**: 재시작 후 `journalctl -u <서비스명> -n 20`으로 에러 확인 + `curl`로 HTTP 응답 코드 확인. 에러 있으면 즉시 롤백
