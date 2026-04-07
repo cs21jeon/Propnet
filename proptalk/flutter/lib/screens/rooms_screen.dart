@@ -494,14 +494,16 @@ class _RoomsScreenState extends State<RoomsScreen> {
 
                   return Card(
                     margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    color: appColors.cardSurface,
                     child: ListTile(
                       leading: CircleAvatar(
                         backgroundColor: isPending
                             ? appColors.warningContainer
-                            : theme.colorScheme.primaryContainer,
+                            : theme.colorScheme.primary.withValues(alpha: 0.15),
                         child: Icon(
                           isPending ? Icons.hourglass_top : Icons.group,
                           color: isPending ? appColors.warning : theme.colorScheme.primary,
+                          size: 22,
                         ),
                       ),
                       title: Text(room['name'] ?? '',

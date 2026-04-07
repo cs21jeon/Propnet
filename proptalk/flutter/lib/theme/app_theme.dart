@@ -11,6 +11,10 @@ class AppTheme {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: _seedColor,
       brightness: Brightness.light,
+    ).copyWith(
+      surface: const Color(0xFFECEEF1),
+      surfaceContainerHighest: const Color(0xFFFFFFFF),
+      surfaceContainerLow: const Color(0xFFF5F7FA),
     );
     return _buildTheme(colorScheme, AppColors.light);
   }
@@ -19,6 +23,10 @@ class AppTheme {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: _seedColor,
       brightness: Brightness.dark,
+    ).copyWith(
+      surface: const Color(0xFF161620),
+      surfaceContainerHighest: const Color(0xFF2E2E3E),
+      surfaceContainerLow: const Color(0xFF1C1C28),
     );
     return _buildTheme(colorScheme, AppColors.dark);
   }

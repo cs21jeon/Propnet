@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
+import '../theme/app_colors.dart';
 import '../widgets/ad_banner_widget.dart';
 import '../widgets/propnet_footer.dart';
 import 'rooms_screen.dart';
@@ -148,9 +149,11 @@ class _MenuCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final appColors = theme.extension<AppColors>()!;
 
     return Card(
       elevation: 2,
+      color: appColors.cardSurface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),

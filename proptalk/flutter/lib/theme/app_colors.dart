@@ -12,6 +12,10 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color success;
   final Color onSuccess;
   final Color successContainer;
+  final Color chatBackground;
+  final Color cardSurface;
+  final Color myBubble;
+  final Color onMyBubble;
 
   const AppColors({
     required this.warning,
@@ -24,6 +28,10 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.success,
     required this.onSuccess,
     required this.successContainer,
+    required this.chatBackground,
+    required this.cardSurface,
+    required this.myBubble,
+    required this.onMyBubble,
   });
 
   static const light = AppColors(
@@ -37,6 +45,10 @@ class AppColors extends ThemeExtension<AppColors> {
     success: Color(0xFF22C55E),
     onSuccess: Colors.white,
     successContainer: Color(0xFFDCFCE7),
+    chatBackground: Color(0xFFE0E4E8),
+    cardSurface: Color(0xFFFFFFFF),
+    myBubble: Color(0xFF1A73E8),
+    onMyBubble: Color(0xFFFFFFFF),
   );
 
   static const dark = AppColors(
@@ -50,6 +62,10 @@ class AppColors extends ThemeExtension<AppColors> {
     success: Color(0xFF4ADE80),
     onSuccess: Color(0xFF052E16),
     successContainer: Color(0xFF14532D),
+    chatBackground: Color(0xFF121218),
+    cardSurface: Color(0xFF22222E),
+    myBubble: Color(0xFF1A5FAA),
+    onMyBubble: Color(0xFFFFFFFF),
   );
 
   @override
@@ -64,6 +80,10 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? success,
     Color? onSuccess,
     Color? successContainer,
+    Color? chatBackground,
+    Color? cardSurface,
+    Color? myBubble,
+    Color? onMyBubble,
   }) {
     return AppColors(
       warning: warning ?? this.warning,
@@ -76,6 +96,10 @@ class AppColors extends ThemeExtension<AppColors> {
       success: success ?? this.success,
       onSuccess: onSuccess ?? this.onSuccess,
       successContainer: successContainer ?? this.successContainer,
+      chatBackground: chatBackground ?? this.chatBackground,
+      cardSurface: cardSurface ?? this.cardSurface,
+      myBubble: myBubble ?? this.myBubble,
+      onMyBubble: onMyBubble ?? this.onMyBubble,
     );
   }
 
@@ -93,6 +117,10 @@ class AppColors extends ThemeExtension<AppColors> {
       success: Color.lerp(success, other.success, t)!,
       onSuccess: Color.lerp(onSuccess, other.onSuccess, t)!,
       successContainer: Color.lerp(successContainer, other.successContainer, t)!,
+      chatBackground: Color.lerp(chatBackground, other.chatBackground, t)!,
+      cardSurface: Color.lerp(cardSurface, other.cardSurface, t)!,
+      myBubble: Color.lerp(myBubble, other.myBubble, t)!,
+      onMyBubble: Color.lerp(onMyBubble, other.onMyBubble, t)!,
     );
   }
 }

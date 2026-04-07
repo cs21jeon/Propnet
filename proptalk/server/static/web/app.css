@@ -5,9 +5,10 @@
     --primary: #1A73E8;
     --primary-light: #e8f0fe;
     --primary-dark: #1557b0;
-    --bg: #f0f2f5;
+    --bg: #E8ECF0;
     --bg-white: #ffffff;
-    --border: #e0e0e0;
+    --bg-card: #f5f7fa;
+    --border: #D0D4D8;
     --text: #1a1a1a;
     --text-secondary: #666;
     --text-muted: #999;
@@ -920,44 +921,57 @@ body.dark {
     --primary: #4da6ff;
     --primary-light: #1a3a5c;
     --primary-dark: #7fc1ff;
-    --bg: #1a1a2e;
-    --bg-white: #16213e;
-    --border: #2a2a4a;
+    --bg: #0D0D14;
+    --bg-white: #1C1C28;
+    --bg-card: #252535;
+    --border: #3A3A4A;
     --text: #e0e0e0;
-    --text-secondary: #a0a0a0;
-    --text-muted: #707070;
+    --text-secondary: #b0b0b0;
+    --text-muted: #808080;
     --danger: #ff6b6b;
     --success: #51cf66;
     --warning: #ffd43b;
 }
 
 body.dark .msg-bubble { border-color: var(--border); }
-body.dark .message-row:not(.own) .msg-bubble { background: var(--bg-white); }
-body.dark .message-row.own .msg-bubble { background: var(--primary); }
+body.dark .message-row:not(.own) .msg-bubble { background: #2A2A3A; }
+body.dark .message-row.own .msg-bubble { background: #1A5FAA; color: #fff; }
 body.dark input, body.dark textarea { background: var(--bg); color: var(--text); border-color: var(--border); }
 body.dark .modal { background: var(--bg-white); color: var(--text); }
-body.dark .room-item:hover { background: #1e2a4a; }
+body.dark .room-item:hover { background: #252535; }
 body.dark .room-item.active { background: var(--primary-light); }
-body.dark .btn-icon:hover { background: #1e2a4a; color: var(--text); }
+body.dark .btn-icon:hover { background: #252535; color: var(--text); }
 body.dark .btn-icon.active { background: var(--primary-light); color: var(--primary); }
-body.dark .btn-ghost:hover { background: #1e2a4a; }
-body.dark .btn-sm.btn-ghost:hover { background: #1e2a4a; }
+body.dark .btn-ghost:hover { background: #252535; }
+body.dark .btn-sm.btn-ghost:hover { background: #252535; }
 body.dark .msg-audio { background: var(--bg-white); border-color: var(--border); }
 body.dark .audio-play-btn { background: var(--primary-light); }
-body.dark .audio-play-btn:hover { background: #1a3a5c; }
-body.dark .summary-item:hover { background: #1e2a4a; }
+body.dark .audio-play-btn:hover { background: #1E4570; }
+body.dark .summary-item:hover { background: #252535; }
 body.dark .date-separator span { background: var(--bg); }
 body.dark .search-bar-inner { background: var(--bg); border-color: var(--border); }
 body.dark .search-bar-inner input { color: var(--text); }
-body.dark .btn-icon-sm:hover { background: #2a2a4a; }
-body.dark .settings-shortcuts kbd { background: #2a2a4a; border-color: #3a3a5a; color: var(--text); }
-body.dark .shortcuts-help kbd { background: #2a2a4a; border-color: #3a3a5a; color: var(--text-muted); }
+body.dark .btn-icon-sm:hover { background: #3A3A4A; }
+body.dark .settings-shortcuts kbd { background: #2A2A3A; border-color: #3A3A4A; color: var(--text); }
+body.dark .shortcuts-help kbd { background: #2A2A3A; border-color: #3A3A4A; color: var(--text-muted); }
 body.dark .drop-overlay { background: rgba(77, 166, 255, 0.15); border-color: var(--primary); }
 body.dark .drop-overlay-inner { background: var(--bg-white); }
-body.dark .recording-bar { background: #2a1a1a; border-color: #4a2a2a; }
+body.dark .recording-bar { background: #1F1215; border-color: #4a2a2a; }
 body.dark .upload-progress-item .progress-track { background: var(--border); }
 body.dark .transcript-collapsed::after { background: linear-gradient(transparent, var(--bg-white)); }
-body.dark .toast { background: #2a2a4a; }
-body.dark code { background: #2a2a4a !important; color: #e0e0e0 !important; }
-body.dark ::-webkit-scrollbar-thumb { background: #3a3a5a; }
-body.dark ::-webkit-scrollbar-thumb:hover { background: #4a4a6a; }
+body.dark .toast { background: #2A2A3A; }
+body.dark code { background: #2A2A3A !important; color: #e0e0e0 !important; }
+body.dark ::-webkit-scrollbar-thumb { background: #3A3A4A; }
+body.dark ::-webkit-scrollbar-thumb:hover { background: #4A4A5A; }
+
+/* Dark mode: search highlight */
+body.dark .search-highlight { animation: highlightFadeDark 2s ease; }
+@keyframes highlightFadeDark {
+    0%, 30% { background: #3A3520; }
+    100% { background: transparent; }
+}
+
+/* Dark mode: file info card */
+body.dark .file-info-card { background: var(--primary-light); }
+body.dark .btn-cancel { background: var(--bg-card); border-color: var(--border); color: var(--text-secondary); }
+body.dark .btn-cancel:hover { background: var(--bg-white); }

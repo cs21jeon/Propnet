@@ -1322,7 +1322,7 @@ class _ChatScreenState extends State<ChatScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: isMe
-                  ? theme.colorScheme.primaryContainer
+                  ? theme.extension<AppColors>()!.myBubble
                   : theme.colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.only(
                 topLeft: const Radius.circular(16),
@@ -1371,7 +1371,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                         decoration: BoxDecoration(
                           color: (isMe
-                              ? theme.colorScheme.onPrimaryContainer
+                              ? theme.extension<AppColors>()!.onMyBubble
                               : theme.colorScheme.primary
                           ).withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(8),
@@ -1400,7 +1400,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               style: TextStyle(
                                 fontSize: 12,
                                 color: isMe
-                                    ? theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.7)
+                                    ? theme.extension<AppColors>()!.onMyBubble.withValues(alpha: 0.7)
                                     : theme.colorScheme.onSurface.withValues(alpha: 0.7),
                               ),
                             ),
@@ -1418,13 +1418,13 @@ class _ChatScreenState extends State<ChatScreen> {
                       Icon(Icons.mic,
                           size: 18,
                           color:
-                              isMe ? theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.7) : theme.colorScheme.primary),
+                              isMe ? theme.extension<AppColors>()!.onMyBubble.withValues(alpha: 0.7) : theme.colorScheme.primary),
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(
                           msg['content'] ?? '',
                           style: TextStyle(
-                            color: isMe ? theme.colorScheme.onPrimaryContainer : null,
+                            color: isMe ? theme.extension<AppColors>()!.onMyBubble : null,
                           ),
                         ),
                       ),
@@ -1442,7 +1442,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             width: 14, height: 14,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: isMe ? theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.7) : theme.colorScheme.primary,
+                              color: isMe ? theme.extension<AppColors>()!.onMyBubble.withValues(alpha: 0.7) : theme.colorScheme.primary,
                             ),
                           ),
                           const SizedBox(width: 6),
@@ -1452,7 +1452,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                   : '텍스트 변환 중...',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: isMe ? theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6) : theme.colorScheme.outline,
+                                color: isMe ? theme.extension<AppColors>()!.onMyBubble.withValues(alpha: 0.6) : theme.colorScheme.outline,
                               )),
                         ],
                       ),
@@ -1474,7 +1474,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
                             color: isMe
-                                ? theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.15)
+                                ? theme.extension<AppColors>()!.onMyBubble.withValues(alpha: 0.15)
                                 : theme.colorScheme.primaryContainer,
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -1485,7 +1485,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                   msg['drive_url'] != null ? Icons.open_in_new : Icons.download,
                                   size: 16,
                                   color: isMe
-                                      ? theme.colorScheme.onPrimaryContainer
+                                      ? theme.extension<AppColors>()!.onMyBubble
                                       : theme.colorScheme.primary),
                               const SizedBox(width: 4),
                               Text(msg['drive_url'] != null ? 'Drive에서 열기' : '다운로드',
@@ -1493,7 +1493,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
                                     color: isMe
-                                        ? theme.colorScheme.onPrimaryContainer
+                                        ? theme.extension<AppColors>()!.onMyBubble
                                         : theme.colorScheme.primary,
                                   )),
                             ],
@@ -1508,13 +1508,13 @@ class _ChatScreenState extends State<ChatScreen> {
                     children: [
                       Icon(_getFileIcon(msg['file_type']),
                           size: 18,
-                          color: isMe ? theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.7) : theme.colorScheme.primary),
+                          color: isMe ? theme.extension<AppColors>()!.onMyBubble.withValues(alpha: 0.7) : theme.colorScheme.primary),
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(
                           msg['file_name'] ?? msg['content'] ?? '',
                           style: TextStyle(
-                            color: isMe ? theme.colorScheme.onPrimaryContainer : null,
+                            color: isMe ? theme.extension<AppColors>()!.onMyBubble : null,
                           ),
                         ),
                       ),
@@ -1530,14 +1530,14 @@ class _ChatScreenState extends State<ChatScreen> {
                             width: 14, height: 14,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: isMe ? theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.7) : theme.colorScheme.primary,
+                              color: isMe ? theme.extension<AppColors>()!.onMyBubble.withValues(alpha: 0.7) : theme.colorScheme.primary,
                             ),
                           ),
                           const SizedBox(width: 6),
                           Text('Drive 업로드 중...',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: isMe ? theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6) : theme.colorScheme.outline,
+                                color: isMe ? theme.extension<AppColors>()!.onMyBubble.withValues(alpha: 0.6) : theme.colorScheme.outline,
                               )),
                         ],
                       ),
@@ -1553,7 +1553,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: (isMe ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.primary).withValues(alpha: 0.1),
+                            color: (isMe ? theme.extension<AppColors>()!.onMyBubble : theme.colorScheme.primary).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
@@ -1562,7 +1562,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               Icon(Icons.open_in_new,
                                   size: 16,
                                   color: isMe
-                                      ? theme.colorScheme.onPrimaryContainer
+                                      ? theme.extension<AppColors>()!.onMyBubble
                                       : theme.colorScheme.primary),
                               const SizedBox(width: 4),
                               Text('Drive에서 열기',
@@ -1570,7 +1570,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
                                     color: isMe
-                                        ? theme.colorScheme.onPrimaryContainer
+                                        ? theme.extension<AppColors>()!.onMyBubble
                                         : theme.colorScheme.primary,
                                   )),
                             ],
@@ -1584,7 +1584,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     _buildLinkedText(
                       msg['content'] ?? '',
                       TextStyle(
-                        color: isMe ? theme.colorScheme.onPrimaryContainer : null,
+                        color: isMe ? theme.extension<AppColors>()!.onMyBubble : null,
                         height: 1.4,
                       ),
                       linkStyle: TextStyle(
@@ -1978,7 +1978,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
           // 메시지 리스트
           Expanded(
-            child: Stack(
+            child: Container(
+              color: theme.extension<AppColors>()!.chatBackground,
+              child: Stack(
               children: [
                 _isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -2087,6 +2089,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
               ],
             ),
+            ),
           ),
 
           // 배너 광고 (무료 사용자만)
@@ -2145,7 +2148,7 @@ class _ChatScreenState extends State<ChatScreen> {
           // 입력 영역
           Container(
             decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
+              color: theme.colorScheme.surfaceContainerLow,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.05),
