@@ -281,7 +281,7 @@ PropNet이 만든 공유 인증 라이브러리. 4개 서비스(PropSheet, Prope
 
 - [ ] Propedia 앱 로그인 시 SSO 쿠키 설정 (set_propnet_cookie 추가)
 - [ ] PropSheet 웹 탈퇴 UI 구현 (agent/subagent 데이터 처리 설계 필요)
-- [ ] Subagent 초대 → 자동 연결 E2E
+- [x] Subagent 초대 → 이메일 수락 → PropSheet 접근 E2E **(04-07 완료)**
 - [ ] 서버 메모리/DB 연결 수 모니터링
 - [ ] Toss Payments 연동 테스트 (테스트 키 발급 후)
 
@@ -336,3 +336,54 @@ PropNet이 만든 공유 인증 라이브러리. 4개 서비스(PropSheet, Prope
 - [x] 승인 메일 발송 (요금제 카드 + 결제 링크)
 - [x] 환영 메일 발송 (4개 서비스 PC/모바일 링크)
 ```
+
+---
+
+## 2026-04-07 Subagent 초대 이메일 기반 흐름 구현
+
+### 배경
+기존: Agent가 초대하면 즉시 subagent 권한 부여 (동의 없이 자동 승인)
+변경: 이메일 수락/거절 흐름으로 subagent 본인 동의 필수
+
+### 구현 내용
+
+| 작업 | 상세 | 파일 |
+|------|------|------|
+| DB 마이그레이션 | `subagent_invitations`에 token, token_expires_at, rejected_at 컬럼 추가 | DB |
+| invitation.py 재작성 | token 생성 (64자 UUID), `accept_by_token()`, `reject_by_token()`, Gmail 점 정규화 | propnet_auth/invitation.py |
+| invite API 전환 | `subagent_requests`(레거시) → `subagent_invitations` 사용 | routes/propsheet.py |
+| 수락/거절 이메일 | 수락/거절 버튼 포함 HTML 이메일 (7일 만료) | routes/propsheet.py |
+| Accept 엔드포인트 | `GET /propsheet/api/invitation/accept?token=...` → 결과 페이지 | routes/propsheet.py |
+| Reject 엔드포인트 | `GET /propsheet/api/invitation/reject?token=...` → 슬롯 복원 | routes/propsheet.py |
+| 환영 메일 | subagent 수락 후 PropSheet 링크 + 로그인 계정 안내 | routes/propsheet.py |
+| Agent 알림 메일 | subagent 수락 시 Agent에게 알림 | routes/propsheet.py |
+| login_hint 전달 | PropSheet 링크에 `?login_hint=이메일` → 다른 계정이면 자동 로그아웃+재로그인 | permission_service.py, oauth.py, google_auth_service.py |
+| Gmail 점 정규화 | 초대 저장/조회/수락 전 Gmail 이메일 정규화 | invitation.py, user_service.py |
+| list/cancel 전환 | 팀 관리 모달이 `subagent_invitations` 조회/삭제 | routes/propsheet.py |
+| 미가입자 처리 | 수락 시 미가입 → `accepted_pending_registration` → 가입 시 자동 연결 | invitation.py, user_service.py |
+
+### Subagent 초대 흐름
+
+```
+1. Agent → PropSheet "서브에이전트 관리" → 이메일 초대
+   → subagent_invitations (pending, token, 7일 만료)
+   → 수락/거절 버튼 이메일 발송
+
+2. Subagent → 이메일 "수락" 클릭
+   → /propsheet/api/invitation/accept?token=xxx
+   → 기존 유저: role=subagent + workspace_members 추가 + 환영 메일
+   → 미가입: accepted_pending_registration → 가입 후 자동 연결
+   → Agent에게 알림 메일
+
+3. Subagent → "PropSheet 열기" 클릭
+   → ?login_hint로 계정 체크 → 다른 계정이면 자동 로그아웃+재로그인
+```
+
+### 검증 완료
+
+- [x] Agent 초대 → subagent_invitations에 pending + token 생성
+- [x] 수락/거절 버튼 이메일 발송
+- [x] 수락 클릭 → propnet_users role=subagent + 결과 페이지
+- [x] 환영 메일 + Agent 알림 메일 발송
+- [x] login_hint로 다른 계정 자동 로그아웃+재로그인
+- [x] Gmail 점 정규화 (cs21.jeonprop == cs21jeonprop)
