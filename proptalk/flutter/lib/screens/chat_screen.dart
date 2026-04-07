@@ -192,7 +192,11 @@ class _ChatScreenState extends State<ChatScreen> {
     if (_messages.isNotEmpty) {
       final latestId = _messages.first['id'] as int?;
       if (latestId != null && latestId > 0) {
+        // WebSocket으로 실시간 전파 (상대방 UI 즉시 반영)
         socket.markRead(widget.roomId, messageId: latestId);
+        // REST API로도 호출하여 DB 업데이트 보장
+        final api = context.read<ApiService>();
+        api.markRead(widget.roomId, messageId: latestId);
         // 로컬에서도 즉시 업데이트 + UI 갱신
         final myId = auth.currentUser?['id'] as int?;
         if (myId != null) {

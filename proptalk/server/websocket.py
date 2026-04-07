@@ -17,35 +17,12 @@ def register_websocket(socketio):
         token = None
         if auth and 'token' in auth:
             token = auth['token']
-        
+
         if not token:
             logger.warning("WebSocket 인증 실패: 토큰 없음")
             return False
-        
-        # 1차: propnet_auth 통합 JWT
-        payload = verify_token(token, expected_type='access')
-        user_id = None
-        if payload:
-            propnet_user_id = payload.get('sub')
-            try:
-                from propnet_auth.user_service import get_service_link
-                link = get_service_link(propnet_user_id, 'proptalk')
-                if link:
-                    user_id = link['local_user_id']
-            except Exception:
-                pass
 
-        # 2차: propnet_auth fallback (type 무시)
-        if not user_id:
-            payload = verify_token(token)
-            if payload:
-                user_id = payload.get('sub') or payload.get('user_id')
-
-        # 3차: 기존 Proptalk JWT
-        if not user_id:
-            payload = decode_token(token)
-            if payload:
-                user_id = payload.get('user_id')
+        user_id = _resolve_user_id(token)
 
         if not user_id:
             logger.warning("WebSocket 인증 실패: 유효하지 않은 토큰")
@@ -53,28 +30,46 @@ def register_websocket(socketio):
 
         user = User.find_by_id(user_id)
         if not user:
+            logger.warning(f"WebSocket 인증 실패: user_id={user_id} 없음")
             return False
-        
+
         logger.info(f"WebSocket 연결: {user['name']} ({user['email']})")
         return True
     
     
     def _resolve_user_id(token):
-        """토큰에서 user_id 추출 (propnet_auth 우선 → 레거시 fallback)"""
+        """토큰에서 proptalk local user_id 추출 (propnet_auth 우선 → 레거시 fallback)"""
+        # 1차: propnet_auth JWT → service_user_links로 local_user_id 변환
         payload = verify_token(token, expected_type='access')
         if payload:
-            try:
-                from propnet_auth.user_service import get_service_link
-                link = get_service_link(payload.get('sub'), 'proptalk')
-                if link:
-                    return link['local_user_id']
-            except Exception:
-                pass
+            propnet_uid = payload.get('sub')
+            if propnet_uid:
+                try:
+                    from propnet_auth.user_service import get_service_link
+                    link = get_service_link(propnet_uid, 'proptalk')
+                    if link:
+                        return link['local_user_id']
+                except Exception as e:
+                    logger.warning(f"WebSocket _resolve_user_id service_link 실패: {e}")
+
+        # 2차: propnet_auth verify_token (type 무시) → service_user_links 변환
         payload = verify_token(token)
         if payload:
-            uid = payload.get('sub') or payload.get('user_id')
+            propnet_uid = payload.get('sub')
+            if propnet_uid:
+                try:
+                    from propnet_auth.user_service import get_service_link
+                    link = get_service_link(propnet_uid, 'proptalk')
+                    if link:
+                        return link['local_user_id']
+                except Exception:
+                    pass
+            # sub가 없으면 기존 JWT의 user_id (local_user_id)
+            uid = payload.get('user_id')
             if uid:
                 return uid
+
+        # 3차: 기존 Proptalk JWT (레거시)
         payload = decode_token(token)
         if payload:
             return payload.get('user_id')
@@ -117,15 +112,21 @@ def register_websocket(socketio):
         token = data.get('token')
         room_id = data.get('room_id')
         message_id = data.get('message_id')
+        logger.info(f"[mark_read] 수신: room_id={room_id}, message_id={message_id}")
 
         if not token or not room_id:
+            logger.warning(f"[mark_read] 토큰 또는 room_id 없음")
             return
 
         user_id = _resolve_user_id(token)
         if not user_id:
+            logger.warning(f"[mark_read] user_id 해석 실패")
             return
 
+        logger.info(f"[mark_read] user_id={user_id}, room_id={room_id}")
+
         if not Room.is_member(room_id, user_id):
+            logger.warning(f"[mark_read] user_id={user_id}는 room_id={room_id}의 멤버가 아님")
             return
 
         # DB 업데이트

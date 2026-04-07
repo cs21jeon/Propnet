@@ -1,10 +1,22 @@
 {
-  "current": "1.0.7+10",
+  "current": "1.0.7+11",
   "releases": [
+    {
+      "version": "1.0.7+11",
+      "date": "2026-04-07",
+      "status": "latest",
+      "summary": "읽음 처리(mark-read) 버그 수정 — 통합 인증 전환 후 WebSocket 읽음 처리 실패 해결",
+      "changes": [
+        "WebSocket _resolve_user_id에서 propnet_user_id를 local_user_id로 정상 변환 (통합 인증 전환 버그)",
+        "handle_connect도 _resolve_user_id 사용으로 통일 (중복 코드 제거)",
+        "mark_read에 디버깅 로그 추가 (실패 원인 추적 용이)",
+        "Flutter _markRead()에 REST API 백업 호출 추가 (WebSocket 불안정 시에도 DB 업데이트 보장)"
+      ]
+    },
     {
       "version": "1.0.7+10",
       "date": "2026-04-06",
-      "status": "latest",
+      "status": "previous",
       "summary": "메시지 읽음 확인 기능 추가 (카카오톡 스타일 Read Receipt)",
       "changes": [
         "채팅방 목록에 안 읽은 메시지 수 빨간 뱃지 표시",
