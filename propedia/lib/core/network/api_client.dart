@@ -3,7 +3,7 @@ import 'package:propedia/core/network/auth_interceptor.dart';
 import 'package:propedia/core/storage/token_storage.dart';
 
 class ApiClient {
-  static const String baseUrl = 'https://goldenrabbit.biz';
+  static const String baseUrl = 'https://propnet.kr';
 
   late final Dio dio;
   final TokenStorage tokenStorage;

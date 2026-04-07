@@ -529,7 +529,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
   }
 
   void _copyLink(PropertyRecord property) {
-    final link = 'https://goldenrabbit.biz/property/${property.id}';
+    final link = 'https://propnet.kr/property/${property.id}';
     Clipboard.setData(ClipboardData(text: link));
 
     ScaffoldMessenger.of(context).showSnackBar(
