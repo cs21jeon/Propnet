@@ -1,5 +1,44 @@
 # PropMap 업데이트 내역
 
+## 2026-04-08: PropMap 통합 매물지도 구축
+
+### 배경
+개별 agent 매물지도를 넘어 전체 agent를 한 화면에서 보여주는 통합 PropMap 서비스 구축.
+`propnet.kr/propmap/`에서 접근하며, `goldenrabbit.biz/propmap/`은 301 리다이렉트.
+
+### 신규 API
+| 엔드포인트 | 설명 |
+|-----------|------|
+| `GET /api/propsheet/agents-public` | 활성 agent 목록 (slug, agency_name, lat/lon, logo_url) |
+| `GET /api/propsheet/map-data?agent_slug=all` | 전체 agent 매물 통합 조회 (마커에 agent_slug 필드 추가) |
+
+### 신규 파일
+| 파일 | 설명 |
+|------|------|
+| `frontend/public/propmap/index.html` | 통합 매물지도 메인 (전체화면 지도 + 우측 패널/모바일 하단시트) |
+| `frontend/public/propmap/map.html` | 통합 지도 iframe (agent 필터, 배지, geolocation, 분류 안내) |
+
+### 주요 기능
+- **멀티 agent 지원**: agent_slug=all로 전체 매물 조회, 개별 agent 토글 필터링
+- **부동산 사무소 배지**: 각 agent 위치에 로고 배지 표시, 클릭 시 해당 agent 필터
+- **현위치 다이얼로그**: 매번 커스텀 다이얼로그로 위치 사용 여부 확인
+- **우측 중개사무소 패널**: 로고 카드, 매물수순/거리순/이름순 정렬, 전체선택/해제
+- **지도 범위 연동**: 지도 이동 시 범위 밖 agent는 패널에서 자동 숨김
+- **부동산 분류방법 팝업**: 단일/집합/부분 분류 설명 카드 (홈페이지 map.html에도 적용)
+- **postMessage 통신**: index↔map 양방향 (filterAgent, filterAgents, mapMoved, markerCounts)
+
+### Nginx 변경
+| 도메인 | 경로 | 동작 |
+|--------|------|------|
+| `propnet.kr` | `/propmap/` | 통합 index.html 서빙 |
+| `propnet.kr` | `/propmap/*.html` | 정적 파일 직접 접근 |
+| `goldenrabbit.biz` | `/propmap/*` | → `propnet.kr/propmap/*` 301 리다이렉트 |
+
+### 서비스 재시작 필요
+`sudo systemctl restart property-manager proppedia propsheet` (propsheet.py 변경 시)
+
+---
+
 ## 2026-04-01: 집합/부분부동산 지도 표시 + 검색 기능 추가
 
 ### 배경

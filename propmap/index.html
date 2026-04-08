@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PropMap - 통합 매물지도</title>
+    <link rel="icon" href="/images/favicon.png" type="image/png">
+    <meta name="description" content="전국 부동산 중개사무소 매물을 한눈에. PropMap 통합 매물지도">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; font-family: 'Noto Sans KR', -apple-system, sans-serif; overflow: hidden; background: #f8fafc; }
+
+        /* ===== 레이아웃 ===== */
+        .app { display: flex; width: 100%; height: 100%; position: relative; }
+        .map-area { flex: 1; height: 100%; position: relative; }
+        .map-area iframe { width: 100%; height: 100%; border: none; }
+
+        /* ===== 우측 패널 (데스크톱) ===== */
+        .side-panel {
+            width: 380px; height: 100%; background: white;
+            border-left: 1px solid #e2e8f0; display: flex; flex-direction: column;
+            z-index: 10; flex-shrink: 0;
+        }
+        .panel-header {
+            padding: 16px 20px; border-bottom: 1px solid #f1f5f9;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .panel-logo { display: flex; align-items: center; gap: 8px; }
+        .panel-logo img { width: 28px; height: 28px; border-radius: 6px; }
+        .panel-logo span { font-size: 16px; font-weight: 700; color: #0f172a; }
+        .panel-close {
+            display: none; width: 32px; height: 32px; border: none; background: #f1f5f9;
+            border-radius: 8px; cursor: pointer; font-size: 18px; color: #64748b;
+            align-items: center; justify-content: center;
+        }
+        .guide-btn {
+            padding: 3px 10px; background: #f1f5f9; border: 1px solid #e2e8f0;
+            border-radius: 6px; font-size: 11px; font-weight: 600; color: #64748b;
+            cursor: pointer; font-family: inherit; white-space: nowrap;
+        }
+        .guide-btn:hover { background: #e2e8f0; }
+
+        /* 부동산분류 팝업 */
+        .guide-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 105;
+            display: none; align-items: center; justify-content: center; padding: 16px;
+        }
+        .guide-overlay.active { display: flex; }
+        .guide-modal {
+            background: white; border-radius: 16px; max-width: 460px; width: 100%;
+            max-height: 85vh; overflow-y: auto; padding: 24px; position: relative;
+        }
+        .guide-modal-close {
+            position: absolute; top: 12px; right: 12px; width: 32px; height: 32px;
+            border: none; background: #f1f5f9; border-radius: 8px; cursor: pointer;
+            font-size: 16px; display: flex; align-items: center; justify-content: center; color: #64748b;
+        }
+        .guide-title { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 16px; }
+        .guide-card {
+            border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px;
+            margin-bottom: 12px;
+        }
+        .guide-card-header {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+        }
+        .guide-card-badge {
+            padding: 3px 10px; border-radius: 6px; font-size: 12px;
+            font-weight: 700; color: white;
+        }
+        .guide-card-badge.danil { background: #1D4ED8; }
+        .guide-card-badge.jibhap { background: #15803D; }
+        .guide-card-badge.bubun { background: #EA580C; }
+        .guide-card-name { font-size: 15px; font-weight: 700; color: #0f172a; }
+        .guide-card-desc {
+            font-size: 13px; color: #475569; line-height: 1.6; margin-bottom: 10px;
+        }
+        .guide-card-subtypes {
+            display: flex; flex-wrap: wrap; gap: 5px;
+        }
+        .guide-subtype-chip {
+            padding: 3px 8px; background: #f1f5f9; border-radius: 5px;
+            font-size: 11px; font-weight: 600; color: #475569;
+        }
+        .guide-card-note {
+            margin-top: 8px; font-size: 11px; color: #94a3b8; line-height: 1.5;
+        }
+        .guide-footer {
+            margin-top: 4px; padding-top: 12px; border-top: 1px solid #f1f5f9;
+            font-size: 11px; color: #94a3b8; text-align: center;
+        }
+        .guide-footer a { color: #3b82f6; text-decoration: none; }
+        .guide-footer a:hover { text-decoration: underline; }
+
+        /* 정렬 바 */
+        .sort-bar {
+            padding: 8px 20px 10px; border-bottom: 1px solid #f1f5f9;
+        }
+        .sort-row {
+            display: flex; align-items: center; gap: 6px;
+        }
+        .sort-row + .sort-row { margin-top: 6px; }
+        .sort-bar .total { font-size: 13px; color: #64748b; font-weight: 500; white-space: nowrap; }
+        .sort-bar .sort-btns { margin-left: auto; display: flex; gap: 4px; }
+        .sort-btn {
+            padding: 4px 10px; border: 1px solid #e2e8f0; background: white;
+            border-radius: 6px; font-size: 11px; font-weight: 600;
+            color: #64748b; cursor: pointer; transition: all 0.15s;
+        }
+        .sort-btn.active { background: #0f172a; color: white; border-color: #0f172a; }
+
+        /* 에이전트 리스트 */
+        .agent-list { flex: 1; overflow-y: auto; padding: 12px 16px; }
+        .agent-card {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 16px; margin-bottom: 8px;
+            background: white; border: 1px solid #e2e8f0; border-radius: 14px;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .agent-card:hover { border-color: #cbd5e1; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .agent-card.selected { border-color: #3b82f6; background: #eff6ff; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+        .agent-card.dimmed { opacity: 0.4; }
+
+        .agent-avatar {
+            width: 48px; height: 48px; border-radius: 12px; background: #f1f5f9;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; font-weight: 700; color: #64748b; flex-shrink: 0;
+            overflow: hidden;
+        }
+        .agent-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .agent-info { flex: 1; min-width: 0; }
+        .agent-name { font-size: 14px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .agent-meta { font-size: 12px; color: #94a3b8; margin-top: 2px; display: flex; gap: 8px; }
+        .agent-stats { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
+        .agent-count { font-size: 20px; font-weight: 700; color: #3b82f6; line-height: 1; }
+        .agent-count-label { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+        .agent-distance { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+
+        /* 전체보기 버튼 */
+        .show-all-btn {
+            display: block; width: calc(100% - 32px); margin: 0 16px 12px;
+            padding: 10px; background: #f8fafc; border: 1px dashed #cbd5e1;
+            border-radius: 12px; text-align: center; font-size: 13px;
+            font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.2s;
+        }
+        .show-all-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+
+        /* 패널 토글 버튼 (지도 위) */
+        .panel-toggle {
+            position: absolute; top: 12px; left: 12px; z-index: 20;
+            padding: 8px 14px; background: white; border: none;
+            border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            cursor: pointer; display: flex; align-items: center; gap: 6px;
+            font-size: 13px; font-weight: 600; color: #334155;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .panel-toggle .material-symbols-outlined { font-size: 18px; }
+        .panel-toggle:hover { background: #f8fafc; }
+
+        /* ===== 모바일 하단 시트 ===== */
+        @media (max-width: 768px) {
+            .app { flex-direction: column; }
+            .map-area { flex: 1; }
+            .side-panel {
+                position: fixed; bottom: 0; left: 0; right: 0; width: 100%;
+                height: auto; max-height: 70vh; border-left: none;
+                border-top: 1px solid #e2e8f0; border-radius: 20px 20px 0 0;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+                transform: translateY(calc(100% - 72px));
+                transition: transform 0.3s ease;
+            }
+            .side-panel.expanded { transform: translateY(0); }
+            .side-panel.collapsed { transform: translateY(calc(100% - 72px)); }
+
+            /* 드래그 핸들 */
+            .sheet-handle {
+                display: flex; justify-content: center; padding: 10px 0 4px;
+                cursor: grab;
+            }
+            .sheet-handle-bar {
+                width: 40px; height: 4px; background: #cbd5e1; border-radius: 2px;
+            }
+            .panel-header { padding: 8px 16px 10px; }
+            .panel-close { display: none; }
+            .sort-bar { padding: 8px 16px; }
+            .agent-list { padding: 8px 12px; }
+            .agent-card { padding: 12px 14px; }
+            .panel-toggle { display: none; }
+        }
+        @media (min-width: 769px) {
+            .sheet-handle { display: none; }
+        }
+
+        /* ===== 상세 모달 ===== */
+        .detail-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 100;
+            display: none; align-items: flex-start; justify-content: center;
+            overflow-y: auto; padding: 24px 16px;
+        }
+        .detail-overlay.active { display: flex; }
+        .detail-modal {
+            background: white; border-radius: 16px; max-width: 480px; width: 100%;
+            overflow: hidden; position: relative;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+        .detail-modal-close {
+            position: absolute; top: 12px; right: 12px; z-index: 10;
+            background: rgba(255,255,255,0.8); backdrop-filter: blur(8px);
+            border: none; border-radius: 50%; width: 36px; height: 36px;
+            font-size: 18px; cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); color: #555;
+        }
+        .detail-photo { width: 100%; max-height: 400px; object-fit: cover; display: block; background: #f1f5f9; }
+        .detail-photo-placeholder { width: 100%; height: 160px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; color: #94a3b8; font-size: 14px; }
+        .detail-body { padding: 20px; }
+        .detail-address { font-size: 15px; font-weight: 600; color: #334155; }
+        .detail-price { font-size: 22px; font-weight: 700; color: #136dec; margin-top: 4px; }
+        .detail-info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        .detail-info-label { color: #64748b; }
+        .detail-info-value { color: #0f172a; font-weight: 600; }
+        .detail-desc-box { margin-top: 16px; padding: 14px; background: #f8fafc; border-radius: 12px; }
+        .detail-desc-title { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 6px; }
+        .detail-desc-text { font-size: 13px; color: #334155; line-height: 1.7; white-space: pre-line; }
+        .broker-card { margin-top: 16px; padding: 14px; background: #f8fafc; border-radius: 12px; border: 1px solid #f1f5f9; }
+        .broker-name { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+        .broker-row { font-size: 12px; color: #64748b; line-height: 1.8; }
+        .broker-phone { color: #136dec; cursor: pointer; text-decoration: underline dotted; text-underline-offset: 2px; }
+        .detail-actions { margin-top: 16px; display: flex; gap: 8px; }
+        .detail-btn-primary {
+            flex: 1; padding: 12px; background: #136dec; color: white;
+            border: none; border-radius: 12px; font-size: 14px; font-weight: 700;
+            cursor: pointer;
+        }
+        .detail-btn-secondary {
+            flex: 1; padding: 12px; background: #f1f5f9; color: #475569;
+            border: none; border-radius: 12px; font-size: 13px; font-weight: 600;
+            cursor: pointer; text-align: center; text-decoration: none;
+        }
+
+        /* 상담 모달 */
+        .consult-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 110;
+            display: none; align-items: center; justify-content: center;
+            padding: 16px;
+        }
+        .consult-overlay.active { display: flex; }
+        .consult-modal { background: white; border-radius: 16px; max-width: 420px; width: 100%; padding: 24px; position: relative; }
+        .consult-modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+        .consult-form .field { margin-bottom: 12px; }
+        .consult-form label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 4px; }
+        .consult-form input, .consult-form textarea, .consult-form select {
+            width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 10px;
+            font-size: 14px; font-family: inherit; outline: none;
+        }
+        .consult-form input:focus, .consult-form textarea:focus, .consult-form select:focus { border-color: #3b82f6; }
+        .consult-form textarea { height: 80px; resize: vertical; }
+        .consult-submit {
+            width: 100%; padding: 12px; background: #136dec; color: white;
+            border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 4px;
+        }
+        .consult-close {
+            position: absolute; top: 12px; right: 12px; width: 32px; height: 32px;
+            border: none; background: #f1f5f9; border-radius: 8px; cursor: pointer;
+            font-size: 16px; display: flex; align-items: center; justify-content: center; color: #64748b;
+        }
+
+        /* 로딩 */
+        .loading-text { text-align: center; padding: 40px 0; color: #94a3b8; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- 지도 영역 -->
+        <div class="map-area">
+            <iframe id="mapIframe" src="map.html?agent=all"></iframe>
+            <button class="panel-toggle" id="panelToggle">
+                <span class="material-symbols-outlined">apartment</span>
+                중개사무소
+            </button>
+        </div>
+
+        <!-- 우측 패널 / 모바일 하단 시트 -->
+        <div class="side-panel" id="sidePanel">
+            <div class="sheet-handle" id="sheetHandle">
+                <div class="sheet-handle-bar"></div>
+            </div>
+            <div class="panel-header">
+                <div class="panel-logo">
+                    <span>중개사무소</span>
+                </div>
+                <button class="panel-close" id="panelClose">&#10005;</button>
+            </div>
+            <div class="sort-bar">
+                <div class="sort-row">
+                    <span class="total" id="totalAgents">0개 사무소</span>
+                    <div class="sort-btns">
+                        <button class="sort-btn" id="btnSelectAll">전체 선택</button>
+                        <button class="sort-btn" id="btnDeselectAll">전체 해제</button>
+                    </div>
+                </div>
+                <div class="sort-row">
+                    <span class="total">정렬</span>
+                    <div class="sort-btns">
+                        <button class="sort-btn active" data-sort="count">매물수순</button>
+                        <button class="sort-btn" data-sort="distance">거리순</button>
+                        <button class="sort-btn" data-sort="name">이름순</button>
+                    </div>
+                </div>
+            </div>
+            <div class="agent-list" id="agentList">
+                <div class="loading-text">중개사무소 정보를 불러오는 중...</div>
+            </div>
+            <button class="show-all-btn" id="showAllBtn" style="display:none">전체 사무소 매물 보기</button>
+        </div>
+    </div>
+
+    <!-- 상세 모달 -->
+    <div class="detail-overlay" id="detailOverlay">
+        <div class="detail-modal">
+            <button class="detail-modal-close" id="detailClose">&#10005;</button>
+            <div id="detailContent"></div>
+        </div>
+    </div>
+
+    <!-- 상담 모달 -->
+    <div class="consult-overlay" id="consultOverlay">
+        <div class="consult-modal">
+            <button class="consult-close" id="consultClose">&#10005;</button>
+            <h2>상담 문의</h2>
+            <form class="consult-form" id="consultForm">
+                <div class="field">
+                    <label>매물종류</label>
+                    <select id="consultType">
+                        <option value="">선택하세요</option>
+                        <option value="house">단독/다가구</option>
+                        <option value="apt">아파트/빌라</option>
+                        <option value="commercial">상가/건물</option>
+                        <option value="land">토지</option>
+                        <option value="room">원룸/투룸</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>연락처</label>
+                    <input type="tel" id="consultPhone" placeholder="010-0000-0000" required>
+                </div>
+                <div class="field">
+                    <label>문의사항</label>
+                    <textarea id="consultMessage" placeholder="관심지역, 희망조건 등을 작성해 주세요"></textarea>
+                </div>
+                <input type="hidden" id="consultAddress" value="">
+                <input type="hidden" id="consultAgentSlug" value="">
+                <button type="submit" class="consult-submit">문의 보내기</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 부동산분류 팝업 -->
+    <div class="guide-overlay" id="guideOverlay">
+        <div class="guide-modal">
+            <button class="guide-modal-close" id="guideClose">&#10005;</button>
+            <div class="guide-title">부동산 분류 체계</div>
+
+            <div class="guide-card">
+                <div class="guide-card-header">
+                    <span class="guide-card-badge danil">단일</span>
+                    <span class="guide-card-name">단일부동산</span>
+                </div>
+                <div class="guide-card-desc">
+                    소유권이 하나인 토지 또는 건물.<br>
+                    하나의 소유자가 전체에 대한 소유권을 가지며, 토지+건물이 함께 거래됩니다.
+                </div>
+                <div class="guide-card-subtypes">
+                    <span class="guide-subtype-chip">주택</span>
+                    <span class="guide-subtype-chip">건물</span>
+                    <span class="guide-subtype-chip">토지</span>
+                </div>
+                <div class="guide-card-note">등기 1건 | 매매 중심 거래</div>
+            </div>
+
+            <div class="guide-card">
+                <div class="guide-card-header">
+                    <span class="guide-card-badge jibhap">집합</span>
+                    <span class="guide-card-name">집합부동산</span>
+                </div>
+                <div class="guide-card-desc">
+                    구분소유권이 존재하는 부동산.<br>
+                    건물은 하나지만 각 호수마다 독립된 소유권을 가지며, 호수별 개별 매매가 가능합니다.
+                </div>
+                <div class="guide-card-subtypes">
+                    <span class="guide-subtype-chip">아파트</span>
+                    <span class="guide-subtype-chip">빌라</span>
+                    <span class="guide-subtype-chip">오피스텔</span>
+                    <span class="guide-subtype-chip">상가</span>
+                    <span class="guide-subtype-chip">지산</span>
+                    <span class="guide-subtype-chip">기타</span>
+                </div>
+                <div class="guide-card-note">호수별 별도 등기 | 매매/전세/월세 거래</div>
+            </div>
+
+            <div class="guide-card">
+                <div class="guide-card-header">
+                    <span class="guide-card-badge bubun">부분</span>
+                    <span class="guide-card-name">부분부동산</span>
+                </div>
+                <div class="guide-card-desc">
+                    단일부동산의 일부를 임대차하는 경우.<br>
+                    소유권이 아닌 임차권(사용 권리)이 거래 대상이며, 보증금/월세/권리금이 핵심 정보입니다.
+                </div>
+                <div class="guide-card-subtypes">
+                    <span class="guide-subtype-chip">원룸</span>
+                    <span class="guide-subtype-chip">1.5룸</span>
+                    <span class="guide-subtype-chip">투룸</span>
+                    <span class="guide-subtype-chip">3룸</span>
+                    <span class="guide-subtype-chip">4룸이상</span>
+                    <span class="guide-subtype-chip">상가</span>
+                    <span class="guide-subtype-chip">사무실</span>
+                </div>
+                <div class="guide-card-note">임차권 거래 | 전세/월세 중심</div>
+            </div>
+
+            <div class="guide-footer">
+                <a href="https://propnet.kr/propsheet/guide/property-types" target="_blank">자세한 분류 가이드 보기</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    /* ===== 전역 상태 ===== */
+    var agents = [];           // API에서 받은 agent 목록
+    var agentCounts = {};      // {slug: markerCount} - 필터 적용된 현재 카운트
+    var totalAgentCounts = {}; // {slug: totalCount} - 전체 매물수 (필터 무관, 정렬용)
+    var totalCountsInitialized = false;
+    var selectedAgents = {};   // {slug: true/false} - 개별 토글 상태
+    var mapCenter = null;      // {lat, lng} - 지도 중심
+    var mapBounds = null;      // {sw: {lat,lng}, ne: {lat,lng}} - 지도 범위
+    var currentSort = 'count';
+
+    /* ===== 유틸 ===== */
+    function escapeHtml(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+    function formatPrice(p) {
+        if (!p || p <= 0) return '가격정보 없음';
+        if (p < 10000) return p.toLocaleString() + '만원';
+        var e = p / 10000;
+        return (e % 1 === 0 ? e.toFixed(0) : e.toFixed(1)) + '억원';
+    }
+    function toPyeong(sqm) { return sqm ? Math.round(sqm / 3.3058) + '평' : ''; }
+
+    function getDistance(lat1, lon1, lat2, lon2) {
+        if (!lat1 || !lon1 || !lat2 || !lon2) return Infinity;
+        var R = 6371;
+        var dLat = (lat2 - lat1) * Math.PI / 180;
+        var dLon = (lon2 - lon1) * Math.PI / 180;
+        var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function formatDistance(km) {
+        if (!km || km === Infinity) return '';
+        if (km < 1) return Math.round(km * 1000) + 'm';
+        return km.toFixed(1) + 'km';
+    }
+
+    /* ===== 에이전트 데이터 로딩 ===== */
+    function loadAgents() {
+        fetch('/propsheet/api/propsheet/agents-public?_t=' + Date.now())
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.success) return;
+                agents = data.agents || [];
+                agents.forEach(function(a) { selectedAgents[a.slug] = true; });
+                renderAgentList();
+            })
+            .catch(function(e) {
+                document.getElementById('agentList').innerHTML = '<div class="loading-text">데이터를 불러올 수 없습니다.</div>';
+            });
+    }
+
+    /* ===== 에이전트 카드 렌더링 ===== */
+    function isInBounds(lat, lng) {
+        if (!mapBounds || !lat || !lng) return true; // bounds 없으면 전부 표시
+        return lat >= mapBounds.sw.lat && lat <= mapBounds.ne.lat &&
+               lng >= mapBounds.sw.lng && lng <= mapBounds.ne.lng;
+    }
+
+    function renderAgentList() {
+        var list = document.getElementById('agentList');
+        if (!agents.length) {
+            list.innerHTML = '<div class="loading-text">등록된 중개사무소가 없습니다.</div>';
+            return;
+        }
+
+        // 지도 범위 내 agent만 필터
+        var sorted = agents.filter(function(a) {
+            return isInBounds(a.latitude, a.longitude);
+        });
+
+        document.getElementById('totalAgents').textContent = sorted.length + '개 사무소';
+
+        if (!sorted.length) {
+            list.innerHTML = '<div class="loading-text">현재 지도 범위에 중개사무소가 없습니다.</div>';
+            document.getElementById('showAllBtn').style.display = 'none';
+            return;
+        }
+        if (currentSort === 'count') {
+            sorted.sort(function(a, b) { return (totalAgentCounts[b.slug] || 0) - (totalAgentCounts[a.slug] || 0); });
+        } else if (currentSort === 'distance' && mapCenter) {
+            sorted.sort(function(a, b) {
+                var da = getDistance(mapCenter.lat, mapCenter.lng, a.latitude, a.longitude);
+                var db = getDistance(mapCenter.lat, mapCenter.lng, b.latitude, b.longitude);
+                return da - db;
+            });
+        } else if (currentSort === 'name') {
+            sorted.sort(function(a, b) { return (a.agency_name || '').localeCompare(b.agency_name || ''); });
+        }
+
+        var html = '';
+        sorted.forEach(function(a) {
+            var count = totalAgentCounts[a.slug] || agentCounts[a.slug] || 0;
+            var dist = '';
+            if (mapCenter && a.latitude && a.longitude) {
+                var km = getDistance(mapCenter.lat, mapCenter.lng, a.latitude, a.longitude);
+                dist = formatDistance(km);
+            }
+            var initial = (a.agency_name || a.slug || '?').charAt(0);
+            var isOn = selectedAgents[a.slug];
+            var cardClass = 'agent-card' + (isOn ? ' selected' : ' dimmed');
+
+            html += '<div class="' + cardClass + '" data-slug="' + a.slug + '">';
+            if (a.logo_url) {
+                html += '  <div class="agent-avatar"><img src="' + a.logo_url + '" alt="' + escapeHtml(a.agency_name || '') + '" onerror="this.parentElement.innerHTML=\'' + escapeHtml(initial) + '\'"></div>';
+            } else {
+                html += '  <div class="agent-avatar">' + escapeHtml(initial) + '</div>';
+            }
+            html += '  <div class="agent-info">';
+            html += '    <div class="agent-name">' + escapeHtml(a.agency_name || a.slug) + '</div>';
+            html += '    <div class="agent-meta">';
+            if (a.address) html += '<span>' + escapeHtml(a.address.split(',')[0]) + '</span>';
+            if (a.phone) html += '<span>' + escapeHtml(a.phone) + '</span>';
+            html += '    </div>';
+            html += '  </div>';
+            html += '  <div class="agent-stats">';
+            html += '    <div class="agent-count">' + count + '</div>';
+            html += '    <div class="agent-count-label">매물</div>';
+            if (dist) html += '    <div class="agent-distance">' + dist + '</div>';
+            html += '  </div>';
+            html += '</div>';
+        });
+        list.innerHTML = html;
+
+        // 카드 클릭 이벤트
+        list.querySelectorAll('.agent-card').forEach(function(card) {
+            card.addEventListener('click', function() {
+                var slug = this.getAttribute('data-slug');
+                selectAgent(slug);
+            });
+        });
+
+        // 전체보기 버튼
+        var anyOff = agents.some(function(a) { return !selectedAgents[a.slug]; });
+        document.getElementById('showAllBtn').style.display = anyOff ? 'block' : 'none';
+    }
+
+    /* ===== 에이전트 선택 ===== */
+    function selectAgent(slug) {
+        // 개별 토글
+        selectedAgents[slug] = !selectedAgents[slug];
+        syncMapFilter();
+        renderAgentList();
+
+        // 모바일: 시트 닫기
+        if (window.innerWidth <= 768) {
+            document.getElementById('sidePanel').classList.remove('expanded');
+            document.getElementById('sidePanel').classList.add('collapsed');
+        }
+    }
+
+    function syncMapFilter() {
+        // 현재 selectedAgents 상태를 map에 전달
+        sendToMap({action: 'filterAgents', agents: Object.assign({}, selectedAgents)});
+    }
+
+    /* ===== 지도 iframe 통신 ===== */
+    function sendToMap(msg) {
+        var iframe = document.getElementById('mapIframe');
+        if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage(msg, '*');
+        }
+    }
+
+    window.addEventListener('message', function(event) {
+        if (!event.data || !event.data.action) return;
+        var msg = event.data;
+
+        if (msg.action === 'mapMoved') {
+            mapCenter = msg.center;
+            mapBounds = msg.bounds || null;
+            if (msg.visibleAgents) {
+                requestMarkerCounts();
+            }
+            renderAgentList();
+        }
+
+        if (msg.action === 'markerCounts') {
+            agentCounts = msg.counts || {};
+            // 최초 수신 시 (필터 없는 상태) 전체 카운트로 저장
+            if (!totalCountsInitialized) {
+                totalAgentCounts = Object.assign({}, agentCounts);
+                totalCountsInitialized = true;
+            }
+            renderAgentList();
+        }
+
+        if (msg.action === 'openPropertyDetail') {
+            fetchPropertyDetail(msg.recordId, msg.dbId, msg.agentSlug);
+        }
+
+        if (msg.action === 'openConsultModal') {
+            openConsult(msg.address, msg.agentSlug);
+        }
+
+        if (msg.action === 'mapFullscreen') {
+            var panel = document.getElementById('sidePanel');
+            if (msg.value) {
+                panel.style.display = 'none';
+            } else {
+                panel.style.display = '';
+            }
+        }
+
+        // 맵 내 agent 필터 변경 → 패널 카드 선택 상태 동기화
+        if (msg.action === 'agentFilterChanged' && msg.agents) {
+            Object.keys(msg.agents).forEach(function(s) {
+                selectedAgents[s] = msg.agents[s];
+            });
+            renderAgentList();
+        }
+    });
+
+    // 주기적으로 마커 카운트 요청 (초기 로드 + 필터 변경 시)
+    function requestMarkerCounts() {
+        sendToMap({action: 'getMarkerCounts'});
+    }
+
+    // map.html에서 초기 데이터 로드 후 카운트 전달하도록 보완
+    // 일정 시간 후 카운트 요청
+    setTimeout(function() { requestMarkerCounts(); }, 3000);
+    setTimeout(function() { requestMarkerCounts(); }, 6000);
+
+    /* ===== 매물 상세 ===== */
+    function fetchPropertyDetail(recordId, dbId, agentSlug) {
+        fetch('/propsheet/api/propsheet/property-detail?record_id=' + recordId + '&db_id=' + dbId)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data || data.error) return;
+                showPropertyDetail(data, agentSlug);
+            });
+    }
+
+    function showPropertyDetail(data, agentSlug) {
+        var agent = agents.find(function(a) { return a.slug === agentSlug; });
+        var content = document.getElementById('detailContent');
+
+        var html = '';
+        if (data.photo) {
+            html += '<img class="detail-photo" src="' + data.photo + '" onerror="this.outerHTML=\'<div class=detail-photo-placeholder>사진 없음</div>\'">';
+        } else {
+            html += '<div class="detail-photo-placeholder">사진 없음</div>';
+        }
+
+        html += '<div class="detail-body">';
+        html += '<div class="detail-address">' + escapeHtml(data.address || data['지번 주소'] || '') + '</div>';
+
+        var txn = data.transaction_type || '매매';
+        var price = parseFloat(data['매가(만원)'] || data.price || 0);
+        var deposit = parseFloat(data['보증금(만원)'] || data.deposit || 0);
+        var rent = parseFloat(data['월세(만원)'] || data.rent || 0);
+
+        if (txn === '월세') {
+            html += '<div class="detail-price">보증금 ' + formatPrice(deposit) + ' / 월세 ' + formatPrice(rent) + '</div>';
+        } else if (txn === '전세') {
+            html += '<div class="detail-price">전세 ' + formatPrice(deposit) + '</div>';
+        } else {
+            html += '<div class="detail-price">' + formatPrice(price) + '</div>';
+        }
+
+        html += '<div style="margin-top:16px">';
+        function row(l, v) { if (v) html += '<div class="detail-info-row"><span class="detail-info-label">' + l + '</span><span class="detail-info-value">' + v + '</span></div>'; }
+
+        var landArea = parseFloat(data['토지면적(㎡)'] || 0);
+        var totalArea = parseFloat(data['연면적(㎡)'] || 0);
+        if (landArea > 0) row('토지면적', toPyeong(landArea) + ' (' + landArea + '㎡)');
+        if (totalArea > 0) row('연면적', toPyeong(totalArea) + ' (' + totalArea + '㎡)');
+        if (data['층수']) row('층수', escapeHtml(data['층수']));
+        if (data['주용도']) row('주용도', escapeHtml(data['주용도']));
+        if (data['용도지역']) row('용도지역', escapeHtml(data['용도지역']));
+        if (data['사용승인일'] && data['사용승인일'] !== '0') row('사용승인일', data['사용승인일']);
+        if (data['인접역']) row('인접역', escapeHtml(data['인접역']));
+        html += '</div>';
+
+        var desc = data['광고(자동완성)'] || data.description || '';
+        if (desc) {
+            html += '<div class="detail-desc-box"><div class="detail-desc-title">상세정보</div>';
+            html += '<div class="detail-desc-text">' + escapeHtml(desc) + '</div></div>';
+        }
+
+        if (agent) {
+            html += '<div class="broker-card">';
+            html += '<div class="broker-name">' + escapeHtml(agent.agency_name || '') + '</div>';
+            if (agent.address) html += '<div class="broker-row">' + escapeHtml(agent.address) + '</div>';
+            if (agent.phone) {
+                html += '<div class="broker-row"><span class="broker-phone" onclick="navigator.clipboard.writeText(\'' + agent.phone + '\');this.textContent=\'복사됨!\';var s=this;setTimeout(function(){s.textContent=\'' + escapeHtml(agent.phone) + '\'},1500)">' + escapeHtml(agent.phone) + '</span></div>';
+            }
+            html += '</div>';
+        }
+
+        html += '<div class="detail-actions">';
+        html += '<button class="detail-btn-primary" onclick="openConsult(\'' + escapeHtml(data.address || '') + '\', \'' + (agentSlug || '') + '\')">문의하기</button>';
+        html += '<a href="https://map.kakao.com/link/search/' + encodeURIComponent(data.address || '') + '" target="_blank" class="detail-btn-secondary">지도 보기</a>';
+        html += '</div></div>';
+
+        content.innerHTML = html;
+        document.getElementById('detailOverlay').classList.add('active');
+    }
+
+    document.getElementById('detailClose').onclick = function() {
+        document.getElementById('detailOverlay').classList.remove('active');
+    };
+    document.getElementById('detailOverlay').onclick = function(e) {
+        if (e.target === this) this.classList.remove('active');
+    };
+
+    /* ===== 상담 문의 ===== */
+    function openConsult(address, agentSlug) {
+        document.getElementById('consultAddress').value = address || '';
+        document.getElementById('consultAgentSlug').value = agentSlug || '';
+        document.getElementById('consultOverlay').classList.add('active');
+    }
+    document.getElementById('consultClose').onclick = function() {
+        document.getElementById('consultOverlay').classList.remove('active');
+    };
+    document.getElementById('consultOverlay').onclick = function(e) {
+        if (e.target === this) this.classList.remove('active');
+    };
+    document.getElementById('consultForm').onsubmit = function(e) {
+        e.preventDefault();
+        var slug = document.getElementById('consultAgentSlug').value;
+        var payload = {
+            property_type: document.getElementById('consultType').value,
+            phone: document.getElementById('consultPhone').value,
+            message: document.getElementById('consultMessage').value,
+            address: document.getElementById('consultAddress').value,
+            agent_slug: slug
+        };
+        fetch('/propsheet/api/propsheet/inquiry', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        }).then(function() {
+            document.getElementById('consultOverlay').classList.remove('active');
+            document.getElementById('consultForm').reset();
+        }).catch(function() {
+            document.getElementById('consultOverlay').classList.remove('active');
+        });
+    };
+
+    /* ===== 정렬 버튼 ===== */
+    document.querySelectorAll('.sort-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            currentSort = this.getAttribute('data-sort');
+            document.querySelectorAll('.sort-btn').forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
+            renderAgentList();
+        });
+    });
+
+    /* ===== 전체보기 버튼 ===== */
+    document.getElementById('showAllBtn').addEventListener('click', function() {
+        agents.forEach(function(a) { selectedAgents[a.slug] = true; });
+        syncMapFilter();
+        renderAgentList();
+    });
+
+    /* ===== 전체 선택 / 전체 해제 ===== */
+    document.getElementById('btnSelectAll').addEventListener('click', function() {
+        agents.forEach(function(a) { selectedAgents[a.slug] = true; });
+        syncMapFilter();
+        renderAgentList();
+    });
+    document.getElementById('btnDeselectAll').addEventListener('click', function() {
+        agents.forEach(function(a) { selectedAgents[a.slug] = false; });
+        syncMapFilter();
+        renderAgentList();
+    });
+
+    /* ===== 패널 토글 (데스크톱) ===== */
+    document.getElementById('panelToggle').addEventListener('click', function() {
+        var panel = document.getElementById('sidePanel');
+        if (panel.style.display === 'none') {
+            panel.style.display = '';
+        } else {
+            panel.style.display = 'none';
+        }
+    });
+
+    /* ===== 모바일 하단 시트 드래그 ===== */
+    (function() {
+        var panel = document.getElementById('sidePanel');
+        var handle = document.getElementById('sheetHandle');
+        var startY = 0, startTransform = 0, isDragging = false;
+
+        // 모바일: 핸들 클릭으로 토글
+        handle.addEventListener('click', function() {
+            if (panel.classList.contains('expanded')) {
+                panel.classList.remove('expanded');
+                panel.classList.add('collapsed');
+            } else {
+                panel.classList.remove('collapsed');
+                panel.classList.add('expanded');
+            }
+        });
+
+        // 터치 드래그
+        handle.addEventListener('touchstart', function(e) {
+            isDragging = true;
+            startY = e.touches[0].clientY;
+        }, {passive: true});
+
+        document.addEventListener('touchmove', function(e) {
+            if (!isDragging) return;
+            var deltaY = e.touches[0].clientY - startY;
+            if (deltaY > 50) {
+                panel.classList.remove('expanded');
+                panel.classList.add('collapsed');
+                isDragging = false;
+            } else if (deltaY < -50) {
+                panel.classList.remove('collapsed');
+                panel.classList.add('expanded');
+                isDragging = false;
+            }
+        }, {passive: true});
+
+        document.addEventListener('touchend', function() { isDragging = false; });
+    })();
+
+    /* ===== ESC 키 ===== */
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.getElementById('detailOverlay').classList.remove('active');
+            document.getElementById('consultOverlay').classList.remove('active');
+        }
+    });
+
+    /* ===== 초기화 ===== */
+    loadAgents();
+    </script>
+</body>
+</html>
