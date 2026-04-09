@@ -73,7 +73,10 @@ def register_message_routes(app, socketio):
             return jsonify({'error': '메시지 내용이 필요합니다'}), 400
         
         msg = Message.create(room_id, g.user_id, 'text', content, parent_id)
-        
+
+        # 발신자는 자기가 보낸 메시지까지 읽은 것으로 처리
+        Room.mark_read(room_id, g.user_id, msg['id'])
+
         # WebSocket으로 실시간 전송
         socketio.emit('new_message', {
             'message': _serialize({
@@ -149,7 +152,10 @@ def register_message_routes(app, socketio):
             room_id, g.user_id, 'audio',
             f'🎙️ {original_filename}'
         )
-        
+
+        # 발신자는 자기가 보낸 메시지까지 읽은 것으로 처리
+        Room.mark_read(room_id, g.user_id, msg['id'])
+
         # 3) audio_files 레코드 생성
         audio = AudioFile.create(
             msg['id'], room_id, g.user_id, original_filename, file_size
@@ -275,6 +281,9 @@ def register_message_routes(app, socketio):
             room_id, g.user_id, 'file',
             f'{icon} {original_filename} ({size_str})'
         )
+
+        # 발신자는 자기가 보낸 메시지까지 읽은 것으로 처리
+        Room.mark_read(room_id, g.user_id, msg['id'])
 
         # 3) file_attachments 레코드 생성
         mime_type = file.content_type
