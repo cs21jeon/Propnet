@@ -2,6 +2,14 @@
 
 > 최종 업데이트: 2026-04-09
 
+## 2026-04-09: 음성 요약 검색 기능 추가
+
+- 음성 요약 목록에 텍스트 키워드 검색 기능 추가 (채팅방 메시지 검색과 동일 UX)
+  - 검색 대상: 요약 내용, 변환 텍스트, 파일명, 발신자명, 전화번호 (ILIKE)
+  - 백엔드: `routes_audio.py` q 파라미터, `models.py` list_summaries_for_user query 조건
+  - 웹앱: 요약 패널 상단 검색바 + 결과 카운트 표시
+  - Flutter 앱: `summary_list_screen.dart` 검색 입력 필드, `api_service.dart` query 파라미터
+
 ## 2026-04-09: 읽음 처리(mark-read) 전면 개선 + 공지사항 API
 
 - 메시지 전송 시 발신자 last_read_message_id 자동 업데이트 (텍스트/음성/파일)

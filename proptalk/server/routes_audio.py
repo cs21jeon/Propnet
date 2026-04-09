@@ -20,6 +20,7 @@ def register_audio_routes(app):
         name = request.args.get('name')
         date_from = request.args.get('date_from')
         date_to = request.args.get('date_to')
+        q = request.args.get('q')
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 30, type=int)
 
@@ -33,6 +34,7 @@ def register_audio_routes(app):
             parsed_name=name,
             date_from=date_from,
             date_to=date_to,
+            query=q,
             page=page,
             per_page=per_page,
         )

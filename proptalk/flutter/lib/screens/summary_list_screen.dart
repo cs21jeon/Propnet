@@ -136,6 +136,7 @@ class _RoomSummaryScreenState extends State<RoomSummaryScreen> {
 
   final _phoneController = TextEditingController();
   final _nameController = TextEditingController();
+  final _searchController = TextEditingController();
   String? _dateFrom;
   String? _dateTo;
   bool _showFilters = false;
@@ -153,6 +154,7 @@ class _RoomSummaryScreenState extends State<RoomSummaryScreen> {
   void dispose() {
     _phoneController.dispose();
     _nameController.dispose();
+    _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -180,6 +182,7 @@ class _RoomSummaryScreenState extends State<RoomSummaryScreen> {
         name: _nameController.text,
         dateFrom: _dateFrom,
         dateTo: _dateTo,
+        query: _searchController.text,
         page: 1,
         perPage: _perPage,
       );
@@ -208,6 +211,7 @@ class _RoomSummaryScreenState extends State<RoomSummaryScreen> {
         name: _nameController.text,
         dateFrom: _dateFrom,
         dateTo: _dateTo,
+        query: _searchController.text,
         page: _page + 1,
         perPage: _perPage,
       );
@@ -224,6 +228,7 @@ class _RoomSummaryScreenState extends State<RoomSummaryScreen> {
   void _clearFilters() {
     _phoneController.clear();
     _nameController.clear();
+    _searchController.clear();
     _dateFrom = null;
     _dateTo = null;
     _loadSummaries();
@@ -275,6 +280,7 @@ class _RoomSummaryScreenState extends State<RoomSummaryScreen> {
       ),
       body: Column(
         children: [
+          _buildSearchBar(theme),
           if (_showFilters) _buildFilterBar(theme),
           Expanded(
             child: _isLoading
@@ -331,6 +337,43 @@ class _RoomSummaryScreenState extends State<RoomSummaryScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        border: Border(
+          bottom: BorderSide(color: theme.dividerColor),
+        ),
+      ),
+      child: TextField(
+        controller: _searchController,
+        decoration: InputDecoration(
+          hintText: '요약 내용 검색...',
+          isDense: true,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          prefixIcon: const Icon(Icons.search, size: 20),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear, size: 18),
+                  onPressed: () {
+                    _searchController.clear();
+                    _loadSummaries();
+                  },
+                )
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        textInputAction: TextInputAction.search,
+        onSubmitted: (_) => _loadSummaries(),
+        onChanged: (_) => setState(() {}),
       ),
     );
   }

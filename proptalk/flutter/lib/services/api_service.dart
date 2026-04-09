@@ -518,6 +518,7 @@ class ApiService {
     String? name,
     String? dateFrom,
     String? dateTo,
+    String? query,
     int page = 1,
     int perPage = 30,
   }) async {
@@ -527,6 +528,7 @@ class ApiService {
     if (name != null && name.isNotEmpty) url += '&name=${Uri.encodeComponent(name)}';
     if (dateFrom != null) url += '&date_from=$dateFrom';
     if (dateTo != null) url += '&date_to=$dateTo';
+    if (query != null && query.isNotEmpty) url += '&q=${Uri.encodeComponent(query)}';
 
     final response = await _client.get(Uri.parse(url), headers: _headers);
     return _handleResponse(response);

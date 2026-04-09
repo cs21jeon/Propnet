@@ -486,7 +486,7 @@ class AudioFile:
     @staticmethod
     def list_summaries_for_user(user_id, room_id=None, phone_number=None,
                                  parsed_name=None, date_from=None, date_to=None,
-                                 page=1, per_page=30):
+                                 query=None, page=1, per_page=30):
         """사용자가 속한 방의 음성파일 요약 목록 (페이지네이션)"""
         conditions = [
             "rm.user_id = %s",
@@ -510,6 +510,16 @@ class AudioFile:
         if date_to:
             conditions.append("af.record_date <= %s")
             params.append(date_to)
+        if query:
+            conditions.append(
+                "(af.transcript_summary ILIKE %s"
+                " OR af.transcript_text ILIKE %s"
+                " OR af.original_filename ILIKE %s"
+                " OR af.parsed_name ILIKE %s"
+                " OR af.phone_number ILIKE %s)"
+            )
+            q_like = f"%{query}%"
+            params.extend([q_like, q_like, q_like, q_like, q_like])
 
         where = " AND ".join(conditions)
         offset = (page - 1) * per_page

@@ -60,6 +60,8 @@ function ProptalkApp() {
         searchQuery: '',
         searchResultIds: [],     // [fix #3] 검색 결과 메시지 ID 목록
         searchResultIndex: -1,   // [fix #3] 현재 선택된 검색 결과 인덱스
+        summarySearchQuery: '',
+        summarySearchTotal: -1,
 
         // ── Room forms ──
         newRoomName: '',
@@ -275,6 +277,8 @@ function ProptalkApp() {
             this.searchResultIndex = -1;
             this.showSummaries = false;
             this.summaries = [];
+            this.summarySearchQuery = '';
+            this.summarySearchTotal = -1;
 
             await this.loadMessages();
             this.loadMembers();
@@ -1006,15 +1010,17 @@ function ProptalkApp() {
         // ============================================================
         // Summaries  [fix #1] - 올바른 응답 필드 매핑
         // ============================================================
-        async loadSummaries() {
+        async loadSummaries(query) {
             if (!this.currentRoom) return;
-            const res = await this.api(`/api/audio/summaries?room_id=${this.currentRoom.id}&per_page=50`);
+            let url = `/api/audio/summaries?room_id=${this.currentRoom.id}&per_page=50`;
+            if (query) url += `&q=${encodeURIComponent(query)}`;
+            const res = await this.api(url);
             if (res?.ok) {
                 const data = await res.json();
-                // API가 { summaries: [...], items: [...] } 형태로 반환
                 this.summaries = data.audio_files || data.summaries || data.items || [];
+                this.summarySearchTotal = query ? (data.total ?? this.summaries.length) : -1;
                 // 빈 배열이면 메시지에서 audio가 있는 것들을 fallback으로 표시
-                if (this.summaries.length === 0) {
+                if (!query && this.summaries.length === 0) {
                     this.summaries = this.messages
                         .filter(m => m.audio && m.audio.transcript_summary)
                         .map(m => ({
@@ -1026,6 +1032,18 @@ function ProptalkApp() {
                         }));
                 }
             }
+        },
+
+        async searchSummaries() {
+            const q = this.summarySearchQuery.trim();
+            if (!q) return;
+            await this.loadSummaries(q);
+        },
+
+        async clearSummarySearch() {
+            this.summarySearchQuery = '';
+            this.summarySearchTotal = -1;
+            await this.loadSummaries();
         },
 
         // ============================================================
