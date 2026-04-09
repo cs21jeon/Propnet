@@ -558,8 +558,16 @@ def register_auth_routes(app):
             except Exception as e:
                 logger.error(f"propnet data deletion failed: {e}")
 
-        # voiceroom 데이터 삭제
+        # voiceroom 유저 soft delete (is_active=FALSE + 개인정보 익명화)
         execute("DELETE FROM user_consents WHERE user_id = %s", (user_id,))
-        execute("DELETE FROM users WHERE id = %s", (user_id,))
-        logger.info(f"Account deleted: user_id={user_id}, propnet_user_id={propnet_user_id}")
+        execute("DELETE FROM device_tokens WHERE user_id = %s", (user_id,))
+        execute(
+            """UPDATE users SET is_active = FALSE,
+                   name = '탈퇴한 사용자',
+                   avatar_url = NULL,
+                   google_tokens = NULL
+               WHERE id = %s""",
+            (user_id,)
+        )
+        logger.info(f"Account soft-deleted: user_id={user_id}, propnet_user_id={propnet_user_id}")
         return jsonify({'ok': True})

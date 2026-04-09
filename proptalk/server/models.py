@@ -66,7 +66,7 @@ def execute(sql, params=None):
 class User:
     @staticmethod
     def find_by_google_id(google_id):
-        return query_one("SELECT * FROM users WHERE google_id = %s", (google_id,))
+        return query_one("SELECT * FROM users WHERE google_id = %s AND is_active = TRUE", (google_id,))
     
     @staticmethod
     def find_by_id(user_id):
@@ -75,10 +75,11 @@ class User:
     @staticmethod
     def create(google_id, email, name, avatar_url=None):
         return execute(
-            """INSERT INTO users (google_id, email, name, avatar_url)
-               VALUES (%s, %s, %s, %s)
+            """INSERT INTO users (google_id, email, name, avatar_url, is_active)
+               VALUES (%s, %s, %s, %s, TRUE)
                ON CONFLICT (google_id) DO UPDATE
-               SET name = EXCLUDED.name, avatar_url = EXCLUDED.avatar_url
+               SET name = EXCLUDED.name, avatar_url = EXCLUDED.avatar_url,
+                   is_active = TRUE
                RETURNING *""",
             (google_id, email, name, avatar_url)
         )

@@ -3,6 +3,17 @@
 > 최종 업데이트: 2026-04-09
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
 
+## 2026-04-09: 랜딩 페이지 네비게이션 개선 + Proptalk 계정 삭제 수정
+
+- [통합] propnet.kr 랜딩 페이지에 중개사 시작 가이드 링크 추가 (헤더/CTA/푸터)
+- [통합] PropMap 카드 "서비스 예정" → "운영 중" 전환, /propmap/ 링크 연결
+- [통합] PropSheet 배지 "중개사 전용" 표기 추가
+- [Proptalk] 요금제 Agent Regular "기본(1시간)" 표기, Propsheet+PropMap 포함 설명 추가
+- [Proptalk] 가이드 페이지에 초대코드 참여 설명+스크린샷 추가
+- [Proptalk] 계정 삭제 FK 위반 오류 수정: hard delete → soft delete 전환
+  - voiceroom.users에 is_active 컬럼 추가, 탈퇴 시 개인정보 익명화
+  - 재가입 시 is_active=TRUE 자동 재활성화
+
 ## 2026-04-09: Proptalk 음성 요약 검색 + 서버 백업 실패 알림
 
 - [Proptalk] 음성 요약 검색 기능 추가 (웹+앱, 5개 필드 ILIKE 검색)
