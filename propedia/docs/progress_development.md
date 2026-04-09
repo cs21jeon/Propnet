@@ -1,4 +1,19 @@
-업데이트 현황 (2026-04-06)
+업데이트 현황 (2026-04-09)
+
+## 2026-04-09: v1.1.0+12 — 인앱 업데이트 + 매물 데이터 PropSheet 전환
+
+- Google Play In-App Update (Flexible 모드) 추가
+  - 새 버전이 Play Store에 등록되면 앱 실행 시 백그라운드 다운로드 → SnackBar로 재시작 안내
+  - Android 전용, 비 Play Store 환경에서는 graceful 무시
+  - 신규 파일: `lib/core/update/in_app_update_service.dart`
+  - 패키지 추가: `in_app_update: ^4.2.3`
+- 매물 데이터 Airtable → PropSheet DB 전면 전환 + 홈 화면 UI 재구성
+  - property_api.dart, property_dto.dart, property_repository.dart, property_provider.dart 전면 수정
+  - property_home_screen.dart UI 전면 재구성 (+1,164줄)
+- 매물지도 서브타입(집합/부분부동산) 필터 추가
+- API baseUrl goldenrabbit.biz → propnet.kr 전환
+  - 기존 앱 호환: goldenrabbit.biz/app/api/* reverse proxy 유지
+- PropNet 통합 약관 재작성 (4개 서비스 포함, 버전 2026-04-03)
 
 ## 2026-04-06: 집합/부분 부동산 상세보기 버그 수정 + 파비콘 통일
 

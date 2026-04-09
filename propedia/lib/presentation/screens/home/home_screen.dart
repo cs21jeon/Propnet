@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:propedia/core/constants/app_colors.dart';
+import 'package:propedia/core/update/in_app_update_service.dart';
 import 'package:propedia/presentation/providers/auth_provider.dart';
 import 'package:propedia/presentation/providers/history_provider.dart';
 import 'package:propedia/presentation/providers/favorites_provider.dart';
@@ -55,8 +56,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ref.read(favoritesProvider.notifier).syncFromServer();
     }
 
+    // In-App Update 확인 (NoticeDialog 표시 전에 실행)
+    _checkForUpdate();
+
     // 공지사항 확인
     ref.read(noticeProvider.notifier).fetchNotices();
+  }
+
+  /// Google Play In-App Update 확인 (Android 전용)
+  Future<void> _checkForUpdate() async {
+    final updateAvailable = await InAppUpdateService.checkForUpdate();
+    if (!updateAvailable || !mounted) return;
+
+    final downloaded = await InAppUpdateService.startFlexibleUpdate();
+    if (!downloaded || !mounted) return;
+
+    // 다운로드 완료 - SnackBar로 재시작 안내
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('업데이트가 다운로드되었습니다'),
+        duration: const Duration(seconds: 10),
+        action: SnackBarAction(
+          label: '재시작',
+          onPressed: () => InAppUpdateService.completeFlexibleUpdate(),
+        ),
+      ),
+    );
   }
 
   @override
