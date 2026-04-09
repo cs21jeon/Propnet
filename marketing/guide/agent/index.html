@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- SEO Meta Tags -->
+    <title>중개사 시작 가이드 - PropNet</title>
+    <meta name="description" content="PropNet 중개사 가이드. 회원가입부터 매물 등록, 매물지도, 건축물대장 조회, 통화녹음 AI 요약까지 모든 기능을 안내합니다.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://propnet.kr/guide/agent/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://propnet.kr/guide/agent/">
+    <meta property="og:title" content="중개사 시작 가이드 - PropNet">
+    <meta property="og:description" content="PropNet 플랫폼의 모든 기능을 쉽게 알려드립니다. 가입부터 매물 관리까지 한 페이지로.">
+    <meta property="og:locale" content="ko_KR">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/property-manager/static/images/propnet-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/property-manager/static/images/propnet-icon.png">
+
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --primary-dark: #1976D2;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --background: #FFFFFF;
+            --surface: #F5F5F5;
+            --border: #E0E0E0;
+            --max-width: 800px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background: var(--background);
+        }
+
+        /* Header */
+        header {
+            background: var(--background);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo img {
+            height: 36px;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .logo-text .title {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .logo-text .subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .header-nav a {
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .nav-back {
+            color: var(--primary-color);
+            border: 1.5px solid var(--primary-color);
+        }
+
+        .nav-back:hover {
+            background: #E3F2FD;
+        }
+
+        /* Main content */
+        main {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 90px 20px 60px;
+        }
+
+        /* Page title */
+        .page-title {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 40px;
+        }
+
+        .page-title h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .page-title p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+        }
+
+        /* Table of Contents */
+        .toc {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 24px 30px;
+            margin-bottom: 50px;
+        }
+
+        .toc h2 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .toc ol {
+            padding-left: 20px;
+        }
+
+        .toc li {
+            margin-bottom: 6px;
+        }
+
+        .toc a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        /* Section */
+        .guide-section {
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .guide-section:last-child {
+            border-bottom: none;
+        }
+
+        .guide-section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-left: 12px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .guide-section h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin: 25px 0 12px;
+            color: var(--text-primary);
+        }
+
+        .guide-section p {
+            margin-bottom: 12px;
+            color: #424242;
+        }
+
+        .guide-section ul, .guide-section ol {
+            padding-left: 24px;
+            margin-bottom: 16px;
+        }
+
+        .guide-section li {
+            margin-bottom: 6px;
+            color: #424242;
+        }
+
+        /* Screenshot placeholder */
+        .screenshot {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .screenshot img {
+            max-width: 280px;
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        .screenshot-placeholder {
+            max-width: 320px;
+            margin: 0 auto;
+            background: #F0F4F8;
+            border: 2px dashed #B0BEC5;
+            border-radius: 16px;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .screenshot-placeholder .icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .screenshot-row {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .screenshot-row .screenshot {
+            margin: 0;
+        }
+
+        .screenshot-row .screenshot img,
+        .screenshot-row .screenshot-placeholder {
+            max-width: 220px;
+        }
+
+        .screenshot-caption {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Wide screenshot for desktop views */
+        .screenshot.wide .screenshot-placeholder {
+            max-width: 600px;
+        }
+
+        /* Tip box */
+        .tip {
+            background: #E3F2FD;
+            border-left: 4px solid var(--primary-color);
+            padding: 14px 18px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+            font-size: 0.95rem;
+        }
+
+        .tip strong {
+            color: var(--primary-dark);
+        }
+
+        /* Step list */
+        .steps {
+            counter-reset: step;
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .steps li {
+            counter-increment: step;
+            padding: 10px 0 10px 40px;
+            position: relative;
+        }
+
+        .steps li::before {
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 10px;
+            width: 28px;
+            height: 28px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        /* Service card link */
+        .service-link {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 10px 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .service-link:hover {
+            background: #E3F2FD;
+            border-color: var(--primary-color);
+        }
+
+        /* CTA Banner */
+        .cta-banner {
+            background: linear-gradient(135deg, #1976D2, #42A5F5);
+            color: white;
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .cta-banner h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .cta-banner p {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 14px 32px;
+            background: white;
+            color: var(--primary-dark);
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Footer */
+        footer {
+            background: #212121;
+            color: #B0B0B0;
+            padding: 30px 20px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: #B0B0B0;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .page-title h1 {
+                font-size: 1.5rem;
+            }
+
+            .guide-section h2 {
+                font-size: 1.25rem;
+            }
+
+            .screenshot-placeholder {
+                max-width: 240px;
+            }
+
+            .screenshot-row .screenshot-placeholder {
+                max-width: 160px;
+                padding: 24px 12px;
+                font-size: 0.8rem;
+            }
+
+            .screenshot.wide .screenshot-placeholder {
+                max-width: 100%;
+            }
+
+            .header-nav .nav-back span {
+                display: none;
+            }
+
+            .cta-banner {
+                padding: 30px 20px;
+            }
+
+            .cta-banner h2 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="https://propnet.kr" class="logo">
+                <img src="/property-manager/static/images/propnet-icon.png" alt="PropNet 로고">
+                <div class="logo-text">
+                    <span class="title">PropNet</span>
+                    <span class="subtitle">부동산 업무 플랫폼</span>
+                </div>
+            </a>
+            <div class="header-nav">
+                <a href="https://propnet.kr" class="nav-back"><span>홈으로</span></a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Page Title -->
+        <div class="page-title">
+            <h1>중개사 시작 가이드</h1>
+            <p>가입부터 매물 관리까지, 한 페이지로 알려드립니다</p>
+        </div>
+
+        <!-- Table of Contents -->
+        <nav class="toc">
+            <h2>목차</h2>
+            <ol>
+                <li><a href="#signup">회원 가입하기</a></li>
+                <li><a href="#approval">승인 후 시작하기</a></li>
+                <li><a href="#propsheet">PropSheet &mdash; 매물 데이터 관리</a></li>
+                <li><a href="#propmap">PropMap &mdash; 내 매물을 지도에 표시</a></li>
+                <li><a href="#propedia">Propedia &mdash; 건축물대장 조회</a></li>
+                <li><a href="#proptalk">Proptalk &mdash; 통화녹음 AI 요약</a></li>
+            </ol>
+        </nav>
+
+        <!-- 1. 회원 가입하기 -->
+        <section class="guide-section" id="signup">
+            <h2>1. 회원 가입하기</h2>
+
+            <p>PropNet은 <strong>Google 계정</strong> 하나로 시작합니다. 별도의 가입 양식을 작성할 필요가 없습니다.</p>
+
+            <ol class="steps">
+                <li><a href="https://propnet.kr/propsheet/" target="_blank"><strong>propnet.kr/propsheet</strong></a>에 접속합니다.</li>
+                <li><strong>"Google 계정으로 로그인"</strong> 버튼을 누릅니다.</li>
+                <li>사용할 Google 계정을 선택합니다.</li>
+                <li>이용약관과 개인정보처리방침에 동의하면 가입이 완료됩니다.</li>
+            </ol>
+
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <div class="screenshot-placeholder">
+                        <span class="icon">&#128274;</span>
+                        로그인 화면<br>Google 계정으로 로그인 버튼
+                    </div>
+                    <p class="screenshot-caption">로그인 화면</p>
+                </div>
+                <div class="screenshot">
+                    <div class="screenshot-placeholder">
+                        <span class="icon">&#9989;</span>
+                        서비스 이용동의 화면
+                    </div>
+                    <p class="screenshot-caption">이용약관 동의</p>
+                </div>
+            </div>
+
+            <div class="tip">
+                <strong>TIP:</strong> 업무용 Google 계정이 있다면 그 계정으로 가입하세요. 이후 모든 PropNet 서비스에서 같은 계정으로 자동 로그인됩니다.
+            </div>
+        </section>
+
+        <!-- 2. 승인 후 시작하기 -->
+        <section class="guide-section" id="approval">
+            <h2>2. 승인 후 시작하기</h2>
+
+            <p>가입 후, 관리자가 중개사 회원으로 승인해드립니다. <strong>현재는 무료</strong>로 시작하실 수 있습니다.</p>
+
+            <h3>승인 절차</h3>
+            <ol class="steps">
+                <li>가입이 완료되면 관리자에게 <strong>자동으로 알림</strong>이 전달됩니다.</li>
+                <li>관리자가 중개사 정보를 확인한 뒤 <strong>승인</strong> 처리합니다.</li>
+                <li>승인이 완료되면 <strong>내 워크스페이스</strong>가 자동으로 만들어집니다.</li>
+            </ol>
+
+            <div class="tip">
+                <strong>빠른 시작:</strong> 승인을 빨리 받고 싶으시면 가입 후 아래 연락처로 문의해 주세요.<br>
+                전화/카카오톡: <strong>010-XXXX-XXXX</strong>
+            </div>
+
+            <h3>승인 후 이용 가능한 서비스</h3>
+            <ul>
+                <li><strong>PropSheet</strong> &mdash; 매물 데이터를 입력하고 관리하는 스마트 장부</li>
+                <li><strong>PropMap</strong> &mdash; 내 매물을 지도에 자동으로 표시</li>
+                <li><strong>Propedia</strong> &mdash; 건축물대장, 공시지가를 30초 만에 조회</li>
+                <li><strong>Proptalk</strong> &mdash; 통화 녹음을 AI로 요약</li>
+            </ul>
+        </section>
+
+        <!-- 3. PropSheet -->
+        <section class="guide-section" id="propsheet">
+            <h2>3. PropSheet &mdash; 매물 데이터 관리</h2>
+
+            <p>PropSheet는 <strong>스마트 매물 장부</strong>입니다. 엑셀처럼 매물 정보를 입력하면, 다른 서비스(지도, AI 요약 등)와 자동으로 연결됩니다.</p>
+
+            <h3>매물 데이터 입력하기</h3>
+            <ol class="steps">
+                <li><a href="https://propnet.kr/propsheet/" target="_blank"><strong>propnet.kr/propsheet</strong></a>에 로그인합니다.</li>
+                <li>내 <strong>워크스페이스</strong>에서 매물 데이터베이스를 엽니다.</li>
+                <li>하단의 <strong>+ 버튼</strong>을 눌러 새 매물을 추가합니다.</li>
+                <li>각 칸(셀)을 클릭하여 정보를 입력합니다.</li>
+            </ol>
+
+            <div class="screenshot wide">
+                <div class="screenshot-placeholder">
+                    <span class="icon">&#128203;</span>
+                    PropSheet 데이터베이스 화면<br>
+                    엑셀처럼 매물 정보가 표 형태로 나열됨
+                </div>
+                <p class="screenshot-caption">PropSheet 매물 데이터베이스</p>
+            </div>
+
+            <h3>주요 입력 항목</h3>
+            <ul>
+                <li><strong>지번주소</strong> &mdash; 매물 위치 (입력하면 지도 좌표가 자동 설정됩니다)</li>
+                <li><strong>매매가 / 전세가</strong> &mdash; 거래 금액</li>
+                <li><strong>대지면적 / 건물면적</strong> &mdash; 면적 정보</li>
+                <li><strong>대표사진</strong> &mdash; 매물 사진 첨부 (클릭 후 파일 선택)</li>
+                <li><strong>상태</strong> &mdash; '등록'으로 변경하면 지도에 공개됩니다</li>
+            </ul>
+
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <div class="screenshot-placeholder">
+                        <span class="icon">&#9998;</span>
+                        셀 편집 화면<br>
+                        클릭하면 바로 입력 가능
+                    </div>
+                    <p class="screenshot-caption">셀 클릭으로 바로 편집</p>
+                </div>
+                <div class="screenshot">
+                    <div class="screenshot-placeholder">
+                        <span class="icon">&#128247;</span>
+                        사진 업로드 화면
+                    </div>
+                    <p class="screenshot-caption">매물 사진 첨부</p>
+                </div>
+            </div>
+
+            <div class="tip">
+                <strong>TIP:</strong> 주소를 입력하면 지도 좌표가 자동으로 설정됩니다. 직접 좌표를 입력할 필요가 없습니다.
+            </div>
+
+            <a href="https://propnet.kr/propsheet/guide/" target="_blank" class="service-link">PropSheet 상세 가이드 보기 &rarr;</a>
+        </section>
+
+        <!-- 4. PropMap -->
+        <section class="guide-section" id="propmap">
+            <h2>4. PropMap &mdash; 내 매물을 지도에 표시</h2>
+
+            <p>PropSheet에 입력한 매물을 <strong>지도 위에 자동으로 표시</strong>하는 서비스입니다. 별도의 지도 작업이 필요 없습니다.</p>
+
+            <h3>매물을 지도에 공개하기</h3>
+            <ol class="steps">
+                <li>PropSheet에서 공개할 매물의 <strong>상태</strong> 칸을 클릭합니다.</li>
+                <li>드롭다운에서 <strong>'등록'</strong>을 선택합니다.</li>
+                <li>저장하면 곧바로 PropMap 지도에 매물이 나타납니다.</li>
+            </ol>
+
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <div class="screenshot-placeholder">
+                        <span class="icon">&#128209;</span>
+                        상태 드롭다운<br>
+                        '등록' 선택
+                    </div>
+                    <p class="screenshot-caption">상태를 '등록'으로 변경</p>
+                </div>
+                <div class="screenshot">
+                    <div class="screenshot-placeholder">
+                        <span class="icon">&#128205;</span>
+                        PropMap 지도<br>
+                        매물 마커 표시
+                    </div>
+                    <p class="screenshot-caption">지도에 매물 표시</p>
+                </div>
+            </div>
+
+            <h3>내 매물지도 확인하기</h3>
+            <p>승인 시 발급받은 고유 주소로 <strong>나만의 매물지도</strong>를 확인할 수 있습니다.</p>
+            <ul>
+                <li><strong>내 지도</strong>: <code>propnet.kr/propmap/내슬러그/</code></li>
+                <li><strong>전체 통합 지도</strong>: <a href="https://propnet.kr/propmap/" target="_blank">propnet.kr/propmap/</a></li>
+            </ul>
+
+            <div class="screenshot wide">
+                <div class="screenshot-placeholder">
+                    <span class="icon">&#127758;</span>
+                    PropMap 통합 매물지도 화면<br>
+                    카카오맵 위에 매물 마커가 표시됨
+                </div>
+                <p class="screenshot-caption">PropMap 매물지도</p>
+            </div>
+
+            <div class="tip">
+                <strong>TIP:</strong> 매물을 비공개로 전환하려면 상태를 '등록' 이외의 값으로 변경하세요. 지도에서 즉시 내려갑니다.
+            </div>
+        </section>
+
+        <!-- 5. Propedia -->
+        <section class="guide-section" id="propedia">
+            <h2>5. Propedia &mdash; 건축물대장 조회</h2>
+
+            <p><strong>건축물대장, 공시지가를 30초 만에 조회</strong>할 수 있습니다. 현장에서 고객에게 바로 정보를 보여주세요.</p>
+
+            <h3>건물 정보 검색하기</h3>
+            <ol class="steps">
+                <li><a href="https://propnet.kr/proppedia/" target="_blank"><strong>propnet.kr/proppedia</strong></a>에 접속하거나, 앱을 실행합니다.</li>
+                <li>검색창에 <strong>도로명 주소</strong> 또는 <strong>지번 주소</strong>를 입력합니다.</li>
+                <li>검색 결과에서 건물을 선택하면 <strong>상세 정보</strong>가 표시됩니다.</li>
+            </ol>
+
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <div class="screenshot-placeholder">
+                        <span class="icon">&#128270;</span>
+                        주소 검색 화면
+                    </div>
+                    <p class="screenshot-caption">주소 검색</p>
+                </div>
+                <div class="screenshot">
+                    <div class="screenshot-placeholder">
+                        <span class="icon">&#127970;</span>
+                        건축물 상세정보<br>
+                        용도, 면적, 구조, 층수 등
+                    </div>
+                    <p class="screenshot-caption">건축물 상세정보</p>
+                </div>
+            </div>
+
+            <h3>조회 결과 활용하기</h3>
+            <ul>
+                <li><strong>PDF 저장</strong> &mdash; 조회 결과를 PDF로 저장하여 고객에게 공유</li>
+                <li><strong>즐겨찾기</strong> &mdash; 자주 조회하는 건물을 저장해두면 빠르게 다시 확인</li>
+            </ul>
+
+            <div class="tip">
+                <strong>TIP:</strong> Google Play에서 <strong>"부동산백과"</strong>를 검색하면 앱으로도 이용할 수 있습니다. 현장에서 스마트폰으로 바로 조회해보세요.
+            </div>
+
+            <a href="https://propnet.kr/proppedia/guide/" target="_blank" class="service-link">Propedia 상세 가이드 보기 &rarr;</a>
+        </section>
+
+        <!-- 6. Proptalk -->
+        <section class="guide-section" id="proptalk">
+            <h2>6. Proptalk &mdash; 통화녹음 AI 요약</h2>
+
+            <p>고객과의 통화 녹음 파일을 올리면, <strong>AI가 핵심 내용을 자동으로 정리</strong>해줍니다. 메모할 필요 없이 나중에 요약만 확인하세요.</p>
+
+            <h3>통화 녹음 업로드하기</h3>
+            <ol class="steps">
+                <li>Google Play에서 <strong>"Proptalk"</strong>을 설치하거나, <a href="https://propnet.kr/proptalk/web/" target="_blank"><strong>웹 버전</strong></a>에 접속합니다.</li>
+                <li>Google 계정으로 로그인합니다.</li>
+                <li><strong>채팅방</strong>을 만들거나 기존 채팅방에 들어갑니다.</li>
+                <li>하단의 <strong>+ 버튼</strong>을 눌러 녹음 파일(m4a, mp3, wav)을 선택합니다.</li>
+                <li>파일이 업로드되면 <strong>AI가 자동으로 텍스트 변환과 요약</strong>을 시작합니다.</li>
+            </ol>
+
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <div class="screenshot-placeholder">
+                        <span class="icon">&#127908;</span>
+                        녹음 파일 업로드 화면
+                    </div>
+                    <p class="screenshot-caption">녹음 파일 업로드</p>
+                </div>
+                <div class="screenshot">
+                    <div class="screenshot-placeholder">
+                        <span class="icon">&#129302;</span>
+                        AI 요약 결과<br>
+                        주제, 매물정보, 결론 등
+                    </div>
+                    <p class="screenshot-caption">AI 요약 결과</p>
+                </div>
+            </div>
+
+            <h3>요약 내용 확인하기</h3>
+            <p>요약이 완료되면 두 곳에서 확인할 수 있습니다:</p>
+            <ul>
+                <li><strong>Proptalk 앱</strong> &mdash; 채팅방에 요약이 자동으로 표시됩니다</li>
+                <li><strong>PropSheet</strong> &mdash; 매물과 연결된 통화 요약을 한눈에 확인할 수 있습니다</li>
+            </ul>
+
+            <div class="tip">
+                <strong>TIP:</strong> 요약에는 통화 주제, 매물 정보, 가격 변동, 결론이 깔끔하게 정리됩니다. 파일명의 전화번호와 날짜도 자동으로 인식합니다.
+            </div>
+
+            <a href="https://propnet.kr/proptalk/guide" target="_blank" class="service-link">Proptalk 상세 가이드 보기 &rarr;</a>
+        </section>
+
+        <!-- CTA Banner -->
+        <div class="cta-banner">
+            <h2>지금 바로 시작해보세요</h2>
+            <p>Google 계정 하나로 모든 서비스를 이용할 수 있습니다</p>
+            <a href="https://propnet.kr/propsheet/" class="cta-button">무료로 시작하기</a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 <a href="https://propnet.kr">PropNet</a>. All rights reserved.</p>
+    </footer>
+
+    <script>
+    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            var target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+    </script>
+</body>
+</html>

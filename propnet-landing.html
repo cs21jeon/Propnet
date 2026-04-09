@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- SEO Meta Tags -->
+    <title>프롭넷 (PropNet) - 부동산 데이터의 모든 것</title>
+    <meta name="description" content="검색부터 분석, 소통, 관리까지. 부동산 업무에 필요한 도구를 하나로 연결합니다. Proppedia, Proptalk, Propsheet.">
+    <meta name="keywords" content="프롭넷, PropNet, 부동산, 부동산백과, Proppedia, Proptalk, Propsheet, 부동산데이터, AI요약, 스프레드시트">
+    <meta name="author" content="프롭넷">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://propnet.kr/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://propnet.kr/">
+    <meta property="og:title" content="프롭넷 (PropNet) - 부동산 데이터의 모든 것">
+    <meta property="og:description" content="검색부터 분석, 소통, 관리까지. 부동산 업무에 필요한 도구를 하나로.">
+    <meta property="og:image" content="https://propnet.kr/images/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="프롭넷 (PropNet)">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="프롭넷 (PropNet) - 부동산 데이터의 모든 것">
+    <meta name="twitter:description" content="검색부터 분석, 소통, 관리까지. 부동산 업무에 필요한 도구를 하나로.">
+    <meta name="twitter:image" content="https://propnet.kr/images/og-image.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/property-manager/static/images/propnet-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/property-manager/static/images/propnet-icon.png">
+
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "프롭넷",
+        "alternateName": "PropNet",
+        "description": "부동산 데이터 검색, 분석, 소통, 관리를 위한 올인원 플랫폼",
+        "url": "https://propnet.kr/",
+        "email": "cs21.jeon@gmail.com",
+        "sameAs": [
+            "https://propnet.kr/proppedia/",
+            "https://propnet.kr/proptalk/",
+            "https://propnet.kr/propsheet/"
+        ],
+        "knowsAbout": ["부동산", "부동산 데이터", "AI", "STT", "스프레드시트"]
+    }
+    </script>
+
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --primary-dark: #1976D2;
+            --secondary-color: #FF9800;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --background: #FFFFFF;
+            --surface: #F5F5F5;
+            --max-width: 1200px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--background);
+        }
+
+        /* Header */
+        header {
+            background: var(--background);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .logo-text .title {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .logo-text .subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .header-nav a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .header-nav a:hover {
+            color: var(--primary-color);
+        }
+
+        .header-nav .btn-register {
+            background: var(--primary-color);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .header-nav .btn-register:hover {
+            color: white;
+            background: var(--primary-dark);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 120px 20px 80px;
+            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-content {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-size: 2.75rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .hero-text h1 span {
+            color: var(--primary-color);
+        }
+
+        .hero-text p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .hero-buttons a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .hero-buttons a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-outline {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid #E0E0E0;
+        }
+
+        .hero-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .service-icons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 360px;
+        }
+
+        .service-icon-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+
+        .service-icon-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .service-icon-card:first-child {
+            grid-column: span 2;
+            max-width: 240px;
+            margin: 0 auto;
+        }
+
+        .service-icon-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+
+        .service-icon-card .name {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .service-icon-card .desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Section Common */
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title h2 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .section-title p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        /* Services Section */
+        .services {
+            padding: 80px 20px;
+            background: var(--background);
+        }
+
+        .services-content {
+            max-width: var(--max-width);
+            margin: 0 auto;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+
+        .service-card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 40px 30px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .service-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .service-card-header .icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .service-card-header h3 {
+            font-size: 1.25rem;
+        }
+
+        .service-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            width: fit-content;
+        }
+
+        .badge-live {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .badge-soon {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+
+        .badge-running {
+            background: #E3F2FD;
+            color: #1565C0;
+        }
+
+        .service-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+        }
+
+        .service-features {
+            list-style: none;
+            margin-bottom: 24px;
+            flex: 1;
+        }
+
+        .service-features li {
+            padding: 6px 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .service-features li::before {
+            content: '✓';
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .service-card .cta-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: gap 0.2s;
+        }
+
+        .service-card .cta-link:hover {
+            gap: 10px;
+        }
+
+        /* Propedia accent */
+        .card-propedia .service-card-header .icon {
+            background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+        }
+
+        /* Proptalk accent */
+        .card-proptalk .service-card-header .icon {
+            background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+        }
+
+        /* Propsheet accent */
+        .card-propsheet .service-card-header .icon {
+            background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+        }
+
+        /* PropMap accent */
+        .card-propmap .service-card-header .icon {
+            background: linear-gradient(135deg, #F3E5F5, #E1BEE7);
+        }
+
+        /* Why Section */
+        .why {
+            padding: 80px 20px;
+            background: var(--surface);
+        }
+
+        .why-content {
+            max-width: var(--max-width);
+            margin: 0 auto;
+        }
+
+        .why-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+        }
+
+        .why-card {
+            background: var(--background);
+            padding: 40px 30px;
+            border-radius: 16px;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .why-card .icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .why-card h3 {
+            font-size: 1.15rem;
+            margin-bottom: 8px;
+        }
+
+        .why-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Company Section */
+        .company {
+            padding: 80px 20px;
+            background: var(--background);
+        }
+
+        .company-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .company-content h2 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        .company-content > p {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-top: 40px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-item .number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
+        }
+
+        .stat-item .label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 80px 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            text-align: center;
+            color: white;
+        }
+
+        .cta-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .cta h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .cta p {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .cta-buttons a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            min-width: 220px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .cta-buttons a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .cta-btn-white {
+            background: white;
+            color: var(--primary-dark);
+        }
+
+        .cta-btn-outline {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+
+        /* Footer */
+        footer {
+            background: #212121;
+            color: #B0B0B0;
+            padding: 60px 20px 30px;
+        }
+
+        .footer-content {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 40px;
+        }
+
+        .footer-brand h3 {
+            color: white;
+            font-size: 1.25rem;
+            margin-bottom: 15px;
+        }
+
+        .footer-brand p {
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        .footer-links h4 {
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: #B0B0B0;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            max-width: var(--max-width);
+            margin: 40px auto 0;
+            padding-top: 20px;
+            border-top: 1px solid #424242;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-text h1 {
+                font-size: 2rem;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+            }
+
+            .hero-visual {
+                order: -1;
+            }
+
+            .services-grid {
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 700px;
+                margin: 0 auto;
+            }
+
+            .why-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-row {
+                gap: 30px;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .header-nav a:not(:last-child) {
+                display: none;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero {
+                min-height: auto;
+                padding: 100px 20px 40px;
+            }
+
+            .hero-text h1 {
+                font-size: 1.75rem;
+            }
+
+            .section-title h2 {
+                font-size: 1.75rem;
+            }
+
+            .service-icons {
+                grid-template-columns: 1fr;
+                max-width: 200px;
+            }
+
+            .service-icon-card:first-child {
+                grid-column: span 1;
+            }
+
+            .stats-row {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .stat-item .number {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="#" class="logo">
+            <img src="data:image/png;base64,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" alt="PropNet" style="width: 40px; height: 40px;">
+                <div class="logo-text">
+                    <span class="title">PropNet</span>
+                    <span class="subtitle">부동산 데이터 플랫폼</span>
+                </div>
+            </a>
+            <nav class="header-nav">
+                <a href="#services">서비스</a>
+                <a href="/billing/">요금제</a>
+                <a href="#company">회사소개</a>
+                <a href="/register/" class="btn-register">회원가입</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>
+                    부동산 데이터의 모든 것,<br>
+                    <span>프롭넷</span>이 연결합니다
+                </h1>
+                <p>
+                    검색부터 분석, 소통, 관리까지.<br>
+                    부동산 업무에 필요한 도구를 하나로.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#services" class="btn-primary">서비스 둘러보기 →</a>
+                    <a href="mailto:cs21.jeon@gmail.com" class="btn-outline">문의하기</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="service-icons" style="grid-template-columns: 1fr 1fr;">
+                    <div class="service-icon-card" style="grid-column: auto;">
+                        <div class="icon">🔍</div>
+                        <div class="name">Proppedia</div>
+                        <div class="desc">부동산 검색</div>
+                    </div>
+                    <div class="service-icon-card">
+                        <div class="icon">🎙️</div>
+                        <div class="name">Proptalk</div>
+                        <div class="desc">AI 음성 변환</div>
+                    </div>
+                    <div class="service-icon-card">
+                        <div class="icon">📊</div>
+                        <div class="name">Propsheet</div>
+                        <div class="desc">데이터 관리</div>
+                    </div>
+                    <div class="service-icon-card">
+                        <div class="icon">🗺️</div>
+                        <div class="name">PropMap</div>
+                        <div class="desc">매물 지도</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services" id="services">
+        <div class="services-content">
+            <div class="section-title">
+                <h2>프롭넷의 서비스</h2>
+                <p>부동산 업무를 위한 올인원 솔루션</p>
+            </div>
+            <div class="services-grid">
+                <!-- Propedia -->
+                <div class="service-card card-propedia">
+                    <div class="service-card-header">
+                        <div class="icon">🔍</div>
+                        <h3>Proppedia</h3>
+                    </div>
+                    <span class="service-badge badge-live">Google Play 출시</span>
+                    <p>건축물대장, 토지대장, 공시가격을 한눈에 조회하세요.</p>
+                    <ul class="service-features">
+                        <li>건축물 · 토지 · 공시가격 통합 조회</li>
+                        <li>도로명 · 지번 · 지도 검색</li>
+                        <li>즐겨찾기 · 조회 기록 · PDF 저장</li>
+                    </ul>
+                    <div style="display: flex; gap: 16px; align-items: center;">
+                        <a href="/proppedia/" class="cta-link">서비스 바로가기 →</a>
+                        <a href="/proppedia/guide/" class="cta-link" style="color: #757575; font-size: 0.85rem;">사용가이드</a>
+                    </div>
+                </div>
+
+                <!-- Proptalk -->
+                <div class="service-card card-proptalk">
+                    <div class="service-card-header">
+                        <div class="icon">🎙️</div>
+                        <h3>Proptalk</h3>
+                    </div>
+                    <span class="service-badge badge-live">Google Play 출시</span>
+                    <p>통화 녹음을 AI가 자동으로 텍스트 변환하고 요약합니다.</p>
+                    <ul class="service-features">
+                        <li>Whisper STT 음성 → 텍스트 변환</li>
+                        <li>AI 핵심 내용 자동 요약</li>
+                        <li>팀 채팅방에서 실시간 공유</li>
+                    </ul>
+                    <a href="/proptalk/" class="cta-link">자세히 보기 →</a>
+                </div>
+
+                <!-- Propsheet -->
+                <div class="service-card card-propsheet">
+                    <div class="service-card-header">
+                        <div class="icon">📊</div>
+                        <h3>Propsheet</h3>
+                    </div>
+                    <span class="service-badge badge-running">운영 중</span>
+                    <p>부동산 데이터를 팀과 함께 관리하는 스프레드시트입니다.</p>
+                    <ul class="service-features">
+                        <li>다중 뷰 · 필터 · 정렬 · 수식</li>
+                        <li>CSV 내보내기 · DB 복제</li>
+                        <li>멤버 초대 · 역할 기반 권한 관리</li>
+                    </ul>
+                    <a href="/propsheet/" class="cta-link">바로가기 →</a>
+                </div>
+
+                <!-- PropMap -->
+                <div class="service-card card-propmap">
+                    <div class="service-card-header">
+                        <div class="icon">🗺️</div>
+                        <h3>PropMap</h3>
+                    </div>
+                    <span class="service-badge badge-soon">서비스 예정</span>
+                    <p>중개사별 매물을 지도에서 한눈에 확인하는 매물 지도 서비스입니다.</p>
+                    <ul class="service-features">
+                        <li>중개사별 맞춤 매물 지도</li>
+                        <li>매물 검색 · 필터 · 상세 정보</li>
+                        <li>홈페이지 연동 · 공유 링크</li>
+                    </ul>
+                    <span style="color: var(--text-secondary); font-size: 0.9rem;">준비 중입니다</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why PropNet Section -->
+    <section class="why" id="why">
+        <div class="why-content">
+            <div class="section-title">
+                <h2>왜 프롭넷인가?</h2>
+                <p>부동산 데이터를 더 쉽고, 스마트하게</p>
+            </div>
+            <div class="why-grid">
+                <div class="why-card">
+                    <div class="icon">🤖</div>
+                    <div>
+                        <h3>AI 기술 활용</h3>
+                        <p>OpenAI Whisper로 음성을 텍스트로, Claude AI로 핵심 내용을 자동 요약합니다.</p>
+                    </div>
+                </div>
+                <div class="why-card">
+                    <div class="icon">🏛️</div>
+                    <div>
+                        <h3>공공데이터 통합</h3>
+                        <p>건축물대장, 토지대장, 공시지가 등 공공 부동산 데이터를 한곳에서 조회합니다.</p>
+                    </div>
+                </div>
+                <div class="why-card">
+                    <div class="icon">👥</div>
+                    <div>
+                        <h3>팀 협업</h3>
+                        <p>채팅방 공유, DB 공유, 멤버 초대로 팀 단위 업무를 효율적으로 관리합니다.</p>
+                    </div>
+                </div>
+                <div class="why-card">
+                    <div class="icon">📱</div>
+                    <div>
+                        <h3>크로스 플랫폼</h3>
+                        <p>모바일 앱과 웹앱을 함께 제공하여 어디서든 업무에 접근할 수 있습니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Company Section -->
+    <section class="company" id="company">
+        <div class="company-content">
+            <h2>프롭넷 (PropNet)</h2>
+            <p>
+                프롭넷은 부동산 업무에 필요한 데이터와 도구를 하나의 플랫폼에서 제공합니다.
+                복잡한 부동산 정보를 쉽게 검색하고, AI로 업무를 자동화하며,
+                팀과 효율적으로 협업할 수 있는 환경을 만들어갑니다.
+            </p>
+            <p>
+                부동산 중개사, 영업직, 데이터 관리자 등 부동산 업무에 종사하는 모든 분들이
+                더 스마트하게 일할 수 있도록 돕는 것이 프롭넷의 목표입니다.
+            </p>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="number">4</div>
+                    <div class="label">서비스 (3 운영 + 1 예정)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number">2</div>
+                    <div class="label">플랫폼 (앱 + 웹)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number">2</div>
+                    <div class="label">Google Play 출시</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="cta-content">
+            <h2>프롭넷의 서비스를 지금 만나보세요</h2>
+            <p>부동산 업무의 새로운 기준, 프롭넷과 함께하세요.</p>
+            <div class="cta-buttons">
+                <a href="/register/" class="cta-btn-white">회원가입</a>
+                <a href="/proppedia/" class="cta-btn-outline">Proppedia 부동산백과</a>
+                <a href="/proptalk/" class="cta-btn-outline">Proptalk 음성 변환</a>
+                <a href="/propsheet/" class="cta-btn-outline">Propsheet 스프레드시트</a>
+                <a href="#" class="cta-btn-outline" style="opacity: 0.6; pointer-events: none;">PropMap 매물지도 (예정)</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>프롭넷 (PropNet)</h3>
+                <p>
+                    부동산 데이터의 모든 것을 연결합니다.<br>
+                    문의: cs21.jeon@gmail.com
+                </p>
+            </div>
+            <div class="footer-links">
+                <h4>서비스</h4>
+                <ul>
+                    <li><a href="/proppedia/">Proppedia 부동산백과</a></li>
+                    <li><a href="/proppedia/guide/">Proppedia 사용가이드</a></li>
+                    <li><a href="/proptalk/">Proptalk 음성 변환</a></li>
+                    <li><a href="/propsheet/">Propsheet 스프레드시트</a></li>
+                    <li><a href="/billing/">서비스 요금제</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>법적 고지</h4>
+                <ul>
+                    <li><a href="/legal/terms-of-service.html" target="_blank">이용약관</a></li>
+                    <li><a href="/legal/privacy-policy.html" target="_blank">개인정보처리방침</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 프롭넷 (PropNet). All rights reserved.</p>
+        </div>
+</footer>
+
+    <script>
+    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            var target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+    </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # GoldenRabbit 서비스 아키텍처
 
-> 최종 업데이트: 2026-03-27 (Propedia Blueprint 분리, 서비스 포트 역할 명확화)
+> 최종 업데이트: 2026-04-01 (상담신청 Airtable→PropSheet DB 전환)
 
 ## 전체 구조
 
@@ -22,6 +22,7 @@
       │
       ├── goldenrabbit01_sales_building (단일부동산, db_id=39)
       ├── goldenrabbit01_sales_multi_unit (집합부동산, db_id=38)
+      ├── inquiry (상담 문의, db_id=11)
       ├── file_attachments (모든 첨부파일 메타데이터)
       └── ... (40+ 테이블)
 ```
@@ -60,6 +61,20 @@ index.html
   │
   └── [링크 복사]   /property/{record_id}
                      └── SNS 크롤러용 OG 메타태그 (DB 조회) → /?property={id} 리다이렉트
+```
+
+### 상담신청
+
+```
+inquiry.html / index.html 모달
+  └── POST /api/submit-inquiry (propertyType, phone, email, message)
+        └── Port 5000 (propnet_api.py)
+              ├── INSERT INTO inquiry (PropSheet DB, db_id=11)
+              └── 백그라운드 스레드
+                    ├── send_consultation_email() → Gmail SMTP
+                    │     ├── 고객 확인 이메일 발송
+                    │     └── 관리자(cs21.jeon@gmail.com) 알림 이메일 발송
+                    └── UPDATE inquiry SET 이메일발송='O'
 ```
 
 ### 이미지 서빙
@@ -232,9 +247,10 @@ sudo cp config/nginx/goldenrabbit.conf /etc/nginx/sites-enabled/goldenrabbit
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-### Airtable 완전 제거됨 (2026-03-26)
+### Airtable 완전 제거됨 (2026-03-26 ~ 2026-04-01)
 - 모든 매물 데이터, 이미지, 건축물대장이 PropSheet DB + 로컬 파일로 전환됨
-- Airtable API 키는 `.env`에 남아있으나 사용하지 않음
+- 상담신청(`/api/submit-inquiry`)도 PropSheet DB `inquiry` 테이블로 전환 완료 (2026-04-01)
+- Airtable API 키는 `.env`에 남아있으나 사용하지 않음 (상담 문의용 키 포함)
 - `backend/scripts/deprecated/` 폴더: 참조 전용, 호출 금지
 - 새 코드에서 Airtable 관련 코드 작성 금지
 
@@ -252,6 +268,7 @@ sudo nginx -t && sudo systemctl reload nginx
 | 2026-03-26 | SNS 공유 엔드포인트 DB 전환, property-detail.html 삭제 |
 | 2026-03-26 | 홈페이지(index.html) backup 의존 코드 제거 |
 | 2026-03-26 | 대표사진/건축물대장 Airtable → /uploads/propsheet/ 마이그레이션 완료 |
+| 2026-04-01 | 상담신청(`/api/submit-inquiry`) Airtable→PropSheet DB 전환, Airtable 의존성 완전 제거 |
 | 2026-03-27 | Propedia Blueprint를 property-manager(5000)에서 제거, proppedia(5010)로 통일 |
 | 2026-03-27 | 서비스 포트별 역할 명확화 (5000=홈페이지/SNS, 5010=Propedia, 5020=PropSheet) |
 | 2026-02-11 | 초기 문서 작성 |

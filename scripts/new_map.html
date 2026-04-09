@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>금토끼부동산 매물지도</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=1a41388ca117958d172c6ba8e71c7c75&autoload=false"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 지도 타입 변경 버튼 */
+        .map-type-control {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            z-index: 1000;
+            display: flex;
+            gap: 2px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            padding: 3px;
+        }
+        .map-type-btn {
+            padding: 4px 10px;
+            border: none;
+            background: white;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 4px;
+            transition: background 0.2s;
+            font-family: -apple-system, sans-serif;
+        }
+        .map-type-btn:hover { background: #f0f0f0; }
+        .map-type-btn.active { background: #e38000; color: white; }
+
+        /* 전체보기/돌아가기 버튼 */
+        .map-nav-control {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            gap: 4px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            padding: 3px;
+        }
+        .map-nav-btn {
+            padding: 4px 12px;
+            border: none;
+            background: white;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 4px;
+            transition: background 0.2s;
+            font-family: -apple-system, sans-serif;
+            color: #333;
+        }
+        .map-nav-btn:hover { background: #f0f0f0; }
+        .map-nav-btn:active { background: #e0e0e0; }
+
+        /* 필터 패널 */
+        .filter-panel {
+            position: absolute;
+            top: 46px;
+            right: 8px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            padding: 8px 6px;
+        }
+        .filter-group-label {
+            font-size: 9px;
+            color: #999;
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            margin-bottom: 2px;
+        }
+        .filter-divider {
+            border-top: 1px solid #eee;
+            margin: 2px 0;
+        }
+        .filter-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 5px 8px;
+            border: 2px solid #ddd;
+            background: white;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-family: -apple-system, sans-serif;
+            min-width: 52px;
+            white-space: nowrap;
+        }
+        .filter-btn .count {
+            font-size: 9px;
+            font-weight: 400;
+            color: #999;
+        }
+        .filter-btn.active { color: white; border-color: transparent; }
+        .filter-btn:not(.active) { color: #999; background: #f5f5f5; }
+
+        /* 부동산유형 버튼 색상 */
+        .filter-btn[data-type="danil"].active { background: #1D4ED8; }
+        .filter-btn[data-type="jibhap"].active { background: #15803D; }
+        .filter-btn[data-type="bubun"].active { background: #EA580C; }
+
+        /* 거래유형 버튼 색상 */
+        .filter-btn[data-txn="매매"].active { background: #1e3a5f; }
+        .filter-btn[data-txn="전세"].active { background: #2563EB; }
+        .filter-btn[data-txn="월세"].active { background: #DC2626; }
+
+        /* 가격 마커 - 기본 스타일 */
+        .price-marker {
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: bold;
+            white-space: nowrap;
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: -apple-system, sans-serif;
+            color: white;
+        }
+        .price-marker:hover {
+            transform: scale(1.1);
+            z-index: 5;
+        }
+        .price-marker::after {
+            content: '';
+            position: absolute;
+            bottom: -7px;
+            left: 50%;
+            margin-left: -5px;
+            width: 0; height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+        }
+
+        /* 단일부동산 - 파랑 계열 */
+        .price-marker.danil-매매 { background: #1D4ED8; }
+        .price-marker.danil-매매::after { border-top: 7px solid #1D4ED8; }
+        .price-marker.danil-전세 { background: #3B82F6; }
+        .price-marker.danil-전세::after { border-top: 7px solid #3B82F6; }
+        .price-marker.danil-월세 { background: #93C5FD; color: #1e3a5f; }
+        .price-marker.danil-월세::after { border-top: 7px solid #93C5FD; }
+
+        /* 집합부동산 - 초록 계열 */
+        .price-marker.jibhap-매매 { background: #15803D; }
+        .price-marker.jibhap-매매::after { border-top: 7px solid #15803D; }
+        .price-marker.jibhap-전세 { background: #22C55E; }
+        .price-marker.jibhap-전세::after { border-top: 7px solid #22C55E; }
+        .price-marker.jibhap-월세 { background: #86EFAC; color: #14532d; }
+        .price-marker.jibhap-월세::after { border-top: 7px solid #86EFAC; }
+
+        /* 부분부동산 - 주황 계열 */
+        .price-marker.bubun-매매 { background: #C2410C; }
+        .price-marker.bubun-매매::after { border-top: 7px solid #C2410C; }
+        .price-marker.bubun-전세 { background: #EA580C; }
+        .price-marker.bubun-전세::after { border-top: 7px solid #EA580C; }
+        .price-marker.bubun-월세 { background: #FB923C; color: #431407; }
+        .price-marker.bubun-월세::after { border-top: 7px solid #FB923C; }
+
+        /* 팝업 */
+        .info-popup {
+            position: relative;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+            padding: 10px 12px;
+            min-width: 170px;
+            max-width: 210px;
+            font-family: -apple-system, sans-serif;
+        }
+        .info-popup .close-btn {
+            position: absolute; top: 6px; right: 8px;
+            font-size: 15px; color: #999; cursor: pointer;
+            border: none; background: none; padding: 2px; line-height: 1;
+        }
+        .info-popup .close-btn:hover { color: #333; }
+        .info-popup .address { font-size: 11px; font-weight: 700; margin-bottom: 6px; padding-right: 20px; color: #333; }
+        .info-popup .type-badge {
+            display: inline-block; font-size: 9px; font-weight: 600; padding: 1px 5px;
+            border-radius: 3px; margin-bottom: 4px; color: white;
+        }
+        .info-popup .type-badge.danil { background: #1D4ED8; }
+        .info-popup .type-badge.jibhap { background: #15803D; }
+        .info-popup .type-badge.bubun { background: #EA580C; }
+        .info-popup .info-row { font-size: 11px; color: #555; margin: 2px 0; }
+        .info-popup .btn-detail {
+            display: block; margin-top: 8px; padding: 6px;
+            background: #f5f5f5; text-align: center; font-weight: 700;
+            color: #e38000; border-radius: 6px; border: none;
+            cursor: pointer; font-size: 11px; width: 100%; box-sizing: border-box;
+        }
+        .info-popup .btn-detail:hover { background: #fef3e0; }
+        .info-popup .btn-consult {
+            display: block; margin-top: 4px; padding: 6px;
+            background: #2962FF; color: white; text-align: center; font-weight: 700;
+            border-radius: 6px; border: none; cursor: pointer;
+            font-size: 11px; width: 100%; box-sizing: border-box;
+        }
+        .info-popup .btn-consult:hover { background: #1e4fcc; }
+
+        /* 로딩 */
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.85); display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
+            z-index: 9999; font-size: 14px; color: #666;
+        }
+        .loading-overlay.hidden { display: none; }
+        .loading-spinner {
+            width: 36px; height: 36px;
+            border: 3px solid #eee; border-top-color: #e38000;
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+            margin-bottom: 10px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* 상세 모달 */
+        .detail-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 10000;
+            display: none; align-items: flex-start; justify-content: center;
+            overflow-y: auto; padding: 24px 16px;
+        }
+        .detail-overlay.active { display: flex; }
+        .detail-modal {
+            background: white; border-radius: 16px; max-width: 480px; width: 100%;
+            overflow: hidden; position: relative;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+        .detail-modal-close {
+            position: absolute; top: 12px; right: 12px; z-index: 10;
+            background: rgba(255,255,255,0.8); backdrop-filter: blur(8px);
+            border: none; border-radius: 50%; width: 36px; height: 36px;
+            font-size: 18px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); color: #555;
+        }
+        .detail-modal-close:hover { background: white; }
+        .detail-photo {
+            width: 100%; max-height: 400px; object-fit: cover; display: block;
+            background: #f1f5f9;
+        }
+        .detail-photo-logo {
+            width: 100%; height: 200px; display: flex;
+            align-items: center; justify-content: center;
+            background: #f1f5f9;
+        }
+        .detail-photo-logo img { max-height: 60px; opacity: 0.5; }
+        .detail-body { padding: 20px; }
+        .detail-address { font-size: 15px; font-weight: 600; color: #334155; }
+        .detail-price { font-size: 24px; font-weight: 700; color: #136dec; margin-top: 4px; }
+        .detail-info-list { margin-top: 20px; }
+        .detail-info-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 0; border-bottom: 1px solid #f1f5f9;
+        }
+        .detail-info-label { font-size: 13px; color: #64748b; font-weight: 500; }
+        .detail-info-value { font-size: 13px; color: #0f172a; font-weight: 600; }
+        .detail-desc-box {
+            margin-top: 20px; padding: 16px;
+            background: #f8fafc; border-radius: 12px;
+        }
+        .detail-desc-title {
+            font-size: 11px; font-weight: 700; color: #64748b;
+            text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;
+        }
+        .detail-desc-text {
+            font-size: 13px; color: #334155; line-height: 1.7; white-space: pre-line;
+        }
+        .broker-card {
+            margin-top: 20px; padding: 16px;
+            background: #f8fafc; border-radius: 12px;
+            border: 1px solid #f1f5f9;
+        }
+        .broker-name { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+        .broker-row { font-size: 12px; color: #64748b; line-height: 1.8; }
+        .broker-phone {
+            color: #136dec; cursor: pointer;
+            text-decoration: underline; text-decoration-style: dotted;
+            text-underline-offset: 2px;
+        }
+        .broker-sub { font-size: 11px; color: #94a3b8; line-height: 1.6; }
+        .detail-actions { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .detail-btn-consult {
+            width: 100%; padding: 14px; background: #136dec; color: white;
+            border: none; border-radius: 12px; font-size: 15px;
+            font-weight: 700; cursor: pointer; transition: background 0.2s;
+            box-shadow: 0 4px 12px rgba(19,109,236,0.2);
+        }
+        .detail-btn-consult:hover { background: #0f5bcc; }
+        .detail-btn-row { display: flex; gap: 10px; }
+        .detail-btn-secondary {
+            flex: 1; padding: 12px; background: #f1f5f9; color: #475569;
+            border: none; border-radius: 12px; font-size: 13px; font-weight: 600;
+            cursor: pointer; text-align: center; text-decoration: none;
+            transition: background 0.2s;
+        }
+        .detail-btn-secondary:hover { background: #e2e8f0; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <div class="loading-overlay" id="loading">
+        <div class="loading-spinner"></div>
+        <div>매물 데이터 로딩 중...</div>
+    </div>
+
+    <div class="map-nav-control">
+        <button class="map-nav-btn" id="btnShowAll">전체보기</button>
+        <button class="map-nav-btn" id="btnGoBack">돌아가기</button>
+    </div>
+
+    <div class="map-type-control">
+        <button class="map-type-btn active" data-type="roadmap">지도</button>
+        <button class="map-type-btn" data-type="skyview">위성</button>
+        <button class="map-type-btn" data-type="hybrid">중첩</button>
+    </div>
+
+    <!-- 필터 패널 -->
+    <div class="filter-panel" id="filterPanel">
+        <div class="filter-group-label">부동산</div>
+        <button class="filter-btn active" data-type="danil">단일 <span class="count" id="cnt-danil">0</span></button>
+        <button class="filter-btn active" data-type="jibhap">집합 <span class="count" id="cnt-jibhap">0</span></button>
+        <button class="filter-btn active" data-type="bubun">부분 <span class="count" id="cnt-bubun">0</span></button>
+        <div class="filter-divider"></div>
+        <div class="filter-group-label">거래</div>
+        <button class="filter-btn active" data-txn="매매">매매 <span class="count" id="cnt-매매">0</span></button>
+        <button class="filter-btn active" data-txn="전세">전세 <span class="count" id="cnt-전세">0</span></button>
+        <button class="filter-btn active" data-txn="월세">월세 <span class="count" id="cnt-월세">0</span></button>
+    </div>
+
+    <!-- 상세 모달 -->
+    <div class="detail-overlay" id="detailOverlay">
+        <div class="detail-modal" id="detailModal">
+            <span class="detail-modal-close" id="detailClose">&#10005;</span>
+            <div id="detailContent"></div>
+        </div>
+    </div>
+
+    <script>
+    var LOGO_URL = '/propsheet/static/images/propsheet-logo-landscape.png';
+    window._markerData = {};
+    window._agentInfo = null;
+    window._allOverlays = []; // {overlay, data, el}
+
+    var TYPE_NAMES = {danil: '단일', jibhap: '집합', bubun: '부분'};
+
+    function formatPrice(price) {
+        if (!price || price <= 0) return '가격정보 없음';
+        if (price < 10000) return price.toLocaleString() + '만원';
+        var eok = price / 10000;
+        var formatted = eok % 1 === 0 ? eok.toFixed(0) : eok.toFixed(1);
+        return formatted + '억원';
+    }
+
+    function toPyeong(sqm) {
+        if (!sqm) return '';
+        return Math.round(sqm / 3.3058) + '평';
+    }
+
+    function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // 필터 상태
+    var filterState = {
+        types: {danil: true, jibhap: true, bubun: true},
+        txns: {'매매': true, '전세': true, '월세': true}
+    };
+
+    function applyFilters() {
+        var visibleCount = 0;
+        window._allOverlays.forEach(function(item) {
+            var typeActive = filterState.types[item.data.property_type];
+            var txnActive = filterState.txns[item.data.transaction_type];
+            if (typeActive && txnActive) {
+                item.overlay.setMap(window._kakaoMap);
+                visibleCount++;
+            } else {
+                item.overlay.setMap(null);
+            }
+        });
+    }
+
+    function updateCounts() {
+        var counts = {danil: 0, jibhap: 0, bubun: 0, '매매': 0, '전세': 0, '월세': 0};
+        window._allOverlays.forEach(function(item) {
+            var d = item.data;
+            var typeActive = filterState.types[d.property_type];
+            var txnActive = filterState.txns[d.transaction_type];
+            if (typeActive && txnActive) {
+                counts[d.property_type]++;
+                counts[d.transaction_type]++;
+            }
+        });
+        document.getElementById('cnt-danil').textContent = counts.danil;
+        document.getElementById('cnt-jibhap').textContent = counts.jibhap;
+        document.getElementById('cnt-bubun').textContent = counts.bubun;
+        document.getElementById('cnt-매매').textContent = counts['매매'];
+        document.getElementById('cnt-전세').textContent = counts['전세'];
+        document.getElementById('cnt-월세').textContent = counts['월세'];
+    }
+
+    // 필터 버튼 이벤트
+    document.querySelectorAll('.filter-btn[data-type]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var type = this.getAttribute('data-type');
+            filterState.types[type] = !filterState.types[type];
+            this.classList.toggle('active', filterState.types[type]);
+            applyFilters();
+            updateCounts();
+        });
+    });
+    document.querySelectorAll('.filter-btn[data-txn]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var txn = this.getAttribute('data-txn');
+            filterState.txns[txn] = !filterState.txns[txn];
+            this.classList.toggle('active', filterState.txns[txn]);
+            applyFilters();
+            updateCounts();
+        });
+    });
+
+    // 상세 모달
+    function openDetail(data) {
+        var overlay = document.getElementById('detailOverlay');
+        var content = document.getElementById('detailContent');
+
+        var photoHtml;
+        if (data.photo) {
+            photoHtml = '<img class="detail-photo" src="' + data.photo + '" onerror="this.outerHTML=\'<div class=detail-photo-logo><img src=' + LOGO_URL + '></div>\'">';
+        } else {
+            photoHtml = '<div class="detail-photo-logo"><img src="' + LOGO_URL + '"></div>';
+        }
+
+        var html = photoHtml;
+        html += '<div class="detail-body">';
+
+        // 유형 뱃지
+        var badgeClass = data.property_type || 'danil';
+        var typeName = TYPE_NAMES[badgeClass] || '단일';
+        html += '<span class="type-badge ' + badgeClass + '" style="display:inline-block;font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;color:white;margin-bottom:6px;">' + typeName + ' ' + escapeHtml(data.transaction_type || '매매') + '</span>';
+
+        html += '<div class="detail-address">' + escapeHtml(data.address || '') + '</div>';
+
+        // 가격 표시 (유형에 따라 다르게)
+        if (data.transaction_type === '월세') {
+            html += '<div class="detail-price">보증금 ' + formatPrice(data.deposit) + ' / 월세 ' + formatPrice(data.rent) + '</div>';
+        } else if (data.transaction_type === '전세') {
+            html += '<div class="detail-price">전세 ' + formatPrice(data.deposit) + '</div>';
+        } else {
+            html += '<div class="detail-price">' + formatPrice(data.price) + '</div>';
+        }
+
+        html += '<div class="detail-info-list">';
+        function addRow(label, value) {
+            html += '<div class="detail-info-row"><span class="detail-info-label">' + label + '</span><span class="detail-info-value">' + value + '</span></div>';
+        }
+
+        // 공통 필드
+        if (data.property_type === 'danil') {
+            if (data.investment > 0) addRow('융자제외 실투자금', formatPrice(data.investment));
+            if (data.yield_rate > 0) addRow('수익률', data.yield_rate.toFixed(1) + '%');
+            if (data.price > 0 && data.land_area > 0) {
+                var pyeong = data.land_area / 3.3058;
+                addRow('평단가', Math.round(data.price / pyeong).toLocaleString() + '만원/평');
+            }
+            if (data.land_area > 0) addRow('토지면적', toPyeong(data.land_area) + ' (' + data.land_area + '㎡)');
+            if (data.total_area > 0) addRow('연면적', toPyeong(data.total_area) + ' (' + data.total_area + '㎡)');
+        } else {
+            // 집합/부분
+            if (data.exclusive_area > 0) addRow('전용면적', toPyeong(data.exclusive_area) + ' (' + data.exclusive_area + '㎡)');
+            if (data.supply_area > 0) addRow('공급면적', toPyeong(data.supply_area) + ' (' + data.supply_area + '㎡)');
+            if (data.rooms > 0) addRow('방/화장실', data.rooms + '방 / ' + (data.bathrooms || 0) + '화');
+            if (data.maintenance_fee > 0) addRow('관리비', formatPrice(data.maintenance_fee));
+            if (data.move_in_date) addRow('입주가능일', escapeHtml(data.move_in_date));
+            if (data.property_subtype) addRow('물건종류', escapeHtml(data.property_subtype));
+            if (data.unit_no) addRow('호수', escapeHtml(data.unit_no));
+            if (data.land_area > 0) addRow('토지면적', toPyeong(data.land_area) + ' (' + data.land_area + '㎡)');
+        }
+
+        if (data.floors) addRow('층수', escapeHtml(data.floors));
+        if (data.usage) addRow('주용도', escapeHtml(data.usage));
+        if (data.zoning) addRow('용도지역', escapeHtml(data.zoning));
+        if (data.approval_date && data.approval_date !== '0') addRow('사용승인일', data.approval_date);
+        if (data.transaction_type === '매매') {
+            if (data.deposit > 0) addRow('보증금', formatPrice(data.deposit));
+            if (data.rent > 0) addRow('월세', formatPrice(data.rent));
+        }
+        if (data.loan > 0) addRow('융자', formatPrice(data.loan));
+        if (data.station) addRow('인접역', escapeHtml(data.station) + (data.distance > 0 ? ' ' + Math.round(data.distance) + 'm' : ''));
+        html += '</div>';
+
+        if (data.description) {
+            html += '<div class="detail-desc-box">';
+            html += '<div class="detail-desc-title">상세정보</div>';
+            html += '<div class="detail-desc-text">' + escapeHtml(data.description) + '</div>';
+            html += '</div>';
+        }
+
+        var agent = window._agentInfo;
+        if (agent) {
+            html += '<div class="broker-card">';
+            html += '<div class="broker-name">' + escapeHtml(agent.agency_name || '') + '</div>';
+            if (agent.address) html += '<div class="broker-row">' + escapeHtml(agent.address) + '</div>';
+            if (agent.phone) {
+                html += '<div class="broker-row"><span class="broker-phone" onclick="navigator.clipboard.writeText(\'' + agent.phone + '\');var s=this;s.dataset.orig=s.textContent;s.textContent=\'복사됨\';setTimeout(function(){s.textContent=s.dataset.orig},1500);" title="클릭하여 복사">' + escapeHtml(agent.phone) + '</span></div>';
+            }
+            if (agent.name || agent.license_no) {
+                html += '<div class="broker-sub">';
+                if (agent.name) html += '대표: ' + escapeHtml(agent.name);
+                if (agent.license_no) html += (agent.name ? ' | ' : '') + '등록번호: ' + escapeHtml(agent.license_no);
+                html += '</div>';
+            }
+            html += '</div>';
+        }
+
+        var addrEsc = (data.address || '').replace(/'/g, "\\'");
+        var mapLink = 'https://map.kakao.com/link/search/' + encodeURIComponent(data.address || '');
+        var shareLink = window.location.origin + '/?property=' + (data.record_id || '');
+        html += '<div class="detail-actions">';
+        html += '<button class="detail-btn-consult" onclick="handleConsult(\'' + addrEsc + '\')">문의하기</button>';
+        html += '<div class="detail-btn-row">';
+        html += '<a href="' + mapLink + '" target="_blank" class="detail-btn-secondary">지도 보기</a>';
+        html += '<button class="detail-btn-secondary" onclick="handleCopyLink(\'' + shareLink + '\')">링크 복사</button>';
+        html += '</div></div></div>';
+
+        content.innerHTML = html;
+        overlay.classList.add('active');
+    }
+
+    function handleConsult(address) {
+        if (window.parent !== window) {
+            window.parent.postMessage({action: 'openConsultModal', address: address}, '*');
+        }
+    }
+
+    function handleCopyLink(url) {
+        navigator.clipboard.writeText(url).then(function() {
+            alert('링크가 복사되었습니다.');
+        }).catch(function() {
+            var ta = document.createElement('textarea');
+            ta.value = url;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            alert('링크가 복사되었습니다.');
+        });
+    }
+
+    function closeDetail() {
+        document.getElementById('detailOverlay').classList.remove('active');
+    }
+
+    document.getElementById('detailClose').onclick = closeDetail;
+    document.getElementById('detailOverlay').onclick = function(e) {
+        if (e.target === this) closeDetail();
+    };
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeDetail();
+    });
+
+    window.addEventListener('message', function(event) {
+        if (!event.data || !event.data.action) return;
+    });
+
+    kakao.maps.load(function() {
+        var container = document.getElementById('map');
+        var options = {
+            center: new kakao.maps.LatLng(37.4834458778777, 126.970207234818),
+            level: 5
+        };
+        var map = new kakao.maps.Map(container, options);
+        window._kakaoMap = map;
+        var bounds = new kakao.maps.LatLngBounds();
+        var currentPopup = null;
+
+        function closePopup() {
+            if (currentPopup) { currentPopup.setMap(null); currentPopup = null; }
+        }
+
+        function panToBottom(pos) {
+            var node = map.getNode();
+            var h = node.offsetHeight;
+            var sw = map.getBounds().getSouthWest();
+            var ne = map.getBounds().getNorthEast();
+            var latPerPx = (ne.getLat() - sw.getLat()) / h;
+            var offsetLat = latPerPx * h * 0.25;
+            map.panTo(new kakao.maps.LatLng(pos.getLat() + offsetLat, pos.getLng()));
+        }
+
+        // 지도 타입 변경
+        var btns = document.querySelectorAll('.map-type-btn');
+        btns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var type = this.getAttribute('data-type');
+                if (type === 'roadmap') map.setMapTypeId(kakao.maps.MapTypeId.ROADMAP);
+                else if (type === 'skyview') map.setMapTypeId(kakao.maps.MapTypeId.SKYVIEW);
+                else if (type === 'hybrid') map.setMapTypeId(kakao.maps.MapTypeId.HYBRID);
+                btns.forEach(function(b) { b.classList.remove('active'); });
+                this.classList.add('active');
+            });
+        });
+
+        kakao.maps.event.addListener(map, 'click', function() { closePopup(); });
+
+        // 팝업 생성 함수
+        function createPopup(m, position) {
+            var typeName = TYPE_NAMES[m.property_type] || '단일';
+            var badgeClass = m.property_type || 'danil';
+
+            var popupEl = document.createElement('div');
+            popupEl.className = 'info-popup';
+
+            var popupHtml = '<button class="close-btn">&times;</button>';
+            popupHtml += '<span class="type-badge ' + badgeClass + '">' + typeName + ' ' + escapeHtml(m.transaction_type || '매매') + '</span>';
+            popupHtml += '<div class="address">' + escapeHtml(m.address || '') + '</div>';
+
+            // 가격 정보 (유형별)
+            if (m.transaction_type === '월세') {
+                popupHtml += '<div class="info-row">보증금: ' + formatPrice(m.deposit) + '</div>';
+                popupHtml += '<div class="info-row">월세: ' + formatPrice(m.rent) + '</div>';
+            } else if (m.transaction_type === '전세') {
+                popupHtml += '<div class="info-row">전세: ' + formatPrice(m.deposit) + '</div>';
+            } else {
+                popupHtml += '<div class="info-row">매가: ' + formatPrice(m.price) + '</div>';
+            }
+
+            // 면적 정보
+            if (m.property_type === 'danil') {
+                if (m.land_area > 0) {
+                    popupHtml += '<div class="info-row">토지: ' + toPyeong(m.land_area) + ' (' + m.land_area.toFixed(1) + '㎡)</div>';
+                }
+            } else {
+                if (m.exclusive_area > 0) {
+                    popupHtml += '<div class="info-row">전용: ' + toPyeong(m.exclusive_area) + ' (' + m.exclusive_area.toFixed(1) + '㎡)</div>';
+                }
+            }
+
+            if (m.floors) popupHtml += '<div class="info-row">층수: ' + escapeHtml(m.floors) + '</div>';
+            if (m.usage) popupHtml += '<div class="info-row">용도: ' + escapeHtml(m.usage) + '</div>';
+            popupHtml += '<button class="btn-detail">상세내역보기</button>';
+            popupHtml += '<button class="btn-consult">이 매물 문의하기</button>';
+
+            popupEl.innerHTML = popupHtml;
+
+            popupEl.querySelector('.close-btn').onclick = function() { closePopup(); };
+            popupEl.querySelector('.btn-detail').onclick = function(ev) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                if (window.parent !== window) {
+                    window.parent.postMessage({action: 'openPropertyDetail', recordId: m.record_id, dbId: m.db_id}, '*');
+                } else {
+                    openDetail(m);
+                }
+            };
+            popupEl.querySelector('.btn-consult').onclick = function(ev) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                handleConsult(m.address || '');
+            };
+
+            var popup = new kakao.maps.CustomOverlay({
+                position: position,
+                content: popupEl,
+                yAnchor: 1.4,
+                xAnchor: 0.5,
+                zIndex: 10,
+                clickable: true
+            });
+            popup.setMap(map);
+            currentPopup = popup;
+            panToBottom(position);
+        }
+
+        // DB에서 매물 데이터 로드
+        fetch('/propsheet/api/propsheet/map-data?status=%EB%93%B1%EB%A1%9D')
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                document.getElementById('loading').classList.add('hidden');
+
+                if (!data.success || !data.markers || data.markers.length === 0) {
+                    return;
+                }
+
+                if (data.agent) {
+                    window._agentInfo = data.agent;
+                }
+
+                data.markers.forEach(function(m) {
+                    window._markerData[m.record_id] = m;
+
+                    var position = new kakao.maps.LatLng(m.lat, m.lon);
+                    bounds.extend(position);
+
+                    var el = document.createElement('div');
+                    el.className = 'price-marker ' + m.property_type + '-' + m.transaction_type;
+                    el.textContent = m.price_label || '가격미정';
+
+                    el.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        closePopup();
+                        createPopup(m, position);
+                    });
+
+                    var overlay = new kakao.maps.CustomOverlay({
+                        position: position,
+                        content: el,
+                        yAnchor: 1.3,
+                        zIndex: 1
+                    });
+                    overlay.setMap(map);
+
+                    window._allOverlays.push({overlay: overlay, data: m, el: el});
+                });
+
+                // 카운트 업데이트
+                updateCounts();
+
+                // 전체보기/돌아가기 버튼
+                var isFullscreen = false;
+                var btnAll = document.getElementById('btnShowAll');
+                var btnBack = document.getElementById('btnGoBack');
+                btnBack.style.display = 'none';
+
+                function relayoutKeepCenter() {
+                    var center = map.getCenter();
+                    var level = map.getLevel();
+                    setTimeout(function() {
+                        map.relayout();
+                        map.setCenter(center);
+                        map.setLevel(level);
+                    }, 150);
+                }
+
+                btnAll.onclick = function() {
+                    parent.postMessage({action: 'mapFullscreen', value: true}, '*');
+                    isFullscreen = true;
+                    btnAll.style.display = 'none';
+                    btnBack.style.display = '';
+                    relayoutKeepCenter();
+                };
+                btnBack.onclick = function() {
+                    parent.postMessage({action: 'mapFullscreen', value: false}, '*');
+                    isFullscreen = false;
+                    btnBack.style.display = 'none';
+                    btnAll.style.display = '';
+                    relayoutKeepCenter();
+                };
+            })
+            .catch(function(err) {
+                console.error('매물 데이터 로딩 실패:', err);
+                document.getElementById('loading').classList.add('hidden');
+            });
+    });
+    </script>
+</body>
+</html>
