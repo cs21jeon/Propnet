@@ -14,6 +14,8 @@
 - API baseUrl goldenrabbit.biz → propnet.kr 전환
   - 기존 앱 호환: goldenrabbit.biz/app/api/* reverse proxy 유지
 - PropNet 통합 약관 재작성 (4개 서비스 포함, 버전 2026-04-03)
+- Google Play 설정 문서 갱신 (google-play-setup.md)
+- admin 배포 스크립트 추가 (deploy_admin_all.sh, patch 스크립트 4종)
 
 ## 2026-04-06: 집합/부분 부동산 상세보기 버그 수정 + 파비콘 통일
 

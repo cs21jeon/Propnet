@@ -139,56 +139,58 @@
 건축물대장, 토지대장, 공시지가를 한눈에! 도로명/지번/지도로 부동산 정보를 무료로 조회하세요.
 ```
 
-### 자세한 설명
+### 자세한 설명 (2026-04-04 수정 — 2차 정책 위반 대응, data-sources 페이지 추가)
 ```
-🏠 Proppedia(부동산백과)는 대한민국 모든 부동산 정보를 한눈에 조회할 수 있는 무료 앱입니다.
+🏠부동산백과 Proppedia는 대한민국 모든 부동산 정보를 한눈에 조회할 수 있는 무료 앱입니다.
 
 📋 주요 기능
 
-▶ 건축물 정보 조회
-• 건축물대장 기반의 정확한 건물 정보
-• 대지면적, 건축면적, 연면적, 용적률, 건폐율
-• 층수, 구조, 주용도, 사용승인일
-• 공동주택(아파트, 다세대) 동/호별 전용면적, 공급면적
+  ▶ 건축물 정보 조회
+  • 건축물대장 기반의 정확한 건물 정보
+  • 대지면적, 건축면적, 연면적, 용적률, 건폐율
+  • 층수, 구조, 주용도, 사용승인일
+  • 공동주택(아파트, 다세대) 동/호별 전용면적, 공급면적
 
-▶ 토지 정보 조회
-• 토지대장 기반의 토지 정보
-• 지목, 토지면적, 용도지역
-• 공시지가 (기준년도 포함)
+  ▶ 토지 정보 조회
+  • 토지대장 기반의 토지 정보
+  • 지목, 토지면적, 용도지역
+  • 공시지가 (기준년도 포함)
 
-▶ 공시가격 조회
-• 개별주택가격 (단독주택)
-• 공동주택가격 (아파트, 다세대)
-• 개별공시지가
+  ▶ 공시가격 조회
+  • 개별주택가격 (단독주택)
+  • 공동주택가격 (아파트, 다세대)
+  • 개별공시지가
 
-▶ 3가지 검색 방식
-• 도로명 주소 검색
-• 지번 주소 검색
-• 지도에서 위치 선택 검색
+  ▶ 3가지 검색 방식
+  • 도로명 주소 검색
+  • 지번 주소 검색
+  • 지도에서 위치 선택 검색
 
-▶ 편의 기능
-• 즐겨찾기 - 관심 부동산 저장
-• 검색기록 - 최근 조회 내역 확인
-• PDF 저장/공유 - 조회 결과를 PDF로 저장
+  ▶ 편의 기능
+  • 즐겨찾기 - 관심 부동산 저장
+  • 검색기록 - 최근 조회 내역 확인
+  • PDF 저장/공유 - 조회 결과를 PDF로 저장
 
 📍 이런 분들께 추천합니다
-• 부동산 투자를 검토하시는 분
-• 이사할 집을 알아보시는 분
-• 공인중개사, 부동산 관련 종사자
-• 건축, 인테리어 관련 업무 종사자
-• 부동산 공부를 시작하시는 분
+  • 부동산 투자를 검토하시는 분
+  • 이사할 집을 알아보시는 분
+  • 공인중개사, 부동산 관련 종사자
+  • 건축, 인테리어 관련 업무 종사자
+  • 부동산 공부를 시작하시는 분
 
-💡 데이터 출처
-• 국토교통부 건축물대장
-• 국토교통부 토지대장
-• 한국부동산원 부동산공시가격
-• 공공데이터포털, VWorld
+💡 Data Sources
+This app provides information based on the following Korean government open data APIs:
+  • Korea Public Data Portal (https://www.data.go.kr) - Building Register API by Ministry of Land, Infrastructure and Transport
+  • VWorld by Ministry of Land, Infrastructure and Transport (https://www.vworld.kr) - Land Information, Land Use Plan API
+For full details on data sources, API authorization proof, and disclaimer, please visit:
+https://propnet.kr/proppedia/landing/data-sources.html
 
-📞 문의
-• 이메일: ant1975@hanmail.net
-• 제작: 금토끼부동산 (https://goldenrabbit.biz)
+⚠️ Disclaimer
+This app is NOT affiliated with, endorsed by, or representative of any government agency. This app utilizes officially issued API authentication keys from Korea's Public Data Portal (https://www.data.go.kr) and VWorld (https://www.vworld.kr) to access publicly available government data. All information is provided for reference purposes only. For official records, please consult the relevant government authority.
 
-※ 본 앱의 정보는 참고용이며, 정확한 내용은 관할 관청의 공적장부를 확인하시기 바랍니다.
+📞 Contact
+  • Email: cs21.jeon@gmail.com
+  • Developer: Propnet (https://propnet.kr)
 ```
 
 ### 출시노트
@@ -443,9 +445,62 @@ PROPPEDIA_OAUTH_CLIENT_SECRET=GOCSPX-B8vj...
 
 ---
 
+## 12. 정책 위반 및 이의신청 이력
+
+### 1차 반려 (2026-04-02)
+
+- **위반 정책**: 혼동을 야기하는 주장 (Misleading Claims)
+- **위반 내용**: 출처 링크가 손상되었거나 액세스할 수 없음
+- **원인 분석**: 스토어 설명의 정부 데이터 출처 URL(data.go.kr, vworld.kr)이 해외 리뷰어 환경에서 접속 불가 판정
+- **조치 1 — 스토어 설명 수정**:
+  - Data Sources, Disclaimer 섹션을 영문으로 변경 (Google 리뷰어 가독성)
+  - VWorld 해외 접속 제한 안내 문구 추가
+  - 면책조항 강화 ("NOT affiliated with, endorsed by, or representative of any government agency")
+- **조치 2 — 이의제기 제출**: Play Console에서 이의제기 + 추가보완서류 있음으로 제출
+
+### 1차 이의제기 결과 (2026-04-02)
+
+- **결과**: 기각 — 여전히 정책 위반으로 확인
+- **Google 지적사항**:
+  - 정부 정보의 명확한 출처링크(유효한 URL 형태)가 앱 설명에 잘 표시되어 있지 않음
+  - 개인정보처리방침 URL 필요 (유효한 활성 URL, PDF/문서 링크 불가, 수정 불가능 확인)
+- **2차 이의제기 회신 내용**:
+  - API 인증키 발급 스크린샷 첨부 (공공데이터포털, VWorld)
+  - VWorld 해외 접속 제한은 한국 정부 사이트 특성이며 URL 손상 아님 설명
+  - 앱 배포 국가가 대한민국 한정이므로 이용자 접속 문제 없음 설명
+  - 개인정보처리방침 URL 확인: `https://propnet.kr/legal/privacy-policy.html`
+
+### 2차 이의제기 결과 (2026-04-04)
+
+- **결과**: 기각 — 동일 사유 (출처링크 유효성)
+- **원인 분석**: VWorld URL이 해외에서 접속 불가하므로, 이메일로 설명해도 리뷰어가 직접 확인 불가
+- **3차 대응 조치**:
+  1. **data-sources.html 페이지 생성**: `https://propnet.kr/proppedia/landing/data-sources.html`
+     - 영문/한국어 병기, 해외에서도 접속 가능한 자체 페이지
+     - 정부 데이터 출처 설명 + API 목록 + API 인증키 발급 스크린샷 포함
+     - 면책조항 + 개인정보처리방침 링크 포함
+  2. **스토어 설명 수정**: Data Sources 섹션에 data-sources.html URL 추가
+  3. **이미지 파일**: `marketing/proppedia/images/api-key-data-go-kr.jpg`, `api-key-vworld.jpg`
+  4. **서버 배포 필요**: data-sources.html + images/ → `/proppedia/landing/` 경로에 배포
+
+### 해결 시 체크리스트
+- [x] 스토어 설명 영문 출처 + 면책조항 수정
+- [x] 1차 이의제기 제출
+- [x] 2차 이의제기 회신 (API 발급 증빙 첨부)
+- [x] 2차 이의제기 결과 확인 (기각)
+- [x] data-sources.html 페이지 생성 (영문/한국어, API 증빙 포함)
+- [ ] data-sources.html + images/ 서버 배포
+- [ ] 스토어 설명 수정 (data-sources.html URL 추가)
+- [ ] Play Console에서 앱 업데이트 재제출 (게시 개요 → 전송하여 검토받기)
+- [ ] Google 검토 통과
+
+---
+
 ## 참고 링크
 
 - [Google Play Console](https://play.google.com/console)
 - [AdMob Console](https://admob.google.com)
 - [google_mobile_ads 패키지](https://pub.dev/packages/google_mobile_ads)
-- [개인정보처리방침](https://goldenrabbit.biz/privacy-policy.html)
+- [개인정보처리방침](https://propnet.kr/legal/privacy-policy.html)
+- [데이터 출처 페이지](https://propnet.kr/proppedia/landing/data-sources.html)
+- [정책 위반 및 이의신청 관리](https://support.google.com/googleplay/android-developer/answer/9899142?hl=ko)

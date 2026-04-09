@@ -91,7 +91,8 @@ def admin_required(f):
             (payload['sub'],)
         )
         if not user or user['role'] != 'admin':
-            return jsonify({'error': 'Forbidden - admin only'}), 403
+            session.pop('admin_token', None)
+            return redirect(url_for('admin_dashboard.admin_login_page'))
 
         g.admin_user = user
         return f(*args, **kwargs)

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>Data Sources & Disclaimer - Proppedia</title>
+    <meta name="description" content="Proppedia app data sources, government API authorization, and disclaimer. This app uses officially issued API keys from Korean government open data portals.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://propnet.kr/proppedia/landing/data-sources.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://propnet.kr/proppedia/landing/data-sources.html">
+    <meta property="og:title" content="Data Sources & Disclaimer - Proppedia">
+    <meta property="og:description" content="Proppedia app data sources and government API authorization details.">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #f9f9f9;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #fff;
+            min-height: 100vh;
+        }
+        h1 {
+            font-size: 28px;
+            color: #2196F3;
+            margin-bottom: 8px;
+            border-bottom: 3px solid #2196F3;
+            padding-bottom: 16px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+        h2 {
+            font-size: 20px;
+            color: #2196F3;
+            margin-top: 36px;
+            margin-bottom: 12px;
+            padding-left: 12px;
+            border-left: 4px solid #2196F3;
+        }
+        h3 {
+            font-size: 16px;
+            color: #444;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+        p {
+            margin-bottom: 12px;
+        }
+        a {
+            color: #1976D2;
+            text-decoration: underline;
+        }
+        .source-card {
+            background: #F5F5F5;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+        .source-card h3 {
+            margin-top: 0;
+            color: #2196F3;
+        }
+        .source-card .url {
+            font-family: monospace;
+            background: #E3F2FD;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        .source-card .description {
+            margin-top: 8px;
+            color: #555;
+        }
+        .screenshot-section {
+            margin: 16px 0;
+        }
+        .screenshot-section img {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 8px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .screenshot-caption {
+            font-size: 13px;
+            color: #666;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .disclaimer-box {
+            background: #FFF3E0;
+            border: 2px solid #FF9800;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+        .disclaimer-box h2 {
+            color: #E65100;
+            border-left-color: #FF9800;
+            margin-top: 0;
+        }
+        .notice-box {
+            background: #E8F5E9;
+            border: 1px solid #4CAF50;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        .notice-box strong {
+            color: #2E7D32;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+        th, td {
+            border: 1px solid #E0E0E0;
+            padding: 10px 12px;
+            text-align: left;
+        }
+        th {
+            background: #F5F5F5;
+            font-weight: 600;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 32px;
+            padding: 10px 20px;
+            background: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+        .back-link:hover {
+            background: #1976D2;
+        }
+        .lang-toggle {
+            float: right;
+            font-size: 14px;
+        }
+        @media (max-width: 600px) {
+            .container { padding: 20px 16px; }
+            h1 { font-size: 22px; }
+            h2 { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p class="lang-toggle"><a href="#korean">한국어 버전 아래</a></p>
+        <h1>Data Sources & Disclaimer</h1>
+        <p class="subtitle">Proppedia - Real Estate Encyclopedia App | Last updated: April 2026</p>
+
+        <!-- ==================== ENGLISH VERSION ==================== -->
+
+        <h2>1. About This App</h2>
+        <p>
+            Proppedia is a free mobile app that allows users to look up real estate information in South Korea,
+            including building registers, land registers, and officially assessed prices.
+        </p>
+        <p>
+            This app retrieves data from <strong>Korean government open data APIs</strong> using officially issued API authentication keys.
+        </p>
+
+        <h2>2. Data Sources</h2>
+        <p>All data displayed in this app comes from the following official Korean government sources:</p>
+
+        <div class="source-card">
+            <h3>Korea Public Data Portal</h3>
+            <p>URL: <span class="url"><a href="https://www.data.go.kr" target="_blank" rel="noopener">https://www.data.go.kr</a></span></p>
+            <p class="description">
+                Operated by the <strong>Korean government (Ministry of the Interior and Safety)</strong>.
+                This is the official Korean government open data platform, similar to data.gov (USA) or data.gov.uk (UK).
+                It provides public APIs for various government datasets.
+            </p>
+            <p class="description">
+                <strong>APIs used by this app:</strong>
+            </p>
+            <table>
+                <tr>
+                    <th>API Name</th>
+                    <th>Provider</th>
+                    <th>Data</th>
+                </tr>
+                <tr>
+                    <td>Building Register API</td>
+                    <td>Ministry of Land, Infrastructure and Transport</td>
+                    <td>Building information (area, structure, floors, usage, approval date)</td>
+                </tr>
+                <tr>
+                    <td>Officially Assessed Individual Housing Price API</td>
+                    <td>Ministry of Land, Infrastructure and Transport</td>
+                    <td>Single-family housing prices</td>
+                </tr>
+                <tr>
+                    <td>Officially Assessed Apartment Price API</td>
+                    <td>Ministry of Land, Infrastructure and Transport</td>
+                    <td>Multi-unit housing prices</td>
+                </tr>
+                <tr>
+                    <td>Officially Assessed Land Price API</td>
+                    <td>Ministry of Land, Infrastructure and Transport</td>
+                    <td>Individual land prices</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="source-card">
+            <h3>VWorld - Spatial Information Open Platform</h3>
+            <p>URL: <span class="url"><a href="https://www.vworld.kr" target="_blank" rel="noopener">https://www.vworld.kr</a></span></p>
+            <p class="description">
+                Operated by the <strong>Ministry of Land, Infrastructure and Transport (South Korea)</strong>.
+                VWorld is the official Korean government platform for spatial and land information data.
+            </p>
+            <p class="description">
+                <strong>APIs used by this app:</strong>
+            </p>
+            <table>
+                <tr>
+                    <th>API Name</th>
+                    <th>Data</th>
+                </tr>
+                <tr>
+                    <td>Land Information API</td>
+                    <td>Land category, area, zoning, officially assessed land price</td>
+                </tr>
+                <tr>
+                    <td>Land Use Plan API</td>
+                    <td>Land use regulations and plans</td>
+                </tr>
+            </table>
+            <div class="notice-box">
+                <strong>Note on accessibility:</strong> VWorld (https://www.vworld.kr) is an official Korean government website
+                that may restrict access from outside South Korea due to regional access policies.
+                The URL is NOT broken — it is fully accessible within South Korea.
+                This app is distributed exclusively in South Korea on Google Play.
+            </div>
+        </div>
+
+        <h2>3. API Authorization Proof</h2>
+        <p>
+            This app has been issued official API authentication keys from both government platforms.
+            Below are screenshots of the API key issuance records:
+        </p>
+
+        <div class="screenshot-section">
+            <h3>Korea Public Data Portal - API Key Issuance</h3>
+            <img src="images/api-key-data-go-kr.jpg" alt="Screenshot of API key issuance from Korea Public Data Portal (data.go.kr)">
+            <p class="screenshot-caption">Official API authentication key issued by Korea Public Data Portal (data.go.kr)</p>
+        </div>
+
+        <div class="screenshot-section">
+            <h3>VWorld - API Key Issuance</h3>
+            <img src="images/api-key-vworld.jpg" alt="Screenshot of API key issuance from VWorld (vworld.kr)">
+            <p class="screenshot-caption">Official API authentication key issued by VWorld (vworld.kr)</p>
+        </div>
+
+        <div class="disclaimer-box">
+            <h2>Disclaimer</h2>
+            <p>
+                <strong>This app is NOT affiliated with, endorsed by, or representative of any government agency.</strong>
+            </p>
+            <p>
+                This app is independently developed by Propnet and utilizes officially issued API authentication keys
+                from Korea's Public Data Portal (data.go.kr) and VWorld (vworld.kr) to access publicly available government data.
+            </p>
+            <p>
+                All information provided through this app is <strong>for reference purposes only</strong>.
+                For official and legally binding records, please consult the relevant government authority directly.
+            </p>
+        </div>
+
+        <h2>5. Privacy Policy</h2>
+        <p>
+            Our privacy policy is available at:
+            <a href="https://propnet.kr/legal/privacy-policy.html" target="_blank" rel="noopener">https://propnet.kr/legal/privacy-policy.html</a>
+        </p>
+
+        <h2>6. Contact</h2>
+        <p>
+            Email: <a href="mailto:cs21.jeon@gmail.com">cs21.jeon@gmail.com</a><br>
+            Developer: Propnet (<a href="https://propnet.kr" target="_blank" rel="noopener">https://propnet.kr</a>)
+        </p>
+
+        <!-- ==================== KOREAN VERSION ==================== -->
+
+        <hr style="margin: 48px 0; border: none; border-top: 2px solid #E0E0E0;" id="korean">
+
+        <h1>데이터 출처 및 면책조항</h1>
+        <p class="subtitle">부동산백과 Proppedia | 최종 업데이트: 2026년 4월</p>
+
+        <h2>1. 앱 소개</h2>
+        <p>
+            부동산백과 Proppedia는 대한민국의 건축물대장, 토지대장, 공시가격 등 부동산 정보를 조회할 수 있는 무료 앱입니다.
+            대한민국 정부가 제공하는 공공데이터 API를 정식 인증키를 발급받아 활용합니다.
+        </p>
+
+        <h2>2. 데이터 출처</h2>
+
+        <div class="source-card">
+            <h3>공공데이터포털</h3>
+            <p>URL: <span class="url"><a href="https://www.data.go.kr" target="_blank" rel="noopener">https://www.data.go.kr</a></span></p>
+            <p class="description">
+                <strong>행정안전부</strong>가 운영하는 대한민국 정부 공식 공공데이터 플랫폼입니다.
+            </p>
+            <p class="description"><strong>사용 API:</strong> 국토교통부 건축물대장 정보, 개별주택가격, 공동주택가격, 개별공시지가</p>
+        </div>
+
+        <div class="source-card">
+            <h3>VWorld 공간정보 오픈플랫폼</h3>
+            <p>URL: <span class="url"><a href="https://www.vworld.kr" target="_blank" rel="noopener">https://www.vworld.kr</a></span></p>
+            <p class="description">
+                <strong>국토교통부</strong>가 운영하는 공간정보 오픈플랫폼입니다.
+            </p>
+            <p class="description"><strong>사용 API:</strong> 토지정보, 토지이용계획</p>
+        </div>
+
+        <h2>3. API 인증키 발급 증빙</h2>
+        <p>본 앱은 위 두 정부 플랫폼에서 정식 API 인증키를 발급받아 사용하고 있습니다.</p>
+
+        <div class="screenshot-section">
+            <h3>공공데이터포털 API 인증키 발급 내역</h3>
+            <img src="images/api-key-data-go-kr.jpg" alt="공공데이터포털 API 인증키 발급 스크린샷">
+            <p class="screenshot-caption">공공데이터포털(data.go.kr) API 인증키 발급 내역</p>
+        </div>
+
+        <div class="screenshot-section">
+            <h3>VWorld API 인증키 발급 내역</h3>
+            <img src="images/api-key-vworld.jpg" alt="VWorld API 인증키 발급 스크린샷">
+            <p class="screenshot-caption">VWorld(vworld.kr) API 인증키 발급 내역</p>
+        </div>
+
+        <div class="disclaimer-box">
+            <h2>면책조항</h2>
+            <p>
+                <strong>본 앱은 정부 기관이 아니며, 정부 기관을 대표하지 않습니다.</strong>
+            </p>
+            <p>
+                본 앱은 Propnet이 독립적으로 개발하였으며, 공공데이터포털(data.go.kr)과 VWorld(vworld.kr)에서
+                정식 발급받은 API 인증키를 활용하여 공공데이터를 제공합니다.
+            </p>
+            <p>
+                제공되는 모든 정보는 <strong>참고용</strong>이며, 정확한 내용은 반드시 관할 관청의 공적장부를 확인하시기 바랍니다.
+            </p>
+        </div>
+
+        <h2>5. 개인정보처리방침</h2>
+        <p>
+            개인정보처리방침:
+            <a href="https://propnet.kr/legal/privacy-policy.html" target="_blank" rel="noopener">https://propnet.kr/legal/privacy-policy.html</a>
+        </p>
+
+        <h2>6. 문의</h2>
+        <p>
+            이메일: <a href="mailto:cs21.jeon@gmail.com">cs21.jeon@gmail.com</a><br>
+            개발: Propnet (<a href="https://propnet.kr" target="_blank" rel="noopener">https://propnet.kr</a>)
+        </p>
+
+        <a href="./" class="back-link">Back to Proppedia</a>
+    </div>
+</body>
+</html>
