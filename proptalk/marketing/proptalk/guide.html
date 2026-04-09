@@ -7,7 +7,7 @@
 
     <!-- SEO Meta Tags -->
     <title>사용 가이드 - Proptalk</title>
-    <meta name="description" content="Proptalk 사용 가이드. 로그인, 음성 파일 업로드, AI 요약, Google Drive 백업까지 모든 기능을 안내합니다.">
+    <meta name="description" content="Proptalk 사용 가이드. 앱 설치부터 로그인, 채팅방, 음성 AI 요약, Google Drive 연동, 검색까지 모든 기능을 안내합니다.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://propnet.kr/proptalk/guide">
 
@@ -27,12 +27,15 @@
         :root {
             --primary-color: #2196F3;
             --primary-dark: #1976D2;
+            --primary-light: #E3F2FD;
             --text-primary: #212121;
             --text-secondary: #757575;
             --background: #FFFFFF;
             --surface: #F5F5F5;
             --border: #E0E0E0;
             --max-width: 800px;
+            --agent-color: #FF6B35;
+            --agent-light: #FFF3E0;
         }
 
         * {
@@ -120,7 +123,7 @@
         }
 
         .nav-back:hover {
-            background: #E3F2FD;
+            background: var(--primary-light);
         }
 
         /* Main content */
@@ -181,6 +184,18 @@
             text-decoration: underline;
         }
 
+        .toc .agent-badge {
+            display: inline-block;
+            background: var(--agent-light);
+            color: var(--agent-color);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
         /* Section */
         .guide-section {
             margin-bottom: 60px;
@@ -198,6 +213,10 @@
             margin-bottom: 20px;
             padding-left: 12px;
             border-left: 4px solid var(--primary-color);
+        }
+
+        .guide-section h2.agent-section {
+            border-left-color: var(--agent-color);
         }
 
         .guide-section h3 {
@@ -257,9 +276,19 @@
             color: var(--text-secondary);
         }
 
+        /* Web screenshot (wider) */
+        .screenshot-web img {
+            max-width: 360px;
+            border-radius: 12px;
+        }
+
+        .screenshot-row .screenshot-web img {
+            max-width: 320px;
+        }
+
         /* Tip box */
         .tip {
-            background: #E3F2FD;
+            background: var(--primary-light);
             border-left: 4px solid var(--primary-color);
             padding: 14px 18px;
             border-radius: 0 8px 8px 0;
@@ -269,6 +298,15 @@
 
         .tip strong {
             color: var(--primary-dark);
+        }
+
+        .tip-agent {
+            background: var(--agent-light);
+            border-left-color: var(--agent-color);
+        }
+
+        .tip-agent strong {
+            color: var(--agent-color);
         }
 
         /* Step list */
@@ -301,6 +339,22 @@
             font-weight: 700;
         }
 
+        /* Agent badge */
+        .section-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .badge-agent {
+            background: var(--agent-light);
+            color: var(--agent-color);
+        }
+
         /* Footer */
         footer {
             background: #212121;
@@ -317,6 +371,23 @@
 
         footer a:hover {
             color: white;
+        }
+
+        /* Back to top */
+        .back-to-top {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 8px 16px;
+            background: var(--surface);
+            color: var(--text-secondary);
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+
+        .back-to-top:hover {
+            background: var(--border);
         }
 
         /* Responsive */
@@ -337,6 +408,14 @@
                 max-width: 160px;
             }
 
+            .screenshot-web img {
+                max-width: 300px;
+            }
+
+            .screenshot-row .screenshot-web img {
+                max-width: 260px;
+            }
+
             .header-nav .nav-back span {
                 display: none;
             }
@@ -348,7 +427,7 @@
     <header>
         <div class="header-content">
             <a href="/proptalk/" class="logo">
-                <img src="/proptalk/images/icons/Proptalk_icon_half_size.png" alt="Proptalk 로고">
+                <img src="/proptalk/images/icons/Proptalk_icon_half_size.png" alt="Proptalk">
                 <div class="logo-text">
                     <span class="title">Proptalk</span>
                     <span class="subtitle">세상 쉬운 업무 공유</span>
@@ -362,7 +441,7 @@
 
     <main>
         <!-- Page Title -->
-        <div class="page-title">
+        <div class="page-title" id="top">
             <h1>사용 가이드</h1>
             <p>Proptalk의 모든 기능을 쉽게 알려드립니다</p>
         </div>
@@ -371,234 +450,387 @@
         <nav class="toc">
             <h2>목차</h2>
             <ol>
-                <li><a href="#start">시작하기</a></li>
-                <li><a href="#login">로그인</a></li>
-                <li><a href="#chatroom">채팅방 만들기 & 메시지 공유</a></li>
-                <li><a href="#voice">음성 파일 업로드 & AI 요약</a></li>
-                <li><a href="#data">저장된 데이터 확인</a></li>
+                <li><a href="#install">앱 설치</a></li>
+                <li><a href="#login">로그인 & 알림 설정</a></li>
+                <li><a href="#home">홈 화면</a></li>
+                <li><a href="#chatroom">업무 채팅방</a></li>
+                <li><a href="#summary">음성 요약</a></li>
+                <li><a href="#original">음성파일 원본 & 오디오 플레이어</a></li>
                 <li><a href="#profile">프로필 & 설정</a></li>
+                <li><a href="#agent">PropSheet 연동</a> <span class="agent-badge">중개사 전용</span></li>
             </ol>
         </nav>
 
-        <!-- 1. 시작하기 -->
-        <section class="guide-section" id="start">
-            <h2>1. 시작하기</h2>
+        <!-- 1. 앱 설치 -->
+        <section class="guide-section" id="install">
+            <h2>1. 앱 설치</h2>
 
-            <h3>Android 앱 설치</h3>
             <ol class="steps">
                 <li>Google Play 스토어에서 <strong>"Proptalk"</strong>을 검색합니다.</li>
+                <li><strong>"프롭톡 - 통화녹음 AI요약 업무공유"</strong> 앱을 찾아 탭합니다.</li>
                 <li><strong>설치</strong> 버튼을 눌러 앱을 다운로드합니다.</li>
                 <li>설치가 완료되면 앱을 실행합니다.</li>
             </ol>
 
-            <div class="screenshot">
-                <img src="/proptalk/images/Capture/Proptalk_screenshot_%EB%A1%9C%EA%B7%B8%EC%9D%B8%ED%99%94%EB%A9%B4.jpg" alt="Proptalk 시작 화면">
-                <p class="screenshot-caption">앱 시작 화면</p>
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/Google%20Play%20Store.jpg" alt="Play 스토어 검색">
+                    <p class="screenshot-caption">Play 스토어에서 검색</p>
+                </div>
+                <div class="screenshot">
+                    <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/Google%20Play%20Store2.jpg" alt="앱 설치 화면">
+                    <p class="screenshot-caption">설치 버튼 탭</p>
+                </div>
+            </div>
+
+            <div class="tip">
+                <strong>TIP:</strong> Proptalk은 현재 Android 전용입니다. iOS 버전은 준비 중입니다.
             </div>
         </section>
 
-        <!-- 2. 로그인 -->
+        <!-- 2. 로그인 & 알림 설정 -->
         <section class="guide-section" id="login">
-            <h2>2. 로그인</h2>
+            <h2>2. 로그인 & 알림 설정</h2>
 
             <p>Proptalk은 <strong>Google 계정</strong>으로 간편하게 로그인합니다. 별도의 회원가입 절차가 없습니다.</p>
 
             <ol class="steps">
-                <li>시작 화면에서 <strong>"Google 계정으로 시작하기"</strong> 버튼을 탭합니다.</li>
-                <li>Google 계정 선택 화면이 나타나면 <strong>사용할 계정을 선택</strong>합니다.</li>
+                <li>앱을 실행하면 시작 화면이 나타납니다. <strong>"Google 계정으로 시작하기"</strong> 버튼을 탭합니다.</li>
+                <li>Google 계정 선택 화면에서 <strong>사용할 계정을 선택</strong>합니다.</li>
                 <li>이용약관과 개인정보처리방침에 동의하면 로그인이 완료됩니다.</li>
+                <li>알림 허용 팝업이 나타나면 <strong>"허용"</strong>을 탭합니다. 채팅방 메시지, 음성 요약 완료 등을 알림으로 받을 수 있습니다.</li>
             </ol>
-
-            <div class="tip">
-                <strong>TIP:</strong> Google 계정으로 로그인하면 Google Drive가 자동으로 연동됩니다. 음성 파일과 요약 결과가 Drive에 자동 저장됩니다.
-            </div>
 
             <div class="screenshot-row">
                 <div class="screenshot">
-                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EB%A1%9C%EA%B7%B8%EC%9D%B8%ED%99%94%EB%A9%B4.jpg" alt="시작 화면">
-                    <p class="screenshot-caption">시작 화면</p>
+                    <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EA%B5%AC%EA%B8%80%EA%B3%84%EC%A0%95%EC%9C%BC%EB%A1%9C%20%EC%8B%9C%EC%9E%91.jpg" alt="시작 화면">
+                    <p class="screenshot-caption">Google 계정으로 시작하기</p>
                 </div>
                 <div class="screenshot">
-                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EB%A1%9C%EA%B7%B8%EC%9D%B8.jpg" alt="계정 선택 화면">
-                    <p class="screenshot-caption">Google 계정 선택</p>
+                    <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EA%B3%84%EC%A0%95%20%EC%84%A0%ED%83%9D%20%EB%A1%9C%EA%B7%B8%EC%9D%B8.jpg" alt="계정 선택">
+                    <p class="screenshot-caption">계정 선택</p>
                 </div>
+                <div class="screenshot">
+                    <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EC%97%85%EB%8D%B0%EC%9D%B4%ED%8A%B8%20%EC%95%8C%EB%A6%BC%20%ED%97%88%EC%9A%A9.jpg" alt="알림 허용">
+                    <p class="screenshot-caption">알림 허용</p>
+                </div>
+            </div>
+
+            <div class="tip">
+                <strong>TIP:</strong> Google 계정으로 로그인하면 Google Drive가 자동으로 연동됩니다. 음성 파일과 요약 결과가 Drive에 자동 백업됩니다.
             </div>
         </section>
 
-        <!-- 3. 채팅방 만들기 & 메시지 공유 -->
-        <section class="guide-section" id="chatroom">
-            <h2>3. 채팅방 만들기 & 메시지 공유</h2>
+        <!-- 3. 홈 화면 -->
+        <section class="guide-section" id="home">
+            <h2>3. 홈 화면</h2>
 
-            <p>로그인 후 메인 화면에서 <strong>"업무 채팅방 가기"</strong>를 탭하면 채팅방 목록으로 이동합니다.</p>
+            <p>로그인 후 나타나는 홈 화면에서 Proptalk의 3가지 핵심 기능에 접근할 수 있습니다.</p>
+
+            <ul>
+                <li><strong>업무 채팅방 가기</strong> - 음성파일 요약과 업무 공유를 편리하게 이용하세요.</li>
+                <li><strong>음성 요약 보러가기</strong> - 녹음 파일 요약 결과를 확인하세요.</li>
+                <li><strong>음성 및 업무 파일 확인</strong> - 구글 드라이브에 저장된 원본 음성파일과 업무 파일을 확인하세요.</li>
+            </ul>
+
+            <div class="screenshot">
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EC%B4%88%EA%B8%B0%ED%99%94%EB%A9%B4.jpg" alt="홈 화면">
+                <p class="screenshot-caption">Proptalk 홈 화면</p>
+            </div>
+
+            <div class="tip">
+                <strong>TIP:</strong> 우측 상단의 <strong>"창성"</strong> 버튼을 탭하면 바로 새 채팅방을 만들 수 있습니다.
+            </div>
+        </section>
+
+        <!-- 4. 업무 채팅방 -->
+        <section class="guide-section" id="chatroom">
+            <h2>4. 업무 채팅방</h2>
+
+            <p>홈 화면에서 <strong>"업무 채팅방 가기"</strong>를 탭하면 채팅방 목록으로 이동합니다.</p>
+
+            <h3>채팅방 목록</h3>
+            <p>참여 중인 채팅방을 한눈에 볼 수 있습니다. 각 채팅방에는 <strong>주제, 참여 인원, 역할</strong>(관리자/멤버)이 표시됩니다.</p>
+
+            <div class="screenshot">
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EC%B1%84%ED%8C%85%EB%B0%A9%20%EC%A7%84%EC%9E%85%ED%99%94%EB%A9%B4.jpg" alt="채팅방 목록">
+                <p class="screenshot-caption">채팅방 목록 화면</p>
+            </div>
 
             <h3>새 채팅방 만들기</h3>
             <ol class="steps">
                 <li>채팅방 목록 화면 우측 하단의 <strong>+ 버튼</strong>을 탭합니다.</li>
-                <li>채팅방 이름과 주제를 입력합니다.</li>
-                <li>초대 코드를 공유하면 팀원이 참여할 수 있습니다.</li>
+                <li><strong>"새 톡방 만들기"</strong>를 선택합니다.</li>
+                <li>채팅방 이름을 입력하고, 필요시 설명을 추가합니다.</li>
+                <li><strong>Drive 자동 저장</strong>과 <strong>시트 기록</strong> 옵션을 설정합니다.</li>
+                <li><strong>"만들기"</strong> 버튼을 탭하면 채팅방이 생성됩니다.</li>
             </ol>
 
             <div class="screenshot-row">
                 <div class="screenshot">
-                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EB%A9%94%EC%9D%B8%ED%99%94%EB%A9%B4.jpg" alt="메인 화면">
-                    <p class="screenshot-caption">메인 화면</p>
+                    <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EC%B1%84%ED%8C%85%EB%B0%A9%20%EB%A7%8C%EB%93%A4%EA%B8%B0%20%ED%99%94%EB%A9%B4.jpg" alt="채팅방 만들기 메뉴">
+                    <p class="screenshot-caption">새 톡방 만들기 선택</p>
                 </div>
                 <div class="screenshot">
-                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%B1%84%ED%8C%85%EB%B0%A9%EB%AA%A9%EB%A1%9D.jpg" alt="채팅방 목록">
-                    <p class="screenshot-caption">채팅방 목록</p>
-                </div>
-            </div>
-
-            <h3>팀원 초대하기 & 참여하기</h3>
-            <p>채팅방에 팀원을 초대하려면 <strong>참여 코드</strong>를 공유하면 됩니다.</p>
-
-            <ol class="steps">
-                <li>채팅방 설정에서 <strong>참여 코드 복사</strong> 버튼을 탭합니다.</li>
-                <li>복사한 코드를 카카오톡, 문자 등으로 팀원에게 전달합니다.</li>
-                <li>팀원은 채팅방 목록 하단의 <strong>"초대코드로 참여"</strong> 버튼을 탭합니다.</li>
-                <li>전달받은 코드를 붙여넣고 <strong>"참여"</strong> 버튼을 누르면 채팅방에 입장합니다.</li>
-            </ol>
-
-            <div class="screenshot-row">
-                <div class="screenshot">
-                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%B4%88%EB%8C%80%EC%BD%94%EB%93%9C%EC%B0%B8%EC%97%AC_%EC%B1%84%ED%8C%85%EB%B0%A9%EB%AA%A9%EB%A1%9D.jpg" alt="초대코드로 참여 버튼">
-                    <p class="screenshot-caption">초대코드로 참여 버튼</p>
-                </div>
-                <div class="screenshot">
-                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%B4%88%EB%8C%80%EC%BD%94%EB%93%9C%EC%B0%B8%EC%97%AC_%EC%BD%94%EB%93%9C%EC%9E%85%EB%A0%A5.jpg" alt="초대 코드 입력">
-                    <p class="screenshot-caption">초대 코드 입력 화면</p>
+                    <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EC%B1%84%ED%8C%85%EB%B0%A9%20%EB%A7%8C%EB%93%A4%EA%B8%B0%20%ED%99%94%EB%A9%B4%202.jpg" alt="채팅방 만들기 다이얼로그">
+                    <p class="screenshot-caption">이름 입력 및 옵션 설정</p>
                 </div>
             </div>
 
             <div class="tip">
-                <strong>TIP:</strong> 참여 코드는 채팅방마다 고유하게 생성됩니다. 코드를 아는 사람만 채팅방에 참여할 수 있으므로 안심하고 공유하세요.
+                <strong>TIP:</strong> <strong>Drive 자동 저장</strong>을 켜면 음성파일이 Google Drive에 자동 백업됩니다. <strong>시트 기록</strong>을 켜면 변환 결과가 Google Sheets에 자동 기록됩니다.
             </div>
 
-            <h3>메시지 & 파일 공유</h3>
-            <p>채팅방에서 텍스트 메시지를 주고받고, <strong>사진과 파일을 자유롭게 공유</strong>할 수 있습니다. 공유된 파일은 Google Drive에 자동으로 저장됩니다.</p>
+            <h3>초대코드로 참여하기</h3>
+            <p>다른 사람이 만든 채팅방에 참여하려면 초대코드를 사용합니다.</p>
+
+            <ol class="steps">
+                <li>채팅방 목록 하단의 <strong>+ 버튼</strong>을 탭합니다.</li>
+                <li><strong>"초대코드로 참여"</strong>를 선택합니다.</li>
+                <li>전달받은 초대코드를 입력하고 <strong>"참여"</strong>를 탭합니다.</li>
+            </ol>
+
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EC%B4%88%EB%8C%80%EC%BD%94%EB%93%9C%EB%A1%9C%20%EC%B0%B8%EC%97%AC%20%ED%99%94%EB%A9%B4.jpg" alt="초대코드로 참여 메뉴">
+                    <p class="screenshot-caption">초대코드로 참여 선택</p>
+                </div>
+                <div class="screenshot">
+                    <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EC%B4%88%EB%8C%80%EC%BD%94%EB%93%9C%EB%A1%9C%20%EC%B0%B8%EC%97%AC%20%ED%99%94%EB%A9%B4%20%282%29.jpg" alt="초대코드 입력">
+                    <p class="screenshot-caption">초대코드 입력</p>
+                </div>
+            </div>
+
+            <h3>채팅방 대화</h3>
+            <p>채팅방에서 텍스트 메시지를 주고받고, <strong>음성 파일을 업로드</strong>하면 AI가 자동으로 요약합니다. 요약 결과는 채팅방에 바로 표시됩니다.</p>
 
             <div class="screenshot">
-                <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%B1%84%ED%8C%85%EB%B0%A9_%EB%A9%94%EC%8B%9C%EC%A7%80%EB%B0%8F%ED%8C%8C%EC%9D%BC%EA%B3%B5%EC%9C%A0.jpg" alt="메시지 및 파일 공유">
-                <p class="screenshot-caption">채팅방에서 메시지와 파일 공유</p>
-            </div>
-        </section>
-
-        <!-- 4. 음성 파일 업로드 & AI 요약 -->
-        <section class="guide-section" id="voice">
-            <h2>4. 음성 파일 업로드 & AI 요약</h2>
-
-            <p>Proptalk의 핵심 기능입니다. 통화 녹음 파일을 채팅방에 업로드하면 <strong>AI가 자동으로 텍스트 변환 + 핵심 요약</strong>을 생성합니다.</p>
-
-            <h3>음성 파일 업로드</h3>
-            <ol class="steps">
-                <li>채팅방 하단의 <strong>+ 버튼</strong> 또는 <strong>마이크 아이콘</strong>을 탭합니다.</li>
-                <li>녹음 파일(m4a, mp3, wav 등)을 선택합니다.</li>
-                <li>파일이 업로드되면 AI가 자동으로 텍스트 변환을 시작합니다.</li>
-                <li>변환이 완료되면 <strong>핵심 요약이 채팅방에 자동으로 표시</strong>됩니다.</li>
-            </ol>
-
-            <div class="tip">
-                <strong>TIP:</strong> 요약 결과에는 주제, 매물 정보, 가격 변경, 결론 등이 마크다운 형식으로 깔끔하게 정리됩니다. 파일명에서 전화번호와 날짜도 자동으로 추출됩니다.
-            </div>
-
-            <h3>채팅방에서 요약 확인</h3>
-            <p>음성 파일을 업로드하면 채팅방 내에서 바로 요약 결과를 확인할 수 있습니다.</p>
-
-            <div class="screenshot-row">
-                <div class="screenshot">
-                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%B1%84%ED%8C%85%EB%B0%A9_%EC%9D%8C%EC%84%B1%EC%9A%94%EC%95%BD_%EC%83%81%EB%8B%A8.jpg" alt="채팅방 음성 요약 상단">
-                    <p class="screenshot-caption">음성 요약 - 파일 정보</p>
-                </div>
-                <div class="screenshot">
-                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%B1%84%ED%8C%85%EB%B0%A9_%EC%9D%8C%EC%84%B1%EC%9A%94%EC%95%BD_%ED%95%98%EB%8B%A8.jpg" alt="채팅방 음성 요약 하단">
-                    <p class="screenshot-caption">음성 요약 - 상세 내용</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- 5. 저장된 데이터 확인 -->
-        <section class="guide-section" id="data">
-            <h2>5. 저장된 데이터 확인</h2>
-
-            <p>업로드한 음성 파일과 AI 요약 결과는 여러 방법으로 확인할 수 있습니다.</p>
-
-            <h3>음성 요약 보러가기</h3>
-            <p>메인 화면에서 <strong>"음성 요약 보러가기"</strong>를 탭하면, 채팅방별로 정리된 요약 카드를 확인할 수 있습니다.</p>
-
-            <ol class="steps">
-                <li>메인 화면에서 <strong>"음성 요약 보러가기"</strong>를 탭합니다.</li>
-                <li>요약을 확인할 <strong>채팅방을 선택</strong>합니다.</li>
-                <li>해당 채팅방의 <strong>모든 음성 요약 카드 목록</strong>이 표시됩니다.</li>
-                <li>카드를 탭하면 <strong>상세 요약 내용</strong>을 펼쳐 볼 수 있습니다.</li>
-            </ol>
-
-            <div class="screenshot-row">
-                <div class="screenshot">
-                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%9D%8C%EC%84%B1%ED%8C%8C%EC%9D%BC%EC%9A%94%EC%95%BD_%EC%B1%84%ED%8C%85%EB%B0%A9%EB%AA%A9%EB%A1%9D.jpg" alt="음성 요약 방 선택">
-                    <p class="screenshot-caption">채팅방 선택</p>
-                </div>
-                <div class="screenshot">
-                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%9D%8C%EC%84%B1%ED%8C%8C%EC%9D%BC%EC%9A%94%EC%95%BD_%EC%83%81%EC%84%B8%EB%AA%A9%EB%A1%9D.jpg" alt="음성 요약 목록">
-                    <p class="screenshot-caption">요약 카드 목록</p>
-                </div>
-            </div>
-
-            <div class="screenshot">
-                <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%9D%8C%EC%84%B1%ED%8C%8C%EC%9D%BC%EC%9A%94%EC%95%BD_%EC%83%81%EC%84%B8%ED%8E%BC%EC%B9%A8.jpg" alt="AI 요약 상세">
-                <p class="screenshot-caption">요약 카드 상세 펼침</p>
-            </div>
-
-            <h3>음성파일 원본 확인</h3>
-            <p>메인 화면에서 <strong>"음성 및 업무 파일 확인"</strong>을 탭하면, Google Drive에 저장된 원본 파일을 확인할 수 있습니다.</p>
-
-            <div class="screenshot-row">
-                <div class="screenshot">
-                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EC%9D%8C%EC%84%B1%ED%8C%8C%EC%9D%BC%EC%9B%90%EB%B3%B8_%ED%8F%B4%EB%8D%94%EB%AA%A9%EB%A1%9D.jpg" alt="음성파일 원본 폴더">
-                    <p class="screenshot-caption">채팅방별 폴더 목록</p>
-                </div>
-                <div class="screenshot">
-                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EA%B5%AC%EA%B8%80%EB%93%9C%EB%9D%BC%EC%9D%B4%EB%B8%8C_%ED%8F%B4%EB%8D%94%ED%8C%8C%EC%9D%BC%EB%AA%A9%EB%A1%9D.jpg" alt="Google Drive 파일 목록">
-                    <p class="screenshot-caption">Google Drive 파일 목록</p>
-                </div>
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EC%B1%84%ED%8C%85%EB%B0%A9%20%ED%99%94%EB%A9%B4.jpg" alt="채팅방 대화 화면">
+                <p class="screenshot-caption">채팅방 대화 화면 - 음성 요약 결과 표시</p>
             </div>
 
             <div class="tip">
-                <strong>TIP:</strong> Google Drive 앱에서도 직접 파일을 확인하고 재생할 수 있습니다. 채팅방 이름으로 폴더가 자동 생성됩니다.
-            </div>
-        </section>
-
-        <!-- 6. 프로필 & 설정 -->
-        <section class="guide-section" id="profile">
-            <h2>6. 프로필 & 설정</h2>
-
-            <p>프로필 화면에서 계정 정보, 구독 현황, 앱 설정을 관리할 수 있습니다.</p>
-
-            <h3>구독/결제 확인</h3>
-            <p>현재 이용 중인 요금제와 잔여 시간, 최근 사용 이력을 확인할 수 있습니다.</p>
-
-            <div class="screenshot-row">
-                <div class="screenshot">
-                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%ED%94%84%EB%A1%9C%ED%95%84_%EC%83%81%EB%8B%A8.jpg" alt="프로필 화면">
-                    <p class="screenshot-caption">프로필 화면</p>
-                </div>
-                <div class="screenshot">
-                    <img src="/proptalk/images/Capture/Proptalk_screenshot_%EA%B5%AC%EB%8F%85%EA%B2%B0%EC%A0%9C_%EC%82%AC%EC%9A%A9%EC%9D%B4%EB%A0%A5.jpg" alt="구독/결제 화면">
-                    <p class="screenshot-caption">구독/결제 현황</p>
-                </div>
+                <strong>TIP:</strong> 요약 메시지에는 파일 정보(전화번호, 날짜, 녹음 시간)와 함께 <strong>"Drive에서 열기"</strong> 버튼이 포함됩니다. 탭하면 원본 파일을 바로 들을 수 있습니다.
             </div>
 
-            <h3>앱 설정</h3>
+            <h3>채팅방 설정</h3>
+            <p>채팅방 상단의 <strong>톱니바퀴 아이콘</strong>을 탭하면 채팅방 설정을 확인할 수 있습니다.</p>
+
             <ul>
-                <li><strong>다크 모드</strong>: 눈이 편안한 다크 테마로 전환할 수 있습니다.</li>
-                <li><strong>법적 문서</strong>: 이용약관, 개인정보처리방침을 확인할 수 있습니다.</li>
-                <li><strong>동의 관리</strong>: 음성 데이터 처리, 개인정보 관련 동의 상태를 관리합니다.</li>
+                <li><strong>초대 코드</strong> - 복사 아이콘을 탭해서 팀원에게 공유하세요.</li>
+                <li><strong>Drive 자동 저장</strong> / <strong>시트 기록</strong> - 언제든 켜고 끌 수 있습니다.</li>
+                <li><strong>멤버 목록</strong> - 참여 중인 멤버와 역할을 확인합니다.</li>
+                <li><strong>채팅방 나가기</strong> / <strong>채팅방 삭제</strong> - 관리자는 채팅방을 삭제할 수 있습니다.</li>
             </ul>
 
             <div class="screenshot">
-                <img src="/proptalk/images/Capture/Proptalk_screenshot_%ED%94%84%EB%A1%9C%ED%95%84%EC%84%A4%EC%A0%95_%EB%8B%A4%ED%81%AC%EB%AA%A8%EB%93%9CON.jpg" alt="다크 모드">
-                <p class="screenshot-caption">다크 모드 설정</p>
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EC%B1%84%ED%8C%85%EB%B0%A9%20%EC%84%A4%EC%A0%95%20%ED%99%94%EB%A9%B4.jpg" alt="채팅방 설정">
+                <p class="screenshot-caption">채팅방 설정 화면</p>
             </div>
         </section>
+
+        <!-- 5. 음성 요약 -->
+        <section class="guide-section" id="summary">
+            <h2>5. 음성 요약</h2>
+
+            <p>홈 화면에서 <strong>"음성 요약 보러가기"</strong>를 탭하면, 채팅방별로 정리된 AI 요약 결과를 모아 볼 수 있습니다.</p>
+
+            <h3>채팅방 선택</h3>
+            <p>음성 요약이 있는 채팅방 목록이 표시됩니다. 확인할 채팅방을 탭합니다.</p>
+
+            <div class="screenshot">
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EC%9D%8C%EC%84%B1%20%EC%9A%94%EC%95%BD%20%EB%B0%A9%20%EB%A6%AC%EC%8A%A4%ED%8A%B8%20%ED%99%94%EB%A9%B4.jpg" alt="음성 요약 채팅방 목록">
+                <p class="screenshot-caption">음성 요약 - 채팅방 목록</p>
+            </div>
+
+            <h3>요약 카드 목록</h3>
+            <p>채팅방을 선택하면 해당 채팅방의 <strong>모든 음성 요약 카드</strong>가 시간순으로 표시됩니다. 각 카드에는 제목, 전화번호, 날짜, 녹음 시간, 주제가 표시됩니다.</p>
+
+            <div class="screenshot">
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EC%9D%8C%EC%84%B1%20%EC%9A%94%EC%95%BD%20%EB%B0%A9%20%ED%99%94%EB%A9%B4.jpg" alt="요약 카드 목록">
+                <p class="screenshot-caption">요약 카드 목록</p>
+            </div>
+
+            <h3>요약 상세 보기</h3>
+            <p>카드의 <strong>펼치기 화살표</strong>를 탭하면 AI 요약의 상세 내용을 확인할 수 있습니다. 매물 현황, 고객 상황, 투자 고민, 시장 현실, 결론 등이 구조화되어 표시됩니다.</p>
+            <p>상단의 <strong>편집 아이콘</strong>을 탭하면 요약 내용을 수정할 수도 있습니다.</p>
+
+            <div class="screenshot">
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EC%9D%8C%EC%84%B1%20%EC%9A%94%EC%95%BD%20%EB%B0%A9%20%EB%A6%AC%EC%8A%A4%ED%8A%B8%20%ED%8E%BC%EC%B9%98%EA%B8%B0%20%ED%99%94%EB%A9%B4.jpg" alt="요약 상세 펼치기">
+                <p class="screenshot-caption">요약 상세 내용 펼치기</p>
+            </div>
+
+            <h3>요약 검색</h3>
+            <p>상단의 <strong>필터 아이콘</strong>을 탭하면 요약 내용을 검색할 수 있습니다. 전화번호, 이름, 시작일/종료일로 필터링하여 원하는 요약을 빠르게 찾을 수 있습니다.</p>
+
+            <div class="screenshot">
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EC%B1%84%ED%8C%85%EB%B0%A9%20%EA%B2%80%EC%83%89%20%ED%99%94%EB%A9%B4.jpg" alt="요약 검색 화면">
+                <p class="screenshot-caption">검색 필터 화면</p>
+            </div>
+
+            <h3>음성파일 듣기 (Google Drive 연결)</h3>
+            <p>요약 카드에서 원본 음성을 들으려면 Google Drive 계정을 연결합니다.</p>
+
+            <ol class="steps">
+                <li>요약 카드의 <strong>재생 버튼</strong> 또는 <strong>Drive 아이콘</strong>을 탭합니다.</li>
+                <li>Google 계정 선택 팝업에서 Drive가 연결된 계정을 선택합니다.</li>
+                <li>음성 파일이 로드되어 앱 내에서 바로 재생됩니다.</li>
+            </ol>
+
+            <div class="screenshot">
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EC%9D%8C%EC%84%B1%20%EC%9A%94%EC%95%BD%EB%B0%A9%EC%97%90%EC%84%9C%20%EC%9D%8C%EC%84%B1%ED%8C%8C%EC%9D%BC%20%EB%93%A3%EA%B8%B0_%EA%B5%AC%EA%B8%80%EB%93%9C%EB%9D%BC%EC%9D%B4%EB%B8%8C%20%EC%97%B0%EA%B2%B0%20%ED%99%94%EB%A9%B4.jpg" alt="Google Drive 계정 연결">
+                <p class="screenshot-caption">Google Drive 계정 선택</p>
+            </div>
+        </section>
+
+        <!-- 6. 음성파일 원본 & 오디오 플레이어 -->
+        <section class="guide-section" id="original">
+            <h2>6. 음성파일 원본 & 오디오 플레이어</h2>
+
+            <p>홈 화면에서 <strong>"음성 및 업무 파일 확인"</strong>을 탭하면, Google Drive에 백업된 음성파일 원본을 확인할 수 있습니다.</p>
+
+            <h3>채팅방별 폴더</h3>
+            <p>채팅방마다 자동 생성된 Drive 폴더가 표시됩니다. Drive 연동 상태도 함께 확인할 수 있습니다.</p>
+
+            <div class="screenshot">
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EC%9D%8C%EC%84%B1%ED%8C%8C%EC%9D%BC%20%EC%9B%90%EB%B3%B8%20%EB%A6%AC%EC%8A%A4%ED%8A%B8%20%ED%99%94%EB%A9%B4.jpg" alt="음성파일 원본 폴더">
+                <p class="screenshot-caption">채팅방별 Drive 폴더 목록</p>
+            </div>
+
+            <h3>Google Drive 파일 목록</h3>
+            <p>폴더의 <strong>외부 링크 아이콘</strong>을 탭하면 Google Drive 앱에서 직접 파일 목록을 확인할 수 있습니다. 녹음 파일과 요약 시트가 날짜별로 정리되어 있습니다.</p>
+
+            <div class="screenshot">
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EA%B5%AC%EA%B8%80%EB%93%9C%EB%9D%BC%EC%9D%B4%EB%B8%8C%20%EB%A6%AC%EC%8A%A4%ED%8A%B8%20%ED%99%94%EB%A9%B4.jpg" alt="Google Drive 파일 목록">
+                <p class="screenshot-caption">Google Drive 파일 목록</p>
+            </div>
+
+            <h3>오디오 플레이어</h3>
+            <p>음성파일을 탭하면 앱 내장 오디오 플레이어가 실행됩니다.</p>
+
+            <ul>
+                <li><strong>재생/일시정지</strong> - 중앙의 재생 버튼으로 조작</li>
+                <li><strong>10초 앞/뒤로</strong> - 좌우 버튼으로 빠르게 이동</li>
+                <li><strong>재생 속도</strong> - 1x, 1.5x, 2x 등 속도 조절 가능</li>
+                <li><strong>자막(CC)</strong> - AI 변환 텍스트를 자막처럼 표시</li>
+                <li><strong>탐색 바</strong> - 원하는 위치로 드래그하여 이동</li>
+            </ul>
+
+            <div class="screenshot">
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EC%9D%8C%EC%84%B1%ED%8C%8C%EC%9D%BC%20%EB%93%A3%EA%B8%B0%20%ED%99%94%EB%A9%B4.jpg" alt="오디오 플레이어">
+                <p class="screenshot-caption">앱 내장 오디오 플레이어</p>
+            </div>
+
+            <h3>Google Drive 계정 연결</h3>
+            <p>음성파일 원본에서도 Drive 계정 연결이 필요합니다. 처음 한 번만 계정을 선택하면 이후에는 자동으로 연결됩니다.</p>
+
+            <div class="screenshot">
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%EC%9D%8C%EC%84%B1%ED%8C%8C%EC%9D%BC%20%EC%9B%90%EB%B3%B8%20%EB%B0%A9%EC%97%90%EC%84%9C%20%EC%9D%8C%EC%84%B1%ED%8C%8C%EC%9D%BC%20%EB%93%A3%EA%B8%B0_%EA%B5%AC%EA%B8%80%EB%93%9C%EB%9D%BC%EC%9D%B4%EB%B8%8C%20%EC%97%B0%EA%B2%B0%20%ED%99%94%EB%A9%B4.jpg" alt="Drive 계정 연결">
+                <p class="screenshot-caption">Google Drive 계정 선택</p>
+            </div>
+
+            <div class="tip">
+                <strong>TIP:</strong> Google Drive에 저장된 파일은 Drive 앱에서도 직접 접근할 수 있습니다. 채팅방 이름으로 폴더가 자동 생성되어 깔끔하게 정리됩니다.
+            </div>
+        </section>
+
+        <!-- 7. 프로필 & 설정 -->
+        <section class="guide-section" id="profile">
+            <h2>7. 프로필 & 설정</h2>
+
+            <p>홈 화면 또는 채팅방 목록에서 <strong>프로필 아이콘</strong>을 탭하면 프로필 화면으로 이동합니다.</p>
+
+            <h3>앱 설정</h3>
+            <ul>
+                <li><strong>다크 모드</strong> - 토글을 켜면 눈이 편안한 다크 테마로 전환됩니다.</li>
+            </ul>
+
+            <h3>법적 문서</h3>
+            <ul>
+                <li><strong>이용약관</strong> - 서비스 이용 조건을 확인합니다.</li>
+                <li><strong>개인정보 처리방침</strong> - 개인정보 수집/이용 정책을 확인합니다.</li>
+            </ul>
+
+            <h3>동의 관리</h3>
+            <p>각 항목별로 동의 상태를 확인하고, 필요시 <strong>"철회"</strong>를 탭하여 동의를 철회할 수 있습니다.</p>
+            <ul>
+                <li>음성 데이터 처리</li>
+                <li>개인정보 국외 이전</li>
+                <li>개인정보 수집 및 이용</li>
+                <li>propsheet_property_data</li>
+                <li>proptalk_voice_data</li>
+                <li>이용약관</li>
+            </ul>
+
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%ED%94%84%EB%A1%9C%ED%95%84%2001%20%EB%9D%BC%EC%9D%B4%ED%8A%B8%EB%AA%A8%EB%93%9C.jpg" alt="프로필 라이트모드">
+                    <p class="screenshot-caption">프로필 (라이트 모드)</p>
+                </div>
+                <div class="screenshot">
+                    <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%ED%94%84%EB%A1%9C%ED%95%84%2002%20%EB%8B%A4%ED%81%AC%EB%AA%A8%EB%93%9C.jpg" alt="프로필 다크모드">
+                    <p class="screenshot-caption">프로필 (다크 모드)</p>
+                </div>
+            </div>
+
+            <h3>계정 관리</h3>
+            <ul>
+                <li><strong>로그아웃</strong> - 현재 계정에서 로그아웃합니다.</li>
+                <li><strong>계정 삭제</strong> - 모든 데이터가 즉시 삭제됩니다. 삭제 후에는 복구할 수 없습니다.</li>
+            </ul>
+
+            <div class="screenshot">
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%ED%9A%8C%EC%9B%90%ED%83%88%ED%87%B4%2C%20%EA%B3%84%EC%A0%95%EC%82%AD%EC%A0%9C%20%ED%99%94%EB%A9%B4.jpg" alt="로그아웃 및 계정 삭제">
+                <p class="screenshot-caption">로그아웃 & 계정 삭제</p>
+            </div>
+        </section>
+
+        <!-- 8. PropSheet 연동 (중개사 전용) -->
+        <section class="guide-section" id="agent">
+            <h2 class="agent-section">8. PropSheet 연동 <span class="section-badge badge-agent">중개사 전용</span></h2>
+
+            <p>중개사 회원은 <strong>PropSheet(매물장)</strong>과 Proptalk을 연동하여, 매물장에서 바로 전화 녹음 요약을 확인하고 채팅방 기록을 조회할 수 있습니다.</p>
+
+            <div class="tip tip-agent">
+                <strong>중개사 전용 기능:</strong> 이 기능은 PropSheet(매물장) 서비스에 가입한 중개사 회원만 이용할 수 있습니다.
+            </div>
+
+            <h3>매물장에서 전화번호 연결</h3>
+            <p>PropSheet의 소유주 연락처 필드에서 <strong>전화 아이콘</strong>을 탭하면, 해당 번호의 통화 녹음이 Proptalk에 있는지 자동으로 검색됩니다.</p>
+
+            <div class="screenshot screenshot-web">
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%28%EC%A4%91%EA%B0%9C%EC%82%AC%EC%A0%84%EC%9A%A9%29propsheet%EC%97%90%EC%84%9C%20%EB%A7%A4%EB%AC%BC%EC%9E%A5%20%EC%A0%84%ED%99%94%EB%B2%88%ED%98%B8%20%EC%97%B0%EA%B2%B0%20%ED%99%94%EB%A9%B4.jpg" alt="매물장 전화번호 연결">
+                <p class="screenshot-caption">매물장에서 전화번호 연결</p>
+            </div>
+
+            <h3>통화 요약 바로 확인</h3>
+            <p>전화번호를 탭하면 해당 번호의 <strong>통화 기록</strong>과 <strong>AI 요약</strong>이 팝업으로 표시됩니다. Drive 파일 링크와 전문 보기도 바로 접근할 수 있습니다.</p>
+
+            <div class="screenshot screenshot-web">
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%28%EC%A4%91%EA%B0%9C%EC%82%AC%EC%A0%84%EC%9A%A9%29propsheet%EC%97%90%EC%84%9C%20%EB%A7%A4%EB%AC%BC%EC%9E%A5%20%EC%A0%84%ED%99%94%EB%B2%88%ED%98%B8%20%ED%86%B5%ED%99%94%EC%9A%94%EC%95%BD%20%ED%99%95%EC%9D%B8%20%ED%99%94%EB%A9%B4.jpg" alt="통화 요약 확인">
+                <p class="screenshot-caption">통화 요약 팝업</p>
+            </div>
+
+            <h3>채팅방 연동 - 녹음 날짜/이름 목록</h3>
+            <p>PropSheet 상단의 채팅방 연동 버튼을 탭하면, 연결된 Proptalk 채팅방의 <strong>녹음 날짜와 이름 목록</strong>을 한눈에 볼 수 있습니다.</p>
+
+            <div class="screenshot screenshot-web">
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%28%EC%A4%91%EA%B0%9C%EC%82%AC%EC%A0%84%EC%9A%A9%29propsheet%EC%97%90%EC%84%9C%20%EC%B1%84%ED%8C%85%EB%B0%A9%20%EC%97%B0%EB%8F%99%20%ED%99%94%EB%A9%B4.jpg" alt="채팅방 연동 - 녹음 목록">
+                <p class="screenshot-caption">채팅방 연동 - 녹음 날짜/이름 목록</p>
+            </div>
+
+            <h3>채팅방 연동 - 전화번호 & 통화 횟수</h3>
+            <p>전화번호와 통화 횟수 기준으로 정리된 목록도 제공됩니다. 각 번호의 <strong>요약 내용</strong>과 <strong>통화 횟수</strong>를 빠르게 파악할 수 있습니다.</p>
+
+            <div class="screenshot screenshot-web">
+                <img src="/proptalk/images/Guide%ED%8E%98%EC%9D%B4%EC%A7%80%EC%9A%A9%20%EC%BA%A1%EC%B3%90/%28%EC%A4%91%EA%B0%9C%EC%82%AC%EC%A0%84%EC%9A%A9%29propsheet%EC%97%90%EC%84%9C%20%EC%B1%84%ED%8C%85%EB%B0%A9%20%EC%97%B0%EB%8F%99%20%ED%99%94%EB%A9%B42_%EC%A0%84%ED%99%94%EB%B2%88%ED%98%B8%20%EB%B0%8F%20%ED%86%B5%ED%99%94%20%ED%9A%9F%EC%88%98.jpg" alt="채팅방 연동 - 전화번호별 통화 횟수">
+                <p class="screenshot-caption">채팅방 연동 - 전화번호 & 통화 횟수</p>
+            </div>
+        </section>
+
+        <div style="text-align: center; padding: 20px 0;">
+            <a href="#top" class="back-to-top">맨 위로 돌아가기</a>
+        </div>
     </main>
 
     <!-- Footer -->

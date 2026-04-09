@@ -1,6 +1,25 @@
 # Proptalk 개발 진행 기록
 
-> 최종 업데이트: 2026-04-09
+> 최종 업데이트: 2026-04-10
+
+## 2026-04-10: 사용 가이드 페이지 전면 리뉴얼
+
+- guide.html 전면 리뉴얼: 6개 → 8개 섹션 구조 개편
+  - 앱 설치, 로그인 & 알림, 홈 화면, 업무 채팅방, 음성 요약, 음성파일 원본 & 오디오 플레이어, 프로필 & 설정, PropSheet 연동(중개사 전용)
+- 최신 앱 캡쳐 이미지 30장 교체 (Guide페이지용 캡쳐 폴더)
+  - Play Store 검색/설치, 로그인, 알림 허용, 홈 화면, 채팅방 CRUD, 음성 요약 리스트/상세/검색, 오디오 플레이어, Drive 연결, 프로필 라이트/다크모드, 계정 삭제, PropSheet 연동 4장
+- 중개사 전용 섹션 신설: PropSheet 매물장 전화번호 연결, 통화 요약 팝업, 채팅방 연동 뷰
+- 디자인 개선: 중개사 전용 오렌지 배지, 웹 스크린샷 넓은 레이아웃, 맨 위로 돌아가기 버튼
+
+## 2026-04-09: 요금제 설명 개선 + 가이드 초대코드 + 계정 삭제 soft delete
+
+- 요금제 Agent Regular "기본(1시간)" 표기, 3개 카드 배지 "Propsheet, PropMap 포함"
+- 요금제 하단 설명: Proppedia/Propsheet/PropMap 서비스 포함 상세 안내
+- 가이드 페이지에 "팀원 초대하기 & 참여하기" 섹션 추가 (스크린샷 2장)
+- 계정 삭제 FK 위반(payment_transactions) 오류 수정
+  - `DELETE FROM users` → `UPDATE SET is_active=FALSE` + 개인정보 익명화
+  - `models.py`: find_by_google_id에 is_active=TRUE 필터, create에 재활성화 로직
+  - DB: voiceroom.users에 is_active BOOLEAN 컬럼 추가
 
 ## 2026-04-09: 음성 요약 검색 기능 추가
 
