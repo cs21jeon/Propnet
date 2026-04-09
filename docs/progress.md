@@ -1,7 +1,23 @@
 # PropNet 통합 개발 진행 기록
 
-> 최종 업데이트: 2026-04-09
+> 최종 업데이트: 2026-04-10
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
+
+## 2026-04-10: 서비스 간 크로스 링크 네비게이션 추가
+
+- [통합] propnet.kr 메인 → Proptalk 사용가이드 링크 추가 (서비스 카드 + 푸터)
+- [Proptalk] 랜딩 페이지 헤더/푸터에 "PropNet 서비스 모두 보기" 버튼 추가
+- [Proptalk] 가이드 페이지 헤더에 "PropNet 홈" 링크 추가
+- [Propedia] 랜딩 페이지 헤더/푸터에 "PropNet 홈" 버튼 추가
+- [Propedia] 가이드 페이지 헤더에 "PropNet 홈" 링크 추가
+- [문서] CLAUDE.md에 정적 페이지 서버 경로 매핑 테이블 추가
+  - propnet.kr 루트는 `frontend/public/propnet/index.html` (index.html 아님)
+  - Nginx 설정 2개 분리: goldenrabbit.conf + propnet.conf
+
+## 2026-04-10: Proptalk 사용 가이드 전면 리뉴얼
+
+- [Proptalk] guide.html 6개→8개 섹션 개편, 최신 캡쳐 이미지 30장 교체
+- [Proptalk] 중개사 전용 PropSheet 연동 섹션 신설
 
 ## 2026-04-09: 랜딩 페이지 네비게이션 개선 + Proptalk 계정 삭제 수정
 

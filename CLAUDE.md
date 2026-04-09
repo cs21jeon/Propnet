@@ -119,7 +119,24 @@ journalctl -u proptalk -f
 - **Proptalk 전용 venv**: `/home/webapp/goldenrabbit/chat_stt/server/venv/`
 - **환경변수**: `/home/webapp/goldenrabbit/backend/.env`
 - **DB**: PostgreSQL `goldenrabbit_db` (공유) + `voiceroom` (Proptalk 전용)
-- **Nginx 설정**: `/home/webapp/goldenrabbit/config/nginx/goldenrabbit.conf`
+- **Nginx 설정**:
+  - **goldenrabbit.biz**: `config/nginx/goldenrabbit.conf` → `/etc/nginx/sites-enabled/goldenrabbit`
+  - **propnet.kr**: `config/nginx/propnet.conf` → `/etc/nginx/sites-enabled/propnet`
+
+### 정적 페이지 경로 매핑 (propnet.kr)
+
+> **주의**: propnet.kr의 루트(`/`)는 `frontend/public/index.html`이 **아니라** `frontend/public/propnet/index.html`임. Nginx `location = /`에서 `try_files /propnet/index.html`로 서빙.
+
+| URL (propnet.kr) | 서버 파일 경로 | 로컬 소스 | 서빙 방식 |
+|---|---|---|---|
+| `/` | `frontend/public/propnet/index.html` | `propnet-landing.html` | Nginx 정적 |
+| `/proptalk/` | `chat_stt/marketing/proptalk/index.html` | `proptalk/marketing/proptalk/index.html` | Flask 5030 |
+| `/proptalk/guide` | `chat_stt/marketing/proptalk/guide.html` | `proptalk/marketing/proptalk/guide.html` | Flask 5030 |
+| `/proppedia/landing/` | `frontend/public/proppedia/index.html` | `propedia/marketing/proppedia/index.html` | Nginx 정적 |
+| `/proppedia/guide/` | `frontend/public/proppedia/guide/index.html` | `propedia/marketing/proppedia/guide/index.html` | Nginx 정적 |
+| `/proppedia/` | `frontend/public/app/index.html` | Propedia 웹앱 (정적 HTML) | Nginx alias |
+| `/guide/agent/` | `frontend/public/guide/agent/index.html` | `marketing/guide/agent/index.html` | Nginx 정적 |
+| `/propmap/` | `frontend/public/propmap/index.html` | `propmap/index.html` | Nginx 정적 |
 
 ## CRITICAL 규칙
 
