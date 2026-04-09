@@ -1,73 +1,33 @@
 {
-  "current": "1.0.7+11",
+  "current": "1.0.8+9",
   "releases": [
     {
-      "version": "1.0.7+11",
-      "date": "2026-04-07",
+      "version": "1.0.8+9",
+      "date": "2026-04-09",
       "status": "latest",
-      "summary": "읽음 처리(mark-read) 버그 수정 — 통합 인증 전환 후 WebSocket 읽음 처리 실패 해결",
+      "summary": "읽음 확인 실시간 업데이트 수정, 인앱 업데이트 알림, 웹앱 안정성 개선",
       "changes": [
-        "WebSocket _resolve_user_id에서 propnet_user_id를 local_user_id로 정상 변환 (통합 인증 전환 버그)",
-        "handle_connect도 _resolve_user_id 사용으로 통일 (중복 코드 제거)",
-        "mark_read에 디버깅 로그 추가 (실패 원인 추적 용이)",
-        "Flutter _markRead()에 REST API 백업 호출 추가 (WebSocket 불안정 시에도 DB 업데이트 보장)"
-      ]
-    },
-    {
-      "version": "1.0.7+10",
-      "date": "2026-04-06",
-      "status": "previous",
-      "summary": "메시지 읽음 확인 기능 추가 (카카오톡 스타일 Read Receipt)",
-      "changes": [
-        "채팅방 목록에 안 읽은 메시지 수 빨간 뱃지 표시",
-        "채팅방 내 메시지별 안 읽은 멤버 수 실시간 표시 (숫자 1, 2...)",
-        "채팅방 진입 시 자동 읽음 처리 (mark-read)",
-        "WebSocket read_update 이벤트로 실시간 읽음 상태 전파",
-        "웹앱(PWA) 읽음 뱃지 + mark-read 동기화 + 메시지별 안 읽은 수 표시",
-        "웹앱 클립보드 이미지 붙여넣기 (Ctrl+V) — 캡처 후 미리보기+전송",
-        "웹앱 파일 메시지 카드 UI (파일명 + Google Drive 링크)",
-        "음성 변환 완료 시 메시지 자동 새로고침 (요약 유실 방지)",
-        "unread count: 부모 메시지만 카운트 (녹음 1건 = 1개)"
-      ]
-    },
-    {
-      "version": "1.0.6+9",
-      "date": "2026-04-03",
-      "status": "previous",
-      "summary": "Proptalk 웹앱(PC) 출시 - PWA 지원, 음성 재생/다운로드, 다크모드",
-      "changes": [
-        "Proptalk 웹앱(/proptalk/web/) 신규 출시 - PC 브라우저에서 앱과 동일한 기능",
-        "Alpine.js + socket.io 기반 실시간 채팅 (WebSocket)",
-        "오디오 파일 Drag & Drop 업로드 + 브라우저 즉석 녹음 (MediaRecorder)",
-        "Google Drive 프록시를 통한 오디오 재생/다운로드 (24시간 만료 파일 지원)",
-        "AI 음성 전사(STT) 및 요약 실시간 상태 표시",
-        "메시지 검색 + 결과 네비게이션 (이전/다음/하이라이트)",
-        "음성 요약 패널 + 더보기/접기 기능",
-        "파일정보 카드 (전화번호/날짜/연락처) 오디오 메시지 내 표시",
-        "다크모드/라이트모드 토글 (localStorage 저장)",
-        "PWA 설치 지원 (독립 창, 작업표시줄 아이콘)",
-        "키보드 단축키 (Enter 전송, Ctrl+N/F/R)",
-        "로그인 상태 영구 유지 (localStorage)",
-        "파일명 파서 개선: 6자리 날짜(YYMMDD) 인식 지원",
-        "Content-Disposition 한글 파일명 RFC 5987 인코딩 적용",
-        "WebSocket 인증 propnet_auth 3단계 JWT 지원"
+        "읽음 확인 실시간 업데이트 수정 — 채팅방 밖에서도 read_update 수신 (개인 room 방식)",
+        "채팅방 목록 unread badge 실시간 갱신 (read_update + new_message 스트림 구독)",
+        "인앱 업데이트 알림 기능 추가 — 새 버전 출시 시 다이얼로그 + Play Store 이동",
+        "강제 업데이트 지원 (min_version_code 이하 버전은 업데이트 필수)",
+        "서버 인증 fallback에서 propnet_user_id → local_user_id 변환 수정",
+        "웹앱 mark-read REST API 백업 호출 추가 (WebSocket 불안정 시에도 DB 업데이트 보장)"
       ]
     },
     {
       "version": "1.0.5+8",
       "date": "2026-04-03",
       "status": "previous",
-      "summary": "PropNet 통합 브랜딩 전환, 요금제 페이지 개편, 법적 문서 업데이트",
+      "summary": "PropNet 통합 브랜딩 전환, 웹앱 출시, 읽음 확인, 요금제 개편",
       "changes": [
+        "Proptalk 웹앱(/proptalk/web/) 신규 출시 - PC 브라우저에서 앱과 동일한 기능",
+        "메시지 읽음 확인 기능 (카카오톡 스타일 안 읽은 수 표시)",
         "PropNet 통합요금제 전환 (Proptalk → PropNet 브랜딩)",
-        "요금제 페이지 비로그인 열람 허용 (구매 시에만 로그인 유도)",
-        "요금제 URL /billing/ 통합 (propnet.kr/billing/)",
-        "결제/환불 약관 PropNet 통합 서비스 + Agent 요금제 반영",
-        "이용약관 PropNet 4개 서비스 정의, 중개사 회원 유형 추가",
-        "개인정보처리방침 중개사 추가 수집 항목 반영",
-        "Proptalk 랜딩페이지 요금제 링크 /billing/로 변경",
-        "Flutter terms.dart PropNet 통합 약관 전면 재작성",
-        "auth_service.dart 동의 버전 2026-04-03 동기화"
+        "요금제 페이지 비로그인 열람 허용, URL /billing/ 통합",
+        "이용약관/개인정보처리방침/결제약관 PropNet 통합 반영",
+        "웹앱 클립보드 이미지 붙여넣기, 파일 메시지 카드 UI",
+        "PWA 설치 지원, 다크모드/라이트모드 토글"
       ]
     },
     {

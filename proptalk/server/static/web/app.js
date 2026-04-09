@@ -749,8 +749,24 @@ function ProptalkApp() {
         },
 
         async markRead(roomId) {
-            if (!this.socket || !this.token) return;
-            this.socket.emit('mark_read', { token: this.token, room_id: roomId });
+            if (!this.token) return;
+            // WebSocket으로 실시간 전파
+            if (this.socket) {
+                this.socket.emit('mark_read', { token: this.token, room_id: roomId });
+            }
+            // REST API 백업 (DB 업데이트 보장)
+            try {
+                await fetch(`/voiceroom/api/rooms/${roomId}/mark-read`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${this.token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: '{}',
+                });
+            } catch (e) {
+                console.warn('[markRead] REST fallback failed:', e);
+            }
             // Update local unread count
             const room = this.rooms.find(r => r.id === roomId);
             if (room) {

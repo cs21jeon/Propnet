@@ -143,9 +143,23 @@ def login_required(f):
         # 2차: propnet_auth verify_token (type 무시 - 기존 JWT fallback)
         payload = verify_token(token)
         if payload:
-            user_id = payload.get('sub') or payload.get('user_id')
-            if user_id:
-                user = User.find_by_id(user_id)
+            propnet_uid_2 = payload.get('sub')
+            if propnet_uid_2:
+                # sub가 있으면 propnet_user_id → service_user_links로 local_user_id 변환
+                from propnet_auth.user_service import get_service_link as get_link_2
+                link_2 = get_link_2(propnet_uid_2, 'proptalk')
+                if link_2:
+                    user = User.find_by_id(link_2['local_user_id'])
+                    if user:
+                        g.user = user
+                        g.user_id = user['id']
+                        g.propnet_user_id = propnet_uid_2
+                        g.propnet_role = payload.get('role', 'user')
+                        return f(*args, **kwargs)
+            # sub가 없으면 기존 JWT의 user_id (local_user_id)
+            uid = payload.get('user_id')
+            if uid:
+                user = User.find_by_id(uid)
                 if user:
                     g.user = user
                     g.user_id = user['id']

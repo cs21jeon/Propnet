@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
+import '../services/notice_service.dart';
+import '../services/update_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/ad_banner_widget.dart';
 import '../widgets/propnet_footer.dart';
@@ -9,8 +11,23 @@ import 'summary_list_screen.dart';
 import 'drive_rooms_screen.dart';
 import 'settings_screen.dart';
 
-class MainScreen extends StatelessWidget {
+class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // 앱 시작 시 공지 확인 + 업데이트 체크 (빌드 완료 후 실행)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NoticeService.checkAndShowNotice(context);
+      UpdateService.checkForUpdate(context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -33,7 +33,11 @@ def register_websocket(socketio):
             logger.warning(f"WebSocket 인증 실패: user_id={user_id} 없음")
             return False
 
-        logger.info(f"WebSocket 연결: {user['name']} ({user['email']})")
+        # 개인 room에 자동 join (채팅방 밖에서도 read_update 수신용)
+        personal_room = f'user_{user_id}'
+        join_room(personal_room)
+
+        logger.info(f"WebSocket 연결: {user['name']} ({user['email']}), personal_room={personal_room}")
         return True
     
     
@@ -141,13 +145,17 @@ def register_websocket(socketio):
             message_id = latest['id'] if latest else 0
             Room.mark_read(room_id, user_id, message_id)
 
-        # 같은 방의 다른 사람들에게 읽음 상태 전파
-        room_key = f'room_{room_id}'
-        emit('read_update', {
+        # 채팅방 멤버 전원의 개인 room으로 읽음 상태 전파
+        # (상대가 채팅방 밖(목록 화면 등)에 있어도 수신 가능)
+        members = Room.get_members(room_id)
+        read_payload = {
             'user_id': user_id,
             'room_id': room_id,
             'last_read_message_id': message_id,
-        }, room=room_key, include_self=False)
+        }
+        for member in members:
+            if member['id'] != user_id:
+                emit('read_update', read_payload, room=f'user_{member["id"]}')
 
 
     @socketio.on('leave_room')

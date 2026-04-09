@@ -81,6 +81,29 @@ def health():
     return {'status': 'ok', 'service': 'VoiceRoom STT'}
 
 # ============================================================
+# 앱 버전 체크 (인앱 업데이트 알림용)
+# ============================================================
+@app.route('/api/app-version', methods=['GET'])
+def app_version():
+    """최신 앱 버전 정보 반환 (app_version.json 기반)"""
+    import json as _json
+    version_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app_version.json')
+    try:
+        with open(version_file, 'r', encoding='utf-8') as f:
+            data = _json.load(f)
+        # 요청한 앱의 version_code가 min_version_code 이하이면 강제 업데이트
+        from flask import request
+        client_version_code = request.args.get('version_code', type=int)
+        if client_version_code and client_version_code <= data.get('min_version_code', 0):
+            data['force_update'] = True
+        return data
+    except FileNotFoundError:
+        return {'error': 'Version info not found'}, 404
+    except Exception as e:
+        logger.error(f'app-version 조회 오류: {e}')
+        return {'error': 'Internal server error'}, 500
+
+# ============================================================
 # JSON 직렬화 커스텀 (datetime, date 처리)
 # ============================================================
 import json

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -21,11 +22,38 @@ class _RoomsScreenState extends State<RoomsScreen> {
   bool _isLoading = true;
   String _sortBy = 'recent'; // recent, name, members
   bool _sortAsc = false; // false=내림차순, true=오름차순
-  
+  StreamSubscription<Map<String, dynamic>>? _readUpdateSub;
+  StreamSubscription<Map<String, dynamic>>? _newMessageSub;
+
   @override
   void initState() {
     super.initState();
     _loadRooms();
+    _setupSocketListeners();
+  }
+
+  @override
+  void dispose() {
+    _readUpdateSub?.cancel();
+    _newMessageSub?.cancel();
+    super.dispose();
+  }
+
+  void _setupSocketListeners() {
+    final auth = context.read<AuthService>();
+    final socket = auth.socket;
+
+    // 개인 room으로 오는 read_update 수신 -> 방 목록 새로고침
+    _readUpdateSub = socket.onReadUpdate.listen((data) {
+      if (!mounted) return;
+      _loadRooms();
+    });
+
+    // 새 메시지 수신 -> 방 목록 새로고침 (unread badge 업데이트)
+    _newMessageSub = socket.onMessage.listen((msg) {
+      if (!mounted) return;
+      _loadRooms();
+    });
   }
   
   Future<void> _loadRooms() async {
