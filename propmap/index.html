@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PropMap - 통합 매물지도</title>
-    <link rel="icon" href="/images/favicon.png" type="image/png">
+    <link rel="icon" href="/propmap/assets/logo/Propmap_transparent_full%20size.png" type="image/png">
     <meta name="description" content="전국 부동산 중개사무소 매물을 한눈에. PropMap 통합 매물지도">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,8 +30,17 @@
             display: flex; align-items: center; justify-content: space-between;
         }
         .panel-logo { display: flex; align-items: center; gap: 8px; }
-        .panel-logo img { width: 28px; height: 28px; border-radius: 6px; }
+        .panel-logo img { width: 36px; height: 36px; }
         .panel-logo span { font-size: 16px; font-weight: 700; color: #0f172a; }
+        .panel-footer {
+            padding: 12px 20px; border-top: 1px solid #f1f5f9;
+            text-align: center; flex-shrink: 0;
+        }
+        .footer-links { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; margin-bottom: 4px; }
+        .footer-links a { font-size: 11px; color: #94a3b8; text-decoration: none; }
+        .footer-links a:hover { color: #3b82f6; }
+        .footer-sep { color: #cbd5e1; font-size: 11px; }
+        .footer-copy { font-size: 10px; color: #cbd5e1; }
         .panel-close {
             display: none; width: 32px; height: 32px; border: none; background: #f1f5f9;
             border-radius: 8px; cursor: pointer; font-size: 18px; color: #64748b;
@@ -292,8 +301,9 @@
                 <div class="sheet-handle-bar"></div>
             </div>
             <div class="panel-header">
-                <div class="panel-logo">
-                    <span>중개사무소</span>
+                <div class="panel-logo" id="panelLogo">
+                    <img src="/propmap/assets/logo/Propmap_transparent_full%20size.png" alt="PropMap" id="panelLogoImg">
+                    <span id="panelLogoText">PropMap</span>
                 </div>
                 <button class="panel-close" id="panelClose">&#10005;</button>
             </div>
@@ -318,6 +328,18 @@
                 <div class="loading-text">중개사무소 정보를 불러오는 중...</div>
             </div>
             <button class="show-all-btn" id="showAllBtn" style="display:none">전체 사무소 매물 보기</button>
+            <div class="panel-footer">
+                <div class="footer-links">
+                    <a href="https://propnet.kr" target="_blank">PropNet</a>
+                    <span class="footer-sep">·</span>
+                    <a href="https://propnet.kr/propsheet/" target="_blank">PropSheet</a>
+                    <span class="footer-sep">·</span>
+                    <a href="https://propnet.kr/proptalk/" target="_blank">Proptalk</a>
+                    <span class="footer-sep">·</span>
+                    <a href="https://propnet.kr/proppedia/landing/" target="_blank">Propedia</a>
+                </div>
+                <div class="footer-copy">&copy; 2026 PropNet. All rights reserved.</div>
+            </div>
         </div>
     </div>
 
@@ -478,6 +500,28 @@
                 if (!data.success) return;
                 agents = data.agents || [];
                 agents.forEach(function(a) { selectedAgents[a.slug] = true; });
+
+                // agent 전용 페이지면 로고 업데이트
+                if (pageAgentSlug) {
+                    var pageAgent = agents.find(function(a) { return a.slug === pageAgentSlug; });
+                    if (pageAgent) {
+                        var logoImg = document.getElementById('panelLogoImg');
+                        var logoText = document.getElementById('panelLogoText');
+                        if (pageAgent.logo_url) {
+                            logoImg.src = pageAgent.logo_url;
+                            logoImg.alt = pageAgent.agency_name || pageAgentSlug;
+                            // 파비콘도 agent 로고로 변경
+                            var favicon = document.querySelector('link[rel="icon"]');
+                            if (favicon) favicon.href = pageAgent.logo_url;
+                        }
+                        // 페이지 타이틀도 agent명으로 변경
+                        document.title = (pageAgent.agency_name || pageAgentSlug) + ' 매물지도';
+                        logoText.textContent = pageAgent.agency_name || pageAgentSlug;
+                        // agent 전용 페이지에서는 해당 agent만 선택
+                        agents.forEach(function(a) { selectedAgents[a.slug] = (a.slug === pageAgentSlug); });
+                    }
+                }
+
                 renderAgentList();
             })
             .catch(function(e) {
@@ -658,16 +702,18 @@
 
     /* ===== 매물 상세 ===== */
     function fetchPropertyDetail(recordId, dbId, agentSlug) {
-        fetch('/propsheet/api/propsheet/property-detail?record_id=' + recordId + '&db_id=' + dbId)
+        fetch('/propsheet/api/propsheet/property-detail?id=' + recordId + '&db_id=' + dbId)
             .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (!data || data.error) return;
-                showPropertyDetail(data, agentSlug);
+            .then(function(resp) {
+                if (!resp || resp.error) return;
+                var data = resp.property || resp;
+                var apiAgent = resp.agent || null;
+                showPropertyDetail(data, agentSlug, apiAgent);
             });
     }
 
-    function showPropertyDetail(data, agentSlug) {
-        var agent = agents.find(function(a) { return a.slug === agentSlug; });
+    function showPropertyDetail(data, agentSlug, apiAgent) {
+        var agent = apiAgent || agents.find(function(a) { return a.slug === agentSlug; });
         var content = document.getElementById('detailContent');
 
         var html = '';
@@ -678,12 +724,12 @@
         }
 
         html += '<div class="detail-body">';
-        html += '<div class="detail-address">' + escapeHtml(data.address || data['지번 주소'] || '') + '</div>';
+        html += '<div class="detail-address">' + escapeHtml(data.address || data.road_address || '') + '</div>';
 
         var txn = data.transaction_type || '매매';
-        var price = parseFloat(data['매가(만원)'] || data.price || 0);
-        var deposit = parseFloat(data['보증금(만원)'] || data.deposit || 0);
-        var rent = parseFloat(data['월세(만원)'] || data.rent || 0);
+        var price = parseFloat(data.price || 0);
+        var deposit = parseFloat(data.deposit || 0);
+        var rent = parseFloat(data.rent || 0);
 
         if (txn === '월세') {
             html += '<div class="detail-price">보증금 ' + formatPrice(deposit) + ' / 월세 ' + formatPrice(rent) + '</div>';
@@ -696,18 +742,18 @@
         html += '<div style="margin-top:16px">';
         function row(l, v) { if (v) html += '<div class="detail-info-row"><span class="detail-info-label">' + l + '</span><span class="detail-info-value">' + v + '</span></div>'; }
 
-        var landArea = parseFloat(data['토지면적(㎡)'] || 0);
-        var totalArea = parseFloat(data['연면적(㎡)'] || 0);
+        var landArea = parseFloat(data.land_area || 0);
+        var totalArea = parseFloat(data.total_area || 0);
         if (landArea > 0) row('토지면적', toPyeong(landArea) + ' (' + landArea + '㎡)');
         if (totalArea > 0) row('연면적', toPyeong(totalArea) + ' (' + totalArea + '㎡)');
-        if (data['층수']) row('층수', escapeHtml(data['층수']));
-        if (data['주용도']) row('주용도', escapeHtml(data['주용도']));
-        if (data['용도지역']) row('용도지역', escapeHtml(data['용도지역']));
-        if (data['사용승인일'] && data['사용승인일'] !== '0') row('사용승인일', data['사용승인일']);
-        if (data['인접역']) row('인접역', escapeHtml(data['인접역']));
+        if (data.floors) row('층수', escapeHtml(data.floors));
+        if (data.usage) row('주용도', escapeHtml(data.usage));
+        if (data.zoning) row('용도지역', escapeHtml(data.zoning));
+        if (data.approval_date && data.approval_date !== '0') row('사용승인일', data.approval_date);
+        if (data.station) row('인접역', escapeHtml(data.station));
         html += '</div>';
 
-        var desc = data['광고(자동완성)'] || data.description || '';
+        var desc = data.description || '';
         if (desc) {
             html += '<div class="detail-desc-box"><div class="detail-desc-title">상세정보</div>';
             html += '<div class="detail-desc-text">' + escapeHtml(desc) + '</div></div>';
@@ -859,6 +905,16 @@
             document.getElementById('consultOverlay').classList.remove('active');
         }
     });
+
+    /* ===== URL에서 agent_slug 파싱 ===== */
+    var pathParts = window.location.pathname.replace(/\/+$/, '').split('/');
+    // /propmap/goldenrabbit → ['', 'propmap', 'goldenrabbit']
+    var pageAgentSlug = (pathParts.length >= 3 && pathParts[1] === 'propmap' && pathParts[2]) ? pathParts[2] : null;
+
+    if (pageAgentSlug) {
+        // agent 전용 페이지: iframe에 해당 agent만 표시
+        document.getElementById('mapIframe').src = 'map.html?agent=' + pageAgentSlug;
+    }
 
     /* ===== 초기화 ===== */
     loadAgents();

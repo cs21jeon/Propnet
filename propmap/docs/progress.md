@@ -1,6 +1,14 @@
 # PropMap 개발 진행 기록
 
-> 최종 업데이트: 2026-04-09
+> 최종 업데이트: 2026-04-10
+
+## 2026-04-10: 매물 상세보기 버그 수정
+
+- property-detail API 호출 파라미터 불일치 수정 (`record_id=` → `id=`)
+- API 응답 구조 변경 대응: `{success, agent, property}` 래핑 구조에서 `property` 추출
+- 필드명 매핑 수정: 한글 필드명 → 영문 필드명 (`land_area`, `floors`, `zoning` 등)
+- API 응답의 agent 정보 활용 (로컬 agents 배열 fallback 유지)
+- 수정 파일: `propmap/index.html` (fetchPropertyDetail, showPropertyDetail)
 
 ## 2026-04-09: PropMap 통합 매물지도 구축 + 문서 정리
 
