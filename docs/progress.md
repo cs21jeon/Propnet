@@ -3,6 +3,12 @@
 > 최종 업데이트: 2026-04-10
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
 
+## 2026-04-10: PropSheet ↔ Proppedia 양방향 연동
+
+- [PropSheet] 부동산 DB에 "Proppedia 조회" 버튼 추가 (slug 기반, 모든 agent 공통)
+- [Proppedia] 저장 성공 모달에 "PropSheet에서 보기" 바로가기 추가
+- [인프라] Nginx /api/auth/ → 5010 라우팅 추가 (SSO session-sync 수정)
+
 ## 2026-04-10: 서비스 간 크로스 링크 네비게이션 추가
 
 - [통합] propnet.kr 메인 → Proptalk 사용가이드 링크 추가 (서비스 카드 + 푸터)

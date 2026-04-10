@@ -1,6 +1,19 @@
 # PropSheet 개발 진행 기록
 
-> 최종 업데이트: 2026-04-09
+> 최종 업데이트: 2026-04-10
+
+## 2026-04-10: PropSheet ↔ Proppedia 양방향 연동 버튼 추가
+
+- 부동산 DB(단일/부분/집합)에 "Proppedia 조회" 버튼 추가 (database_list.html)
+  - database.slug 기반 조건부 표시 (single/part/multi-unit만) — DB 이름 변경에 안전
+  - 새 탭으로 /proppedia/ 열기, SSO 쿠키 자동 연동
+  - 기존 "부동산 조회" 버튼 → "워크스페이스"로 라벨 변경
+- Proppedia 저장 성공 시 "PropSheet에서 보기" 바로가기 모달 추가 (result.html)
+  - save API 응답에 agent_slug/db_slug 추가 (propsheet_save.py, proppedia/app.py)
+  - alert() → 성공 모달로 교체, PropSheet DB 페이지 새 탭 열기
+- Nginx: /api/auth/ → 5010 라우팅 추가 (SSO token-sync 수정)
+  - 기존: /api/ → 5000으로만 라우팅되어 session-sync 실패 → Proppedia 로그인 풀림
+  - 수정: /api/auth/ → 5010(proppedia) 우선 매칭
 
 ## 2026-04-09: 채팅등록일시 시스템필드 + 정렬 자동 저장 + 문서 정리
 
