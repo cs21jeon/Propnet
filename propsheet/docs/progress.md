@@ -1,6 +1,22 @@
 # PropSheet 개발 진행 기록
 
-> 최종 업데이트: 2026-04-10
+> 최종 업데이트: 2026-04-11
+
+## 2026-04-11: 레코드생성일자 필드 통합 + 컬럼 show/hide 서버 동기화 + 필드 정합성 정리
+
+- 레코드생성일자 필드 마이그레이션
+  - goldenrabbit: `날짜`(NULL) 컬럼 삭제, `레코드생성일자`(timestamp) 유지, type→system_generated_value
+  - template/propnet/silverrabbit single: `날짜`→`레코드생성일자` rename
+  - part/multi-unit: 이미 `레코드생성일자` 존재, type만 통일
+  - propsheet_save_service.py: 하드코딩 `레코드생성일자` 복원 (모든 테이블에 컬럼 존재 보장)
+  - view column_config에 `레코드생성일자` 추가 (날짜→rename 후 누락 보정)
+- 컬럼 show/hide 서버 동기화 (database_list.js)
+  - toggleColumn/selectAll/deselectAll: localStorage→서버 view API에 debounce(500ms) 저장
+  - 페이지 리로드 후에도 컬럼 가시성 유지
+- 전체 워크스페이스 필드 정합성 감사 및 정리 (20건→0건)
+  - view 유령 필드 74개 제거 (template에서 goldenrabbit 전용 필드 참조)
+  - part DB field_definitions 104개 보충
+  - 레거시 field_def 제거 (airtable_id, 번호, 생성일자, 테스트3 등)
 
 ## 2026-04-10: PropSheet ↔ Proppedia 양방향 연동 버튼 추가
 

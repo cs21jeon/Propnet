@@ -1,6 +1,15 @@
 # PropMap 개발 진행 기록
 
-> 최종 업데이트: 2026-04-10
+> 최종 업데이트: 2026-04-11
+
+## 2026-04-11: 통합 PropMap 문의 API 수정 + propnet agent 페이지 생성
+
+- 통합 PropMap(`/propmap/index.html`) 문의 폼 수정
+  - API: `/propsheet/api/propsheet/inquiry`(404) → `/api/submit-inquiry` (올바른 엔드포인트)
+  - 필드명: `property_type` → `propertyType` (API 기대 키에 맞춤)
+  - 에러 핸들링 추가 (성공/실패/네트워크 오류 alert)
+- propnet agent 매물지도 페이지 자동 생성 (`/propmap/propnet/`)
+  - agent 가입 강제완료 → 환경 셋업 중 PropMap 페이지 생성
 
 ## 2026-04-10: 매물 상세보기 버그 수정
 
