@@ -276,7 +276,8 @@
         }
 
         /* Wide screenshot for desktop views */
-        .screenshot.wide .screenshot-placeholder {
+        .screenshot.wide .screenshot-placeholder,
+        .screenshot.wide img {
             max-width: 600px;
         }
 
@@ -480,29 +481,62 @@
         <section class="guide-section" id="signup">
             <h2>1. 회원 가입하기</h2>
 
-            <p>PropNet은 <strong>Google 계정</strong> 하나로 시작합니다. 별도의 가입 양식을 작성할 필요가 없습니다.</p>
+            <p>PropNet은 <strong>Google 계정</strong> 하나로 시작합니다. 회원가입 페이지에서 중개사 등록까지 한 번에 진행할 수 있습니다.</p>
 
+            <h3>회원유형 선택 &amp; Google 로그인</h3>
             <ol class="steps">
-                <li><a href="https://propnet.kr/propsheet/" target="_blank"><strong>propnet.kr/propsheet</strong></a>에 접속합니다.</li>
-                <li><strong>"Google 계정으로 로그인"</strong> 버튼을 누릅니다.</li>
-                <li>사용할 Google 계정을 선택합니다.</li>
-                <li>이용약관과 개인정보처리방침에 동의하면 가입이 완료됩니다.</li>
+                <li><a href="https://propnet.kr/register/" target="_blank"><strong>propnet.kr/register</strong></a>에 접속합니다.</li>
+                <li>회원 유형에서 <strong>"공인중개사"</strong>를 선택합니다.</li>
+                <li><strong>"Google 계정으로 시작하기"</strong> 버튼을 누릅니다.</li>
+                <li>사용할 Google 계정을 선택하고 <strong>"계속"</strong>을 누릅니다.</li>
             </ol>
 
             <div class="screenshot-row">
                 <div class="screenshot">
-                    <div class="screenshot-placeholder">
-                        <span class="icon">&#128274;</span>
-                        로그인 화면<br>Google 계정으로 로그인 버튼
-                    </div>
-                    <p class="screenshot-caption">로그인 화면</p>
+                    <img src="images/signup-type.jpg" alt="회원가입 유형 선택 - 공인중개사 선택">
+                    <p class="screenshot-caption">공인중개사 선택 후 Google 로그인</p>
                 </div>
                 <div class="screenshot">
-                    <div class="screenshot-placeholder">
-                        <span class="icon">&#9989;</span>
-                        서비스 이용동의 화면
-                    </div>
-                    <p class="screenshot-caption">이용약관 동의</p>
+                    <img src="images/signup-google.jpg" alt="Google 계정 선택 화면">
+                    <p class="screenshot-caption">Google 계정 선택</p>
+                </div>
+            </div>
+
+            <h3>약관 동의 &amp; 중개사 정보 입력</h3>
+            <ol class="steps">
+                <li>서비스 이용 동의 화면에서 <strong>"전체 동의"</strong>를 체크하고 <strong>"동의하고 중개사 등록으로"</strong> 버튼을 누릅니다.</li>
+                <li>중개사 등록 신청 화면에서 사무소 정보를 입력합니다.
+                    <ul>
+                        <li><strong>사무소명</strong> &mdash; 중개사무소 이름</li>
+                        <li><strong>영문 사무소명 (URL용)</strong> &mdash; PropSheet 워크스페이스 및 매물지도 주소에 사용됩니다</li>
+                        <li><strong>대표자명 / 연락처</strong></li>
+                        <li><strong>사무소 주소</strong> &mdash; 매물지도의 기준 위치로 사용됩니다</li>
+                        <li><strong>중개업 등록번호 / 중개사 등록증</strong> &mdash; 등록증 사본(PDF, JPG, PNG)을 업로드합니다</li>
+                        <li><strong>사무소 로고</strong> (선택) &mdash; 매물지도에 표시됩니다</li>
+                    </ul>
+                </li>
+                <li><strong>"등록 신청하기"</strong> 버튼을 누르면 가입 신청이 완료됩니다.</li>
+            </ol>
+
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <img src="images/signup-terms.jpg" alt="서비스 이용 동의 화면">
+                    <p class="screenshot-caption">전체 동의 후 진행</p>
+                </div>
+                <div class="screenshot">
+                    <img src="images/signup-form.jpg" alt="중개사 등록 신청 입력 화면">
+                    <p class="screenshot-caption">중개사 정보 입력</p>
+                </div>
+            </div>
+
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <img src="images/signup-submit.jpg" alt="등록 신청하기 버튼">
+                    <p class="screenshot-caption">등록증 업로드 후 신청</p>
+                </div>
+                <div class="screenshot">
+                    <img src="images/signup-complete.jpg" alt="중개사 등록 신청 완료 화면">
+                    <p class="screenshot-caption">등록 신청 완료 (승인 1~2일 소요)</p>
                 </div>
             </div>
 
@@ -515,18 +549,18 @@
         <section class="guide-section" id="approval">
             <h2>2. 승인 후 시작하기</h2>
 
-            <p>가입 후, 관리자가 중개사 회원으로 승인해드립니다. <strong>현재는 무료</strong>로 시작하실 수 있습니다.</p>
+            <p>가입 후, 관리자가 중개사 등록증을 확인하고 승인해드립니다. <strong>현재는 무료</strong>로 시작하실 수 있습니다.</p>
 
             <h3>승인 절차</h3>
             <ol class="steps">
-                <li>가입이 완료되면 관리자에게 <strong>자동으로 알림</strong>이 전달됩니다.</li>
-                <li>관리자가 중개사 정보를 확인한 뒤 <strong>승인</strong> 처리합니다.</li>
-                <li>승인이 완료되면 <strong>내 워크스페이스</strong>가 자동으로 만들어집니다.</li>
+                <li>등록 신청이 완료되면 관리자에게 <strong>자동으로 알림</strong>이 전달됩니다.</li>
+                <li>관리자가 등록증을 확인한 뒤 <strong>승인</strong> 처리합니다. (보통 1~2일 소요)</li>
+                <li>승인이 완료되면 <strong>이메일로 안내</strong>가 발송되고, <strong>내 워크스페이스</strong>가 자동으로 만들어집니다.</li>
             </ol>
 
-            <div class="tip">
-                <strong>빠른 시작:</strong> 승인을 빨리 받고 싶으시면 가입 후 아래 연락처로 문의해 주세요.<br>
-                전화/카카오톡: <strong>010-XXXX-XXXX</strong>
+            <div class="screenshot">
+                <img src="images/approval-email.jpg" alt="중개사 등록 완료 이메일">
+                <p class="screenshot-caption">승인 완료 시 발송되는 안내 이메일</p>
             </div>
 
             <h3>승인 후 이용 가능한 서비스</h3>
@@ -547,18 +581,20 @@
             <h3>매물 데이터 입력하기</h3>
             <ol class="steps">
                 <li><a href="https://propnet.kr/propsheet/" target="_blank"><strong>propnet.kr/propsheet</strong></a>에 로그인합니다.</li>
-                <li>내 <strong>워크스페이스</strong>에서 매물 데이터베이스를 엽니다.</li>
-                <li>하단의 <strong>+ 버튼</strong>을 눌러 새 매물을 추가합니다.</li>
+                <li>내 <strong>워크스페이스</strong>에서 매물 데이터베이스(단일부동산, 부분부동산 등)를 선택합니다.</li>
+                <li>상단의 <strong>"+ 새 레코드"</strong> 버튼을 눌러 새 매물을 추가합니다.</li>
                 <li>각 칸(셀)을 클릭하여 정보를 입력합니다.</li>
             </ol>
 
-            <div class="screenshot wide">
-                <div class="screenshot-placeholder">
-                    <span class="icon">&#128203;</span>
-                    PropSheet 데이터베이스 화면<br>
-                    엑셀처럼 매물 정보가 표 형태로 나열됨
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <img src="images/propsheet-workspace.jpg" alt="PropSheet 워크스페이스 화면">
+                    <p class="screenshot-caption">워크스페이스 &mdash; 데이터베이스 선택</p>
                 </div>
-                <p class="screenshot-caption">PropSheet 매물 데이터베이스</p>
+                <div class="screenshot">
+                    <img src="images/propsheet-database.jpg" alt="PropSheet 매물 데이터베이스 스프레드시트">
+                    <p class="screenshot-caption">스프레드시트 형태의 매물 관리</p>
+                </div>
             </div>
 
             <h3>주요 입력 항목</h3>
@@ -567,26 +603,8 @@
                 <li><strong>매매가 / 전세가</strong> &mdash; 거래 금액</li>
                 <li><strong>대지면적 / 건물면적</strong> &mdash; 면적 정보</li>
                 <li><strong>대표사진</strong> &mdash; 매물 사진 첨부 (클릭 후 파일 선택)</li>
-                <li><strong>상태</strong> &mdash; '등록'으로 변경하면 지도에 공개됩니다</li>
+                <li><strong>현황(상태)</strong> &mdash; <strong>'등록'</strong>으로 변경하면 지도에 공개됩니다</li>
             </ul>
-
-            <div class="screenshot-row">
-                <div class="screenshot">
-                    <div class="screenshot-placeholder">
-                        <span class="icon">&#9998;</span>
-                        셀 편집 화면<br>
-                        클릭하면 바로 입력 가능
-                    </div>
-                    <p class="screenshot-caption">셀 클릭으로 바로 편집</p>
-                </div>
-                <div class="screenshot">
-                    <div class="screenshot-placeholder">
-                        <span class="icon">&#128247;</span>
-                        사진 업로드 화면
-                    </div>
-                    <p class="screenshot-caption">매물 사진 첨부</p>
-                </div>
-            </div>
 
             <div class="tip">
                 <strong>TIP:</strong> 주소를 입력하면 지도 좌표가 자동으로 설정됩니다. 직접 좌표를 입력할 필요가 없습니다.
@@ -603,29 +621,10 @@
 
             <h3>매물을 지도에 공개하기</h3>
             <ol class="steps">
-                <li>PropSheet에서 공개할 매물의 <strong>상태</strong> 칸을 클릭합니다.</li>
-                <li>드롭다운에서 <strong>'등록'</strong>을 선택합니다.</li>
-                <li>저장하면 곧바로 PropMap 지도에 매물이 나타납니다.</li>
+                <li>PropSheet에서 공개할 매물의 <strong>현황</strong> 칸을 클릭합니다.</li>
+                <li>드롭다운에서 <strong>'등록'</strong>을 선택하고 저장합니다.</li>
+                <li>곧바로 PropMap 지도에 매물 마커가 나타납니다.</li>
             </ol>
-
-            <div class="screenshot-row">
-                <div class="screenshot">
-                    <div class="screenshot-placeholder">
-                        <span class="icon">&#128209;</span>
-                        상태 드롭다운<br>
-                        '등록' 선택
-                    </div>
-                    <p class="screenshot-caption">상태를 '등록'으로 변경</p>
-                </div>
-                <div class="screenshot">
-                    <div class="screenshot-placeholder">
-                        <span class="icon">&#128205;</span>
-                        PropMap 지도<br>
-                        매물 마커 표시
-                    </div>
-                    <p class="screenshot-caption">지도에 매물 표시</p>
-                </div>
-            </div>
 
             <h3>내 매물지도 확인하기</h3>
             <p>승인 시 발급받은 고유 주소로 <strong>나만의 매물지도</strong>를 확인할 수 있습니다.</p>
@@ -635,16 +634,31 @@
             </ul>
 
             <div class="screenshot wide">
-                <div class="screenshot-placeholder">
-                    <span class="icon">&#127758;</span>
-                    PropMap 통합 매물지도 화면<br>
-                    카카오맵 위에 매물 마커가 표시됨
+                <img src="images/propmap-overview.jpg" alt="PropMap 통합 매물지도 화면">
+                <p class="screenshot-caption">PropMap 매물지도 &mdash; 중개사무소 패널과 매물 마커</p>
+            </div>
+
+            <h3>매물 상세 정보 &amp; 고객 문의</h3>
+            <p>지도에서 매물 마커를 클릭하면 <strong>간략 정보</strong>가 표시되고, 상세내역보기로 사진과 세부 정보를 확인할 수 있습니다. 고객은 <strong>"이 매물 문의하기"</strong> 버튼으로 바로 상담을 신청할 수 있습니다.</p>
+
+            <div class="screenshot-row">
+                <div class="screenshot">
+                    <img src="images/propmap-marker.jpg" alt="매물 마커 클릭 시 팝업">
+                    <p class="screenshot-caption">마커 클릭 &mdash; 매물 간략 정보</p>
                 </div>
-                <p class="screenshot-caption">PropMap 매물지도</p>
+                <div class="screenshot">
+                    <img src="images/propmap-detail.jpg" alt="매물 상세보기 화면">
+                    <p class="screenshot-caption">매물 상세보기 &mdash; 사진, 면적, 용도</p>
+                </div>
+            </div>
+
+            <div class="screenshot">
+                <img src="images/propmap-inquiry.jpg" alt="상담 문의 폼">
+                <p class="screenshot-caption">고객이 보내는 상담 문의 &rarr; PropSheet 상담신청 DB에 자동 기록</p>
             </div>
 
             <div class="tip">
-                <strong>TIP:</strong> 매물을 비공개로 전환하려면 상태를 '등록' 이외의 값으로 변경하세요. 지도에서 즉시 내려갑니다.
+                <strong>TIP:</strong> 매물을 비공개로 전환하려면 현황을 '등록' 이외의 값으로 변경하세요. 지도에서 즉시 내려갑니다.
             </div>
         </section>
 
@@ -652,38 +666,37 @@
         <section class="guide-section" id="propedia">
             <h2>5. Propedia &mdash; 건축물대장 조회</h2>
 
-            <p><strong>건축물대장, 공시지가를 30초 만에 조회</strong>할 수 있습니다. 현장에서 고객에게 바로 정보를 보여주세요.</p>
+            <p><strong>건축물대장, 토지정보, 공시지가를 30초 만에 조회</strong>할 수 있습니다. 현장에서 고객에게 바로 정보를 보여주세요.</p>
 
             <h3>건물 정보 검색하기</h3>
             <ol class="steps">
                 <li><a href="https://propnet.kr/proppedia/" target="_blank"><strong>propnet.kr/proppedia</strong></a>에 접속하거나, 앱을 실행합니다.</li>
-                <li>검색창에 <strong>도로명 주소</strong> 또는 <strong>지번 주소</strong>를 입력합니다.</li>
-                <li>검색 결과에서 건물을 선택하면 <strong>상세 정보</strong>가 표시됩니다.</li>
+                <li>검색 방식을 선택합니다 &mdash; <strong>도로명주소</strong>, <strong>지번주소</strong>, 또는 <strong>지도에서 검색</strong>.</li>
+                <li>검색 결과에서 건물을 선택하면 기본정보, 토지정보 등 <strong>상세 정보</strong>가 표시됩니다.</li>
             </ol>
 
             <div class="screenshot-row">
                 <div class="screenshot">
-                    <div class="screenshot-placeholder">
-                        <span class="icon">&#128270;</span>
-                        주소 검색 화면
-                    </div>
-                    <p class="screenshot-caption">주소 검색</p>
+                    <img src="images/propedia-home.jpg" alt="Propedia 검색 방식 선택 화면">
+                    <p class="screenshot-caption">검색 방식 선택</p>
                 </div>
                 <div class="screenshot">
-                    <div class="screenshot-placeholder">
-                        <span class="icon">&#127970;</span>
-                        건축물 상세정보<br>
-                        용도, 면적, 구조, 층수 등
-                    </div>
-                    <p class="screenshot-caption">건축물 상세정보</p>
+                    <img src="images/propedia-result.jpg" alt="Propedia 조회 결과 화면">
+                    <p class="screenshot-caption">조회 결과 &mdash; 기본정보, 토지정보</p>
                 </div>
             </div>
 
             <h3>조회 결과 활용하기</h3>
             <ul>
+                <li><strong>PropSheet에 저장</strong> &mdash; 조회 결과를 바로 PropSheet 매물 데이터로 저장</li>
                 <li><strong>PDF 저장</strong> &mdash; 조회 결과를 PDF로 저장하여 고객에게 공유</li>
                 <li><strong>즐겨찾기</strong> &mdash; 자주 조회하는 건물을 저장해두면 빠르게 다시 확인</li>
             </ul>
+
+            <div class="screenshot">
+                <img src="images/propedia-save.jpg" alt="PropSheet에 저장 완료 화면">
+                <p class="screenshot-caption">조회 결과를 PropSheet에 바로 저장</p>
+            </div>
 
             <div class="tip">
                 <strong>TIP:</strong> Google Play에서 <strong>"부동산백과"</strong>를 검색하면 앱으로도 이용할 수 있습니다. 현장에서 스마트폰으로 바로 조회해보세요.
@@ -700,37 +713,31 @@
 
             <h3>통화 녹음 업로드하기</h3>
             <ol class="steps">
-                <li>Google Play에서 <strong>"Proptalk"</strong>을 설치하거나, <a href="https://propnet.kr/proptalk/web/" target="_blank"><strong>웹 버전</strong></a>에 접속합니다.</li>
+                <li>Google Play에서 <strong>"Proptalk"</strong>을 설치하거나, <a href="https://propnet.kr/proptalk/web/" target="_blank"><strong>웹 버전</strong></a>에 접속합니다. PC에서는 <strong>PWA 앱</strong>으로도 설치할 수 있습니다.</li>
                 <li>Google 계정으로 로그인합니다.</li>
                 <li><strong>채팅방</strong>을 만들거나 기존 채팅방에 들어갑니다.</li>
-                <li>하단의 <strong>+ 버튼</strong>을 눌러 녹음 파일(m4a, mp3, wav)을 선택합니다.</li>
+                <li>하단의 <strong>첨부(클립) 버튼</strong>을 눌러 녹음 파일(m4a, mp3, wav)을 선택합니다.</li>
                 <li>파일이 업로드되면 <strong>AI가 자동으로 텍스트 변환과 요약</strong>을 시작합니다.</li>
             </ol>
 
             <div class="screenshot-row">
                 <div class="screenshot">
-                    <div class="screenshot-placeholder">
-                        <span class="icon">&#127908;</span>
-                        녹음 파일 업로드 화면
-                    </div>
-                    <p class="screenshot-caption">녹음 파일 업로드</p>
+                    <img src="images/proptalk-web.jpg" alt="Proptalk 웹 버전 채팅방 목록">
+                    <p class="screenshot-caption">웹 버전 &mdash; 채팅방 목록</p>
                 </div>
                 <div class="screenshot">
-                    <div class="screenshot-placeholder">
-                        <span class="icon">&#129302;</span>
-                        AI 요약 결과<br>
-                        주제, 매물정보, 결론 등
-                    </div>
-                    <p class="screenshot-caption">AI 요약 결과</p>
+                    <img src="images/proptalk-pwa.jpg" alt="Proptalk PWA 앱 화면">
+                    <p class="screenshot-caption">PWA 앱 &mdash; 채팅방 입장</p>
                 </div>
             </div>
 
             <h3>요약 내용 확인하기</h3>
-            <p>요약이 완료되면 두 곳에서 확인할 수 있습니다:</p>
-            <ul>
-                <li><strong>Proptalk 앱</strong> &mdash; 채팅방에 요약이 자동으로 표시됩니다</li>
-                <li><strong>PropSheet</strong> &mdash; 매물과 연결된 통화 요약을 한눈에 확인할 수 있습니다</li>
-            </ul>
+            <p>요약이 완료되면 <strong>PropSheet 채팅방 데이터베이스</strong>에서 녹음 날짜, 전화번호, 요약, 통화내용을 한눈에 확인할 수 있습니다.</p>
+
+            <div class="screenshot wide">
+                <img src="images/proptalk-summary.jpg" alt="PropSheet 채팅방 DB에서 통화 요약 확인">
+                <p class="screenshot-caption">PropSheet 채팅방 DB &mdash; AI 요약 결과 기록</p>
+            </div>
 
             <div class="tip">
                 <strong>TIP:</strong> 요약에는 통화 주제, 매물 정보, 가격 변동, 결론이 깔끔하게 정리됩니다. 파일명의 전화번호와 날짜도 자동으로 인식합니다.
