@@ -2,6 +2,11 @@
 
 > 최종 업데이트: 2026-04-11
 
+## 2026-04-11: PropMap 로고 경로 변경 + 레거시 로고 정리
+
+- map.html 로고 URL: propsheet 경로 → `/propmap/assets/logo/Propmap_transparent.png` 변경
+- 레거시 로고 파일 삭제 (`propmap/assets/images/logo/` → `propmap/assets/logo/`로 이동)
+
 ## 2026-04-11: 통합 PropMap 문의 API 수정 + propnet agent 페이지 생성
 
 - 통합 PropMap(`/propmap/index.html`) 문의 폼 수정

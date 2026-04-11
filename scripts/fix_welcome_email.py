@@ -22,7 +22,7 @@ new_html = r'''    html_body = f"""
           <tr><td style="padding:12px;border-radius:8px;border:1px solid #d0e0f0;background:#f8faff;">
             <b style="font-size:13px;">📊 매물관리 (PropSheet)</b>
             <p style="font-size:11px;color:#888;margin:4px 0;">매물 등록/관리, 스프레드시트형 데이터베이스</p>
-            <a href="https://propnet.kr/propsheet/{agent_slug}/" style="color:#2962FF;text-decoration:none;font-size:12px;">PC/모바일 웹 열기</a>
+            <a href="https://propnet.kr/propsheet/{agent_slug}/" style="color:#2962FF;text-decoration:none;font-size:12px;">PC 웹 열기</a>
           </td></tr>
           <tr><td style="padding:12px;border-radius:8px;border:1px solid #c8e6c9;background:#f5fff8;">
             <b style="font-size:13px;">📖 부동산백과 (Proppedia)</b>

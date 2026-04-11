@@ -4,7 +4,7 @@
     "description": "세상 쉬운 업무 공유 - 음성 채팅 & AI 요약",
     "start_url": "/proptalk/web/",
     "scope": "/proptalk/web/",
-    "display": "standalone",
+    "display": "browser",
     "background_color": "#ffffff",
     "theme_color": "#ffffff",
     "orientation": "any",

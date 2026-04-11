@@ -3,6 +3,12 @@
 > 최종 업데이트: 2026-04-11
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
 
+## 2026-04-11: 승인 이메일 개선 + Proptalk PWA 설정 변경
+
+- [통합] 승인 환영 이메일 PropSheet 링크 "PC/모바일 웹 열기" → "PC 웹 열기" 변경
+- [Proptalk] manifest.json display: standalone → browser (웹앱 창 대신 브라우저 탭)
+- [PropMap] map.html 로고 경로 변경 + 레거시 로고 파일 정리
+
 ## 2026-04-11: Agent 환경 셋업 복구 + 필드 정합성 + 문의 API 수정
 
 - [PropSheet] 레코드생성일자 필드 통합 마이그레이션 (날짜↔레코드생성일자 불일치 해소)
