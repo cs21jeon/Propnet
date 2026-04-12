@@ -119,6 +119,13 @@ def register_billing_routes(app):
 
         if not result['success']:
             PaymentTransaction.fail(order_id, result.get('error'), result.get('data'))
+            from models_billing import BillingErrorLog
+            BillingErrorLog.create(
+                error_type='payment_failed', service='toss_payments',
+                user_id=g.user_id, order_id=order_id,
+                error_message=result.get('error'),
+                details={'amount': amount}
+            )
             return jsonify({'error': result.get('error', '결제 승인 실패')}), 400
 
         toss_data = result['data']

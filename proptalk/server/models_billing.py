@@ -119,7 +119,10 @@ class UserBilling:
 
     @staticmethod
     def renew_subscription(user_id, plan_id):
-        """구독 갱신 (크론에서 호출)"""
+        """구독 갱신 (크론에서 호출)
+        NOTE: remaining_seconds를 RESET (누적 아님). 업계 표준.
+        미사용 시간은 이월되지 않음.
+        """
         plan = query_one("SELECT * FROM billing_plans WHERE id = %s", (plan_id,))
         if not plan:
             return None
@@ -293,6 +296,27 @@ class UsageLog:
 
 
 # ============================================================
+# 에러 로그
+# ============================================================
+class BillingErrorLog:
+    @staticmethod
+    def create(error_type, service, user_id=None, order_id=None,
+               error_message=None, details=None):
+        """과금 에러 구조화 기록"""
+        import json
+        try:
+            execute(
+                """INSERT INTO billing_error_logs
+                   (error_type, service, user_id, order_id, error_message, details)
+                   VALUES (%s, %s, %s, %s, %s, %s)""",
+                (error_type, service, user_id, order_id, error_message,
+                 json.dumps(details, default=str) if details else None)
+            )
+        except Exception:
+            pass  # 에러 로그 실패가 메인 로직을 차단하면 안 됨
+
+
+# ============================================================
 # 관리자 전용 쿼리
 # ============================================================
 class AdminQueries:
@@ -315,7 +339,8 @@ class AdminQueries:
         return query_all(
             """SELECT u.id, u.name, u.email, u.avatar_url, u.created_at,
                       ub.remaining_seconds, ub.subscription_status,
-                      bp.name as plan_name, bp.code as plan_code
+                      bp.name as plan_name, bp.code as plan_code,
+                      bp.plan_type
                FROM users u
                LEFT JOIN user_billing ub ON u.id = ub.user_id
                LEFT JOIN billing_plans bp ON ub.current_plan_id = bp.id

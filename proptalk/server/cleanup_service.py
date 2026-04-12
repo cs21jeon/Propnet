@@ -172,6 +172,22 @@ def process_subscription_renewals():
                         f"[Billing Cron] 갱신 실패: user={user_id}, "
                         f"error={result.get('error')}"
                     )
+                    # 에러 로그 + 갱신 실패 알림
+                    try:
+                        from models_billing import BillingErrorLog
+                        BillingErrorLog.create(
+                            error_type='renewal_failed', service='toss_payments',
+                            user_id=user_id, order_id=order_id,
+                            error_message=result.get('error'),
+                            details={'plan_code': sub.get('plan_code'), 'amount': amount}
+                        )
+                    except Exception:
+                        pass
+                    try:
+                        from notification_service import notify_renewal_failed
+                        notify_renewal_failed(user_id)
+                    except Exception as noti_err:
+                        logger.warning(f"[Billing Cron] 갱신실패 알림 전송 오류: {noti_err}")
 
             except Exception as e:
                 logger.error(f"[Billing Cron] 갱신 오류: user={user_id}, error={e}")
@@ -206,6 +222,134 @@ def expire_past_due_subscriptions():
 
     except Exception as e:
         logger.error(f"[Billing Cron] expire_past_due 오류: {e}")
+
+
+def expire_ended_subscriptions():
+    """
+    만료일 경과 구독 자동 만료 처리 (매일 04:05 실행)
+    - active + auto_renew=false + expires_at 경과 (해지 예정)
+    - active + billing_key 없음 + expires_at 경과 (admin 강제 설정)
+    - cancelled + expires_at 경과
+    NOTE: expires_at IS NULL인 레코드는 제외 (admin 수동 설정분 보호)
+    """
+    from models import query_all
+    from models_billing import UserBilling
+
+    try:
+        ended = query_all(
+            """SELECT user_id FROM user_billing
+               WHERE subscription_status IN ('active', 'cancelled')
+                 AND subscription_expires_at IS NOT NULL
+                 AND subscription_expires_at < NOW()
+                 AND (auto_renew = false OR billing_key_encrypted IS NULL)"""
+        )
+
+        if not ended:
+            return
+
+        logger.info(f"[Billing Cron] 구독 종료 처리 대상: {len(ended)}건")
+
+        for row in ended:
+            user_id = row['user_id']
+            UserBilling.set_status(user_id, 'expired')
+            logger.info(f"[Billing Cron] 구독 종료 → expired: user={user_id}")
+
+    except Exception as e:
+        logger.error(f"[Billing Cron] expire_ended_subscriptions 오류: {e}")
+
+
+def notify_expiring_subscriptions():
+    """
+    만료 3일 전 구독자에게 알림 (매일 10:00 실행)
+    auto_renew=false인 구독자만 대상 (auto_renew=true는 자동결제되므로 불필요)
+    """
+    from models import query_all
+
+    try:
+        expiring = query_all(
+            """SELECT user_id FROM user_billing
+               WHERE subscription_status = 'active'
+                 AND auto_renew = false
+                 AND subscription_expires_at BETWEEN NOW() AND NOW() + INTERVAL '3 days'"""
+        )
+
+        if not expiring:
+            return
+
+        logger.info(f"[Billing Cron] 만료 임박 알림 대상: {len(expiring)}건")
+
+        from notification_service import notify_subscription_expiring
+        for row in expiring:
+            try:
+                notify_subscription_expiring(row['user_id'], 3)
+            except Exception as e:
+                logger.warning(f"[Billing Cron] 만료 임박 알림 실패: user={row['user_id']}, {e}")
+
+    except Exception as e:
+        logger.error(f"[Billing Cron] notify_expiring_subscriptions 오류: {e}")
+
+
+def generate_billing_daily_summary():
+    """
+    일간 과금 요약 생성 (매일 23:55 실행)
+    billing_daily_summary 테이블에 당일 데이터 집계 저장
+    """
+    from models import query_one, execute
+
+    try:
+        # 결제 통계
+        tx = query_one("""
+            SELECT COUNT(*) FILTER (WHERE status = 'approved') as successful,
+                   COUNT(*) FILTER (WHERE status = 'failed') as failed,
+                   COUNT(*) as total,
+                   COALESCE(SUM(amount) FILTER (WHERE status = 'approved'), 0) as revenue,
+                   COALESCE(SUM(CASE WHEN status IN ('refunded','partial_refund') THEN refund_amount ELSE 0 END), 0) as refunded
+            FROM payment_transactions
+            WHERE created_at::date = CURRENT_DATE
+        """) or {}
+
+        # 구독 상태
+        from models import query_all
+        subs_rows = query_all("SELECT subscription_status, COUNT(*) as cnt FROM user_billing GROUP BY subscription_status") or []
+        subs = {r['subscription_status']: r['cnt'] for r in subs_rows}
+
+        # 사용량
+        usage = query_one("""
+            SELECT COALESCE(SUM(seconds_used)/60, 0) as total_minutes,
+                   COUNT(DISTINCT user_id) as active_users
+            FROM usage_logs WHERE created_at::date = CURRENT_DATE
+        """) or {}
+
+        # 신규 가입
+        new = query_one("SELECT COUNT(*) as cnt FROM users WHERE created_at::date = CURRENT_DATE") or {}
+
+        execute("""
+            INSERT INTO billing_daily_summary
+                (date, total_transactions, successful_transactions, failed_transactions,
+                 total_revenue, refunded_amount, active_subscriptions, cancelled_subscriptions,
+                 new_users, active_users, total_usage_minutes)
+            VALUES (CURRENT_DATE, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (date) DO UPDATE SET
+                total_transactions = EXCLUDED.total_transactions,
+                successful_transactions = EXCLUDED.successful_transactions,
+                failed_transactions = EXCLUDED.failed_transactions,
+                total_revenue = EXCLUDED.total_revenue,
+                refunded_amount = EXCLUDED.refunded_amount,
+                active_subscriptions = EXCLUDED.active_subscriptions,
+                cancelled_subscriptions = EXCLUDED.cancelled_subscriptions,
+                new_users = EXCLUDED.new_users,
+                active_users = EXCLUDED.active_users,
+                total_usage_minutes = EXCLUDED.total_usage_minutes
+        """, (tx.get('total', 0), tx.get('successful', 0), tx.get('failed', 0),
+              int(tx.get('revenue', 0)), int(tx.get('refunded', 0)),
+              subs.get('active', 0), subs.get('cancelled', 0),
+              new.get('cnt', 0), usage.get('active_users', 0),
+              round(float(usage.get('total_minutes', 0)), 1)))
+
+        logger.info("[Billing Cron] 일간 요약 생성 완료")
+
+    except Exception as e:
+        logger.error(f"[Billing Cron] generate_billing_daily_summary 오류: {e}")
 
 
 def cleanup_stale_orders():
@@ -269,6 +413,33 @@ def init_cleanup_scheduler():
         hour=4, minute=0,
         id='billing_expire',
         name='구독 만료 처리'
+    )
+
+    # 매일 04:05 만료일 경과 구독 종료 (non-renewal)
+    _scheduler.add_job(
+        expire_ended_subscriptions,
+        'cron',
+        hour=4, minute=5,
+        id='billing_expire_ended',
+        name='구독 종료 처리 (만료일 경과)'
+    )
+
+    # 매일 10:00 만료 임박 알림
+    _scheduler.add_job(
+        notify_expiring_subscriptions,
+        'cron',
+        hour=10, minute=0,
+        id='billing_expiring_notify',
+        name='구독 만료 임박 알림'
+    )
+
+    # 매일 23:55 일간 과금 요약 생성
+    _scheduler.add_job(
+        generate_billing_daily_summary,
+        'cron',
+        hour=23, minute=55,
+        id='billing_daily_summary',
+        name='일간 과금 요약'
     )
 
     # 매시간 stale 주문 정리

@@ -1,6 +1,33 @@
 # Proptalk 개발 진행 기록
 
-> 최종 업데이트: 2026-04-10
+> 최종 업데이트: 2026-04-12
+
+## 2026-04-12: Billing 시스템 전면 점검 및 모니터링 구축
+
+- **propnet_user_id 누락 수정**: user_billing INSERT 시 propnet_user_id 미설정 → 조회 불가 버그 수정
+  - admin_dashboard_service.py update_billing() + UserBilling.ensure() 자동 조회 추가
+- **set_plan 액션 버그 수정**: 요금제 변경 시 시간 미추가 → plan_type별 분기 (time_pack: 시간 추가, subscription: 시간 설정+상태 활성화)
+- **구독 만료 자동 처리 크론 추가** (04:05): active/cancelled + expires_at 경과 → expired 전환
+- **과금 알림 시스템 구축** (FCM 4종):
+  - 잔여시간 5분 이하 진입 / 시간 소진 / 구독 만료 3일 전 / 자동결제 실패
+- **STT 후 앱 잔여시간 자동 갱신**: audio_status WebSocket에 billing 정보 포함 → Flutter updateFromServer()
+- **Admin 대시보드 보완**:
+  - 구독상태 표시 개선 (시간팩/충전됨/결제실패/해지예정 구분)
+  - /admin/billing 페이지 → 결제 이력 중심 개편 (유저별 조작은 /admin/users로 통일)
+  - PropNet admin 구독 해지 버튼 추가
+  - Proptalk admin 유저 상세에 PropNet 연결 정보 표시
+  - Proptalk admin 유저 목록에 검색/필터 추가
+- **모니터링 인프라 구축**:
+  - /admin/api/billing-health: 구독현황, 오늘 결제, STT 사용량, 잔여0유저, 최근 에러 등 한번에 조회
+  - billing_daily_summary 테이블 + 크론(23:55): 일간 매출/결제/가입/사용량 자동 집계
+  - billing_error_logs 테이블: Toss 결제 실패, 갱신 실패 구조화 기록
+  - access_logs 감사 로그 활성화: admin 과금 조작, role 변경 자동 기록
+
+## 2026-04-11: Proptalk 웹 PWA standalone → browser 변경
+
+- manifest.json `display: standalone` → `display: browser` 변경
+  - 이메일 "PC 웹 열기" 클릭 시 별도 앱 창 대신 일반 브라우저 탭에서 열림
+- app.html manifest 캐시 버스팅 v4 → v5
 
 ## 2026-04-10: 크로스 서비스 네비게이션 링크 추가
 

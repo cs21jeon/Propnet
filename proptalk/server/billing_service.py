@@ -25,6 +25,12 @@ def check_can_transcribe(user_id, audio_duration_seconds=None):
     STT 가능 여부 확인.
     audio_duration_seconds가 주어지면 잔여 시간과 비교하여 부족 시 차단.
     Returns: (bool, reason_str)
+
+    NOTE: 의도적으로 subscription_expires_at/subscription_status를 체크하지 않음.
+    remaining_seconds > 0이 유일한 사용 기준.
+    - 시간팩 유저: 구독 없음, 잔여시간만으로 판단 (만료 개념 없음)
+    - 구독 만료 유저: 이미 결제한 잔여시간은 사용 가능 (소진 시 차단)
+    구독 상태 전환은 cleanup_service.py 크론에서 별도 처리.
     """
     billing = UserBilling.find_by_user_id(user_id)
     if not billing:
@@ -86,6 +92,17 @@ def deduct_usage(user_id, audio_file_id, duration_seconds):
         f"[Billing] 차감: user={user_id}, audio={audio_file_id}, "
         f"used={duration_seconds:.1f}s, before={seconds_before:.1f}s, after={seconds_after:.1f}s"
     )
+
+    # 잔여시간 알림 (임계값 1회만 발생)
+    try:
+        if seconds_after <= 0:
+            from notification_service import notify_time_exhausted
+            notify_time_exhausted(user_id)
+        elif seconds_after <= 300 and seconds_before > 300:
+            from notification_service import notify_low_balance
+            notify_low_balance(user_id, seconds_after)
+    except Exception as e:
+        logger.warning(f"[Billing] 알림 전송 실패 (차감은 완료): {e}")
 
     return {
         'seconds_used': duration_seconds,

@@ -769,14 +769,21 @@ def process_audio_background(app, socketio, filepath, audio_id, message_id,
             notify_new_message(room_id, user_name, notify_body,
                                msg_type='text', sender_user_id=user_id)
 
-            socketio.emit('audio_status', {
+            _audio_status_data = {
                 'audio_id': audio_id,
                 'message_id': message_id,
                 'status': 'completed',
                 'transcript_preview': transcript_text[:100],
                 'has_summary': summary_text is not None,
                 'drive_uploaded': drive_uploaded,
-            }, room=f'room_{room_id}')
+            }
+            # 과금 정보 포함 (앱에서 잔여시간 자동 갱신)
+            if deduct_result:
+                _audio_status_data['billing'] = {
+                    'remaining_seconds': deduct_result['seconds_after'],
+                    'seconds_used': deduct_result['seconds_used'],
+                }
+            socketio.emit('audio_status', _audio_status_data, room=f'room_{room_id}')
 
             # --- 7단계: (선택) Google Sheets 로깅 ---
             if drive_uploaded and room_sheets_enabled and owner_tokens:

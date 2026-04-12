@@ -88,4 +88,10 @@ class BillingService extends ChangeNotifier {
     if (_remainingSeconds < 0) _remainingSeconds = 0;
     notifyListeners();
   }
+
+  /// 서버에서 받은 잔여시간으로 동기화 (STT 완료 후 WebSocket)
+  void updateFromServer(double remainingSeconds) {
+    _remainingSeconds = remainingSeconds;
+    notifyListeners();
+  }
 }

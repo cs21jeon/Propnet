@@ -272,8 +272,13 @@ class _ChatScreenState extends State<ChatScreen> {
           };
         }
       });
-      // 완료 시 메시지 새로고침 (요약 댓글이 WebSocket으로 유실될 수 있으므로)
+      // 완료 시 메시지 새로고침 + 잔여시간 동기화
       if (data['status'] == 'completed') {
+        // 서버에서 전달된 billing 정보로 잔여시간 즉시 동기화
+        if (data['billing'] != null && data['billing']['remaining_seconds'] != null) {
+          final remaining = (data['billing']['remaining_seconds'] as num).toDouble();
+          context.read<BillingService>().updateFromServer(remaining);
+        }
         Future.delayed(const Duration(seconds: 1), () {
           if (mounted) _loadMessages();
         });

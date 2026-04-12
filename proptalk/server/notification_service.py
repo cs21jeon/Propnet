@@ -124,6 +124,59 @@ def _send_push_sync(user_ids, title, body, data, exclude_user_id):
         logger.error(f"FCM 전송 오류: {e}")
 
 
+# ============================================================
+# 과금 알림
+# ============================================================
+
+def notify_low_balance(user_id, remaining_seconds):
+    """잔여 시간 부족 알림 (5분 이하 진입 시 1회)"""
+    mins = max(0, int(remaining_seconds / 60))
+    send_push_to_users(
+        user_ids=[user_id],
+        title='Proptalk 잔여 시간 알림',
+        body=f'잔여 시간이 {mins}분 남았습니다. 충전 후 이용해주세요.',
+        data={'type': 'billing_low_balance', 'remaining_seconds': str(int(remaining_seconds))},
+    )
+    logger.info(f"[Billing] 잔여시간 부족 알림: user={user_id}, remaining={remaining_seconds:.0f}s")
+
+
+def notify_time_exhausted(user_id):
+    """이용 시간 소진 알림"""
+    send_push_to_users(
+        user_ids=[user_id],
+        title='Proptalk 이용 시간 소진',
+        body='이용 시간이 모두 소진되었습니다. 충전 후 이용해주세요.',
+        data={'type': 'billing_exhausted'},
+    )
+    logger.info(f"[Billing] 시간 소진 알림: user={user_id}")
+
+
+def notify_subscription_expiring(user_id, days_remaining):
+    """구독 만료 임박 알림 (3일 전)"""
+    send_push_to_users(
+        user_ids=[user_id],
+        title='Proptalk 구독 만료 예정',
+        body=f'{days_remaining}일 후 구독이 만료됩니다. 갱신하시려면 결제 수단을 확인해주세요.',
+        data={'type': 'billing_expiring', 'days': str(days_remaining)},
+    )
+    logger.info(f"[Billing] 구독 만료 임박 알림: user={user_id}, days={days_remaining}")
+
+
+def notify_renewal_failed(user_id):
+    """자동결제 실패 알림"""
+    send_push_to_users(
+        user_ids=[user_id],
+        title='Proptalk 자동결제 실패',
+        body='구독 갱신 결제에 실패했습니다. 결제 수단을 확인해주세요.',
+        data={'type': 'billing_renewal_failed'},
+    )
+    logger.info(f"[Billing] 갱신 실패 알림: user={user_id}")
+
+
+# ============================================================
+# 채팅 알림
+# ============================================================
+
 def notify_new_message(room_id, sender_name, content, msg_type='text',
                        sender_user_id=None):
     """
