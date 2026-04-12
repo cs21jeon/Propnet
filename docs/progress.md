@@ -1,7 +1,20 @@
 # PropNet 통합 개발 진행 기록
 
-> 최종 업데이트: 2026-04-11
+> 최종 업데이트: 2026-04-12
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
+
+## 2026-04-12: AI 일간/주간 보고 시스템 구축
+
+- [인프라] daily-report/ 신규 모듈 — 7개 부서 AI 에이전트 보고 시스템
+  - 일간(08:00): infra, dev, qa, growth, cs → Claude haiku 분석 → COO sonnet 취합 → Gmail 발송
+  - 주간(월 09:00): 전 7개 부서(+design, pm) → Claude sonnet 분석/취합 → Gmail 발송
+  - 수집: DB 쿼리(propnet_users, agents, billing 등) + Nginx 로그 + systemd 상태 + git log
+  - 저장: propnet_reports 테이블(JSONB) + JSON 파일 백업
+  - 스케줄: systemd timer 2개 (propnet-daily-report, propnet-weekly-report)
+- [인프라] 서버 배포 완료 — /home/webapp/goldenrabbit/backend/daily-report/
+  - anthropic 0.34.0→0.94.0 업그레이드, markdown 라이브러리 활용
+  - 이메일 마크다운→HTML 변환 (Gmail 인라인 스타일 표/볼드/리스트)
+- [인프라] 헬스체크 경로 수정 (/ → 서비스별 실제 라우트), billing_daily_summary 컬럼명 수정
 
 ## 2026-04-11: 중개사 시작 가이드 전면 개편 + 파비콘/가이드 라우트 수정
 

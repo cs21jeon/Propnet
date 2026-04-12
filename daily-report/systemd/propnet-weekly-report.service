@@ -1,0 +1,16 @@
+[Unit]
+Description=PropNet Weekly Report Generator
+After=postgresql.service network.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/home/webapp/goldenrabbit/backend/daily-report
+ExecStart=/home/webapp/goldenrabbit/backend/venv/bin/python daily_report.py --mode weekly
+EnvironmentFile=/home/webapp/goldenrabbit/backend/.env
+TimeoutStartSec=600
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

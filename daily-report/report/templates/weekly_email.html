@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;
+max-width:680px;margin:0 auto;padding:20px;color:#333;background:#fff;">
+
+<!-- 헤더 -->
+<div style="text-align:center;padding:20px 0;border-bottom:3px solid #0d47a1;">
+  <h1 style="color:#0d47a1;font-size:24px;margin:0;">PropNet 주간 보고</h1>
+  <p style="color:#666;font-size:13px;margin:6px 0 0;">{{ report_date }}</p>
+</div>
+
+<!-- COO 전략 요��� -->
+<div style="margin:24px 0;padding:20px;background:linear-gradient(135deg,#e3f2fd,#e8eaf6);
+border-radius:10px;font-size:15px;line-height:1.8;">
+  <strong style="color:#0d47a1;font-size:16px;">COO 주간 요약</strong><br><br>
+  {{ executive_summary | replace('\n', '<br>') }}
+</div>
+
+<!-- 긴급/주의 사항 -->
+{% if critical_issues %}
+<div style="margin:20px 0;padding:14px 18px;background:#fce4ec;
+border-left:5px solid #c62828;border-radius:4px;">
+  <strong style="color:#c62828;font-size:15px;">주의 필요 영역</strong>
+  <ul style="margin:10px 0;padding-left:20px;">
+  {% for issue in critical_issues %}
+    <li style="margin:6px 0;color:#b71c1c;line-height:1.5;">{{ issue }}</li>
+  {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<!-- 추천 조치 -->
+{% if recommendations %}
+<div style="margin:20px 0;padding:14px 18px;background:#e8f5e9;
+border-left:5px solid #2e7d32;border-radius:4px;">
+  <strong style="color:#2e7d32;font-size:15px;">이번 주 Focus</strong>
+  <ol style="margin:10px 0;padding-left:20px;">
+  {% for rec in recommendations %}
+    <li style="margin:6px 0;color:#1b5e20;line-height:1.5;">{{ rec }}</li>
+  {% endfor %}
+  </ol>
+</div>
+{% endif %}
+
+<!-- 부서별 상세 -->
+<h2 style="color:#37474f;font-size:17px;margin:28px 0 12px;
+border-bottom:1px solid #e0e0e0;padding-bottom:6px;">부서별 상세 보고</h2>
+
+{% set colors = ['#1565c0', '#2e7d32', '#e65100', '#6a1b9a', '#00838f', '#c62828', '#4e342e'] %}
+{% for dept, info in department_reports.items() %}
+<div style="margin:14px 0;padding:14px 18px;background:#fafafa;
+border-left:5px solid {{ colors[loop.index0 % 7] }};border-radius:4px;">
+  <h3 style="margin:0 0 8px;font-size:15px;color:{{ colors[loop.index0 % 7] }};">
+    {{ info.display_name }}
+  </h3>
+  <div style="font-size:13px;color:#555;line-height:1.7;">
+    {{ info.analysis | replace('\n', '<br>') }}
+  </div>
+</div>
+{% endfor %}
+
+<!-- 에러 -->
+{% if errors %}
+<div style="margin:20px 0;padding:10px 16px;background:#fffbe6;
+border-left:4px solid #f9a825;border-radius:4px;">
+  <strong style="color:#f57f17;">수집 에러</strong>
+  <ul style="margin:4px 0;padding-left:20px;font-size:12px;color:#666;">
+  {% for err in errors %}
+    <li>{{ err }}</li>
+  {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<!-- 푸터 -->
+<div style="margin-top:28px;padding-top:14px;border-top:2px solid #e0e0e0;
+text-align:center;font-size:11px;color:#999;">
+  생성 {{ generation_seconds }}초 | {{ claude_tokens_used }} 토큰 | PropNet AI Weekly Report System
+</div>
+
+</body>
+</html>
