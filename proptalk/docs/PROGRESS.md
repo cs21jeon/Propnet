@@ -22,6 +22,11 @@
   - billing_daily_summary 테이블 + 크론(23:55): 일간 매출/결제/가입/사용량 자동 집계
   - billing_error_logs 테이블: Toss 결제 실패, 갱신 실패 구조화 기록
   - access_logs 감사 로그 활성화: admin 과금 조작, role 변경 자동 기록
+- **role ↔ agent_id 정합성 규칙 구현**:
+  - user로 변경 시 소속(agent_id) 해제 확인 다이얼로그
+  - subagent 변경 시 agent_id 없으면 차단
+  - agent 변경 시 agents 레코드 + agent_id 자동 연결
+- **유저 검색 필터 확장**: 이름/이메일 + 사무소명 + 역할 + 요금제 + 구독상태 5종 필터
 
 ## 2026-04-11: Proptalk 웹 PWA standalone → browser 변경
 
