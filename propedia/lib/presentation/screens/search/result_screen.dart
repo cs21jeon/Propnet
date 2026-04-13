@@ -390,33 +390,62 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     PropSheetPropertyType propertyType;
 
     if (isMultiUnit) {
-      propertyType = PropSheetPropertyType.jibhap;
+      // 집합건물인데 동/호 미선택 → 건물 전체 매도로 단일부동산에 저장
+      if (_selectedDong == null || _selectedHo == null) {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('건물 전체 저장'),
+            content: const Text(
+              '동/호수가 지정되지 않았습니다.\n'
+              '해당 건물 전체에 대한 데이터를 단일부동산으로 입력합니다.\n\n'
+              '계속하시겠습니까?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('취소'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('저장'),
+              ),
+            ],
+          ),
+        );
+        if (confirmed != true) return;
+        propertyType = PropSheetPropertyType.danil;
+      } else {
+        propertyType = PropSheetPropertyType.jibhap;
+      }
     } else {
       final selected = await _showPropertyTypeDialog();
       if (selected == null) return;
       propertyType = selected;
     }
 
-    // 저장 확인
-    final typeName = _typeNames[propertyType]!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('저장 확인'),
-        content: Text('$typeName으로 저장할까요?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('취소'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('저장'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true) return;
+    // 저장 확인 (집합건물 전체 저장은 이미 위에서 확인했으므로 스킵)
+    if (!(isMultiUnit && propertyType == PropSheetPropertyType.danil)) {
+      final typeName = _typeNames[propertyType]!;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('저장 확인'),
+          content: Text('$typeName으로 저장할까요?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('취소'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('저장'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+    }
 
     await _doSaveToPropSheet(result, propertyType: propertyType, forceNew: false);
   }

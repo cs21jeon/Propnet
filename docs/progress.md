@@ -3,6 +3,13 @@
 > 최종 업데이트: 2026-04-13
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
 
+## 2026-04-13: 집합건물 전체 매도 저장 + PropMap 마커 개편 + 광고 면책 확인
+
+- [Propedia] 집합건물 동/호 미선택 시 단일부동산 저장 분기 (앱+웹)
+- [PropSheet] 현황→등록 변경 시 PropMap 광고 면책 확인 다이얼로그
+- [PropMap] 마커 색상 9종 체계 (유형×거래 명도), 중복 매물 클러스터, 통합↔agent 네비게이션 버튼, 패널 레이아웃 정비
+- 전 서비스(goldenrabbit.biz, propmap/, propmap/{agent_slug}/) 동일 반영
+
 ## 2026-04-13: 주간전략보고서 조치 — WebSocket 수정, 봇 차단, QA 개선, 보고 시스템 고도화
 
 - [Proptalk] WebSocket 소켓 누수 수정 (Bad file descriptor 78회/주)

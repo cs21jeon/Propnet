@@ -1,4 +1,11 @@
-업데이트 현황 (2026-04-09)
+업데이트 현황 (2026-04-13)
+
+## 2026-04-13: 집합건물 전체 매도 시 단일부동산 저장 분기
+
+- 집합건물(multi_unit)에서 동/호수 미선택 시 단일부동산(danil)으로 저장하도록 분기 추가
+  - `result_screen.dart`: 동/호 미선택 → "건물 전체 저장" 확인 다이얼로그 → danil로 저장
+  - 서버 `_build_building_record()`가 이미 multi_unit의 recap_title_info를 처리하므로 서버 수정 불필요
+- → PropSheet 웹 `result.html`에도 동일 로직 반영 (서버 직접 수정)
 
 ## 2026-04-09: v1.1.0+12 — 인앱 업데이트 + 매물 데이터 PropSheet 전환
 

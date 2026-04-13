@@ -143,11 +143,21 @@
         .agent-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .agent-info { flex: 1; min-width: 0; }
         .agent-name { font-size: 14px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .agent-meta { font-size: 12px; color: #94a3b8; margin-top: 2px; display: flex; gap: 8px; }
+        .agent-meta { font-size: 11px; color: #94a3b8; margin-top: 3px; display: flex; flex-direction: column; gap: 1px; }
+        .agent-meta span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .agent-stats { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
         .agent-count { font-size: 20px; font-weight: 700; color: #3b82f6; line-height: 1; }
         .agent-count-label { font-size: 10px; color: #94a3b8; margin-top: 2px; }
         .agent-distance { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+        .agent-page-link {
+            display: inline-flex; align-items: center; gap: 2px;
+            margin-top: 4px; padding: 2px 8px; background: #f1f5f9;
+            border: 1px solid #e2e8f0; border-radius: 6px;
+            font-size: 10px; font-weight: 600; color: #64748b;
+            text-decoration: none; transition: all 0.2s; cursor: pointer;
+        }
+        .agent-page-link:hover { background: #e2e8f0; color: #334155; }
+        .agent-page-link .material-symbols-outlined { font-size: 12px; }
 
         /* 전체보기 버튼 */
         .show-all-btn {
@@ -596,6 +606,7 @@
             html += '    <div class="agent-count">' + count + '</div>';
             html += '    <div class="agent-count-label">매물</div>';
             if (dist) html += '    <div class="agent-distance">' + dist + '</div>';
+            html += '    <a class="agent-page-link" href="/propmap/' + encodeURIComponent(a.slug) + '/" onclick="event.stopPropagation()"><span class="material-symbols-outlined">open_in_new</span>매물만 보기</a>';
             html += '  </div>';
             html += '</div>';
         });

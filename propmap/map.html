@@ -103,9 +103,9 @@
         .type-btn-wrap[data-type="jibhap"].active { background: #15803D; }
         .type-btn-wrap[data-type="bubun"].active { background: #EA580C; }
 
-        .filter-btn[data-txn="매매"].active { background: #1e3a5f; }
-        .filter-btn[data-txn="전세"].active { background: #2563EB; }
-        .filter-btn[data-txn="월세"].active { background: #DC2626; }
+        .filter-btn[data-txn="매매"].active { background: #334155; }
+        .filter-btn[data-txn="전세"].active { background: #6B7280; }
+        .filter-btn[data-txn="월세"].active { background: #D1D5DB; color: #334155; }
 
         .subtype-panel { display: flex; flex-direction: column; gap: 3px; padding: 4px 0; }
         .subtype-panel .filter-btn { font-size: 10px; min-width: 48px; padding: 3px 6px; }
@@ -126,7 +126,7 @@
         }
         .agent-btn .count { font-size: 9px; font-weight: 400; opacity: 0.7; margin-left: auto; }
 
-        /* 가격 마커 */
+        /* 매물 마커 (금액 표시) */
         .price-marker {
             border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             padding: 3px 8px; font-size: 11px; font-weight: bold;
@@ -143,24 +143,79 @@
 
         .price-marker.danil-매매 { background: #1D4ED8; }
         .price-marker.danil-매매::after { border-top: 7px solid #1D4ED8; }
-        .price-marker.danil-전세 { background: #3B82F6; }
-        .price-marker.danil-전세::after { border-top: 7px solid #3B82F6; }
-        .price-marker.danil-월세 { background: #93C5FD; color: #1e3a5f; }
-        .price-marker.danil-월세::after { border-top: 7px solid #93C5FD; }
+        .price-marker.danil-전세 { background: #60A5FA; }
+        .price-marker.danil-전세::after { border-top: 7px solid #60A5FA; }
+        .price-marker.danil-월세 { background: #BFDBFE; color: #1e3a5f; }
+        .price-marker.danil-월세::after { border-top: 7px solid #BFDBFE; }
 
         .price-marker.jibhap-매매 { background: #15803D; }
         .price-marker.jibhap-매매::after { border-top: 7px solid #15803D; }
-        .price-marker.jibhap-전세 { background: #22C55E; }
-        .price-marker.jibhap-전세::after { border-top: 7px solid #22C55E; }
-        .price-marker.jibhap-월세 { background: #86EFAC; color: #14532d; }
-        .price-marker.jibhap-월세::after { border-top: 7px solid #86EFAC; }
+        .price-marker.jibhap-전세 { background: #4ADE80; color: #14532d; }
+        .price-marker.jibhap-전세::after { border-top: 7px solid #4ADE80; }
+        .price-marker.jibhap-월세 { background: #BBF7D0; color: #14532d; }
+        .price-marker.jibhap-월세::after { border-top: 7px solid #BBF7D0; }
 
         .price-marker.bubun-매매 { background: #C2410C; }
         .price-marker.bubun-매매::after { border-top: 7px solid #C2410C; }
-        .price-marker.bubun-전세 { background: #EA580C; }
-        .price-marker.bubun-전세::after { border-top: 7px solid #EA580C; }
-        .price-marker.bubun-월세 { background: #FB923C; color: #431407; }
-        .price-marker.bubun-월세::after { border-top: 7px solid #FB923C; }
+        .price-marker.bubun-전세 { background: #FB923C; color: #431407; }
+        .price-marker.bubun-전세::after { border-top: 7px solid #FB923C; }
+        .price-marker.bubun-월세 { background: #FED7AA; color: #431407; }
+        .price-marker.bubun-월세::after { border-top: 7px solid #FED7AA; }
+
+        /* 중복 매물 클러스터 마커 */
+        .cluster-marker {
+            width: 26px; height: 26px; border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3), 0 0 0 2px rgba(255,255,255,0.9);
+            position: relative; cursor: pointer; transition: all 0.15s;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 800; color: white;
+            font-family: -apple-system, sans-serif;
+        }
+        .cluster-marker:hover { transform: scale(1.2); z-index: 5; }
+        .cluster-marker.mixed { background: #475569; }
+        .cluster-marker.danil-매매 { background: #1D4ED8; }
+        .cluster-marker.danil-전세 { background: #60A5FA; }
+        .cluster-marker.danil-월세 { background: #BFDBFE; color: #1e3a5f; }
+        .cluster-marker.jibhap-매매 { background: #15803D; }
+        .cluster-marker.jibhap-전세 { background: #4ADE80; color: #14532d; }
+        .cluster-marker.jibhap-월세 { background: #BBF7D0; color: #14532d; }
+        .cluster-marker.bubun-매매 { background: #C2410C; }
+        .cluster-marker.bubun-전세 { background: #FB923C; color: #431407; }
+        .cluster-marker.bubun-월세 { background: #FED7AA; color: #431407; }
+
+        /* 중복 매물 목록 팝업 */
+        .cluster-popup {
+            position: relative; background: #fff; border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.2); padding: 10px 12px;
+            min-width: 200px; max-width: 260px; font-family: -apple-system, sans-serif;
+        }
+        .cluster-popup .close-btn {
+            position: absolute; top: 6px; right: 8px; font-size: 15px;
+            color: #999; cursor: pointer; border: none; background: none;
+            padding: 2px; line-height: 1;
+        }
+        .cluster-popup .close-btn:hover { color: #333; }
+        .cluster-popup .cluster-title {
+            font-size: 11px; font-weight: 700; color: #333;
+            margin-bottom: 8px; padding-right: 20px;
+        }
+        .cluster-popup .cluster-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 8px; margin: 2px 0; border-radius: 6px;
+            cursor: pointer; transition: background 0.15s;
+        }
+        .cluster-popup .cluster-item:hover { background: #f1f5f9; }
+        .cluster-popup .cluster-dot {
+            width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+        }
+        .cluster-popup .cluster-info { flex: 1; min-width: 0; }
+        .cluster-popup .cluster-agent {
+            font-size: 10px; font-weight: 600; color: #334155;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .cluster-popup .cluster-price {
+            font-size: 10px; color: #64748b;
+        }
 
         /* 팝업 */
         .info-popup {
@@ -584,6 +639,24 @@
     }
     function toPyeong(sqm) { return sqm ? Math.round(sqm / 3.3058) + '평' : ''; }
     function escapeHtml(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+    // price_label에서 거래유형 접두사(매매/전세/월세) 제거 → 금액만 반환
+    function stripTxnPrefix(label) {
+        if (!label) return '';
+        return label.replace(/^(매매|전세|월세)\s*/, '');
+    }
+    // 클러스터 마커 CSS 클래스 결정 (유형×거래 조합)
+    function getClusterClass(group) {
+        var types = {}, txns = {};
+        group.forEach(function(m) { types[m.property_type] = true; txns[m.transaction_type] = true; });
+        var typeKeys = Object.keys(types), txnKeys = Object.keys(txns);
+        if (typeKeys.length === 1 && txnKeys.length === 1) {
+            return typeKeys[0] + '-' + txnKeys[0]; // 예: danil-매매
+        }
+        if (typeKeys.length === 1) {
+            return typeKeys[0] + '-매매'; // 유형 동일, 거래 혼합 → 진한색 기본
+        }
+        return 'mixed';
+    }
 
     /* ===== 필터 로직 ===== */
     function isTypeVisible(type) {
@@ -611,11 +684,41 @@
     }
 
     function applyFilters() {
+        // 클러스터 오버레이는 그룹 내 하나라도 visible이면 표시
+        var clusterChecked = {};
         window._allOverlays.forEach(function(item) {
-            if (isMarkerVisible(item.data)) {
-                item.overlay.setMap(window._kakaoMap);
+            if (item.cluster) {
+                var ck = item.data.lat.toFixed(6) + ',' + item.data.lon.toFixed(6);
+                if (clusterChecked[ck]) return; // 이미 처리됨
+                // 그룹 내 visible 매물 확인
+                var visibleInGroup = item.clusterGroup.filter(function(m) { return isMarkerVisible(m); });
+                if (visibleInGroup.length > 0) {
+                    item.overlay.setMap(window._kakaoMap);
+                    // 클러스터 숫자 업데이트
+                    item.el.textContent = visibleInGroup.length;
+                    if (visibleInGroup.length === 1) {
+                        // 1개만 남으면 금액 마커로 변경
+                        var m0 = visibleInGroup[0];
+                        item.el.className = 'price-marker ' + m0.property_type + '-' + m0.transaction_type;
+                        item.el.textContent = stripTxnPrefix(m0.price_label) || '가격미정';
+                        item.el.onclick = function(e) { e.stopPropagation(); closePopup(); createPopup(m0, new kakao.maps.LatLng(m0.lat, m0.lon)); };
+                    } else {
+                        // 원래 클러스터 스타일 복원 (유형×거래 색상)
+                        var cClass = getClusterClass(visibleInGroup);
+                        item.el.className = 'cluster-marker ' + cClass;
+                        var grp = visibleInGroup;
+                        item.el.onclick = function(e) { e.stopPropagation(); closePopup(); createClusterPopup(grp, new kakao.maps.LatLng(grp[0].lat, grp[0].lon)); };
+                    }
+                } else {
+                    item.overlay.setMap(null);
+                }
+                clusterChecked[ck] = true;
             } else {
-                item.overlay.setMap(null);
+                if (isMarkerVisible(item.data)) {
+                    item.overlay.setMap(window._kakaoMap);
+                } else {
+                    item.overlay.setMap(null);
+                }
             }
         });
         // 부모에게 카운트 전달
@@ -1157,6 +1260,57 @@
             panToBottom(position);
         }
 
+        // 중복 매물 클러스터 팝업
+        function createClusterPopup(group, position) {
+            var popupEl = document.createElement('div');
+            popupEl.className = 'cluster-popup';
+
+            var address = group[0].address || '';
+            var h = '<button class="close-btn">&times;</button>';
+            h += '<div class="cluster-title">' + escapeHtml(address) + ' (' + group.length + '건)</div>';
+
+            var MARKER_COLORS = {
+                'danil-매매': '#1D4ED8', 'danil-전세': '#60A5FA', 'danil-월세': '#BFDBFE',
+                'jibhap-매매': '#15803D', 'jibhap-전세': '#4ADE80', 'jibhap-월세': '#BBF7D0',
+                'bubun-매매': '#C2410C', 'bubun-전세': '#FB923C', 'bubun-월세': '#FED7AA'
+            };
+
+            group.forEach(function(m, idx) {
+                var agent = window._agentsMap[m.agent_slug];
+                var agentName = agent ? (agent.agency_name || m.agent_slug) : m.agent_slug;
+                var colorKey = m.property_type + '-' + m.transaction_type;
+                var dotColor = MARKER_COLORS[colorKey] || '#999';
+                var typeName = TYPE_NAMES[m.property_type] || '';
+                var priceText = m.price_label || '가격미정';
+
+                h += '<div class="cluster-item" data-idx="' + idx + '">';
+                h += '<div class="cluster-dot" style="background:' + dotColor + '"></div>';
+                h += '<div class="cluster-info">';
+                h += '<div class="cluster-agent">' + escapeHtml(agentName) + '</div>';
+                h += '<div class="cluster-price">' + escapeHtml(typeName + ' ' + (m.transaction_type || '') + ' ' + priceText) + '</div>';
+                h += '</div></div>';
+            });
+
+            popupEl.innerHTML = h;
+            popupEl.querySelector('.close-btn').onclick = function() { closePopup(); };
+            popupEl.querySelectorAll('.cluster-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    var idx = parseInt(this.dataset.idx);
+                    var m = group[idx];
+                    closePopup();
+                    createPopup(m, position);
+                });
+            });
+
+            var popup = new kakao.maps.CustomOverlay({
+                position: position, content: popupEl,
+                yAnchor: 1.4, xAnchor: 0.5, zIndex: 10, clickable: true
+            });
+            popup.setMap(map);
+            currentPopup = popup;
+            panToBottom(position);
+        }
+
         /* ===== 데이터 로딩 ===== */
         var apiUrl = '/propsheet/api/propsheet/map-data?status=%EB%93%B1%EB%A1%9D&agent_slug=' + encodeURIComponent(paramAgent) + '&_t=' + Date.now();
 
@@ -1197,27 +1351,59 @@
                 // 정렬: 위도 내림차순 (북쪽 마커가 먼저, 남쪽이 위에) → 지도에서 자연스러운 겹침
                 data.markers.sort(function(a, b) { return b.lat - a.lat; });
 
-                data.markers.forEach(function(m, idx) {
+                // 좌표 기반 그룹핑 (같은 좌표 = 같은 건물)
+                var coordGroups = {};
+                data.markers.forEach(function(m) {
                     window._markerData[m.record_id] = m;
-                    var position = new kakao.maps.LatLng(m.lat, m.lon);
+                    var key = m.lat.toFixed(6) + ',' + m.lon.toFixed(6);
+                    if (!coordGroups[key]) coordGroups[key] = [];
+                    coordGroups[key].push(m);
+                });
+
+                Object.keys(coordGroups).forEach(function(key) {
+                    var group = coordGroups[key];
+                    var m0 = group[0];
+                    var position = new kakao.maps.LatLng(m0.lat, m0.lon);
                     bounds.extend(position);
 
-                    var el = document.createElement('div');
-                    el.className = 'price-marker ' + m.property_type + '-' + m.transaction_type;
-                    el.textContent = m.price_label || '가격미정';
+                    if (group.length === 1) {
+                        // 단일 매물: 금액 표시 마커
+                        var el = document.createElement('div');
+                        el.className = 'price-marker ' + m0.property_type + '-' + m0.transaction_type;
+                        el.textContent = stripTxnPrefix(m0.price_label) || '가격미정';
+                        el.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            closePopup();
+                            createPopup(m0, position);
+                        });
+                        var overlay = new kakao.maps.CustomOverlay({
+                            position: position, content: el,
+                            yAnchor: 1.3, zIndex: 1
+                        });
+                        overlay.setMap(map);
+                        window._allOverlays.push({overlay: overlay, data: m0, el: el});
+                    } else {
+                        // 중복 매물: 숫자 클러스터 마커 (유형×거래 색상)
+                        var clusterClass = getClusterClass(group);
 
-                    el.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        closePopup();
-                        createPopup(m, position);
-                    });
-
-                    var overlay = new kakao.maps.CustomOverlay({
-                        position: position, content: el,
-                        yAnchor: 1.3, zIndex: 1
-                    });
-                    overlay.setMap(map);
-                    window._allOverlays.push({overlay: overlay, data: m, el: el});
+                        var el = document.createElement('div');
+                        el.className = 'cluster-marker ' + clusterClass;
+                        el.textContent = group.length;
+                        el.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            closePopup();
+                            createClusterPopup(group, position);
+                        });
+                        var overlay = new kakao.maps.CustomOverlay({
+                            position: position, content: el,
+                            yAnchor: 1.3, zIndex: 2
+                        });
+                        overlay.setMap(map);
+                        // 클러스터 내 각 매물도 _allOverlays에 등록 (필터링용)
+                        group.forEach(function(m) {
+                            window._allOverlays.push({overlay: overlay, data: m, el: el, cluster: true, clusterGroup: group});
+                        });
+                    }
                 });
 
                 // 부동산 사무소 배지 마커 표시
