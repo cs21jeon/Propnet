@@ -1,7 +1,26 @@
 # PropNet 통합 개발 진행 기록
 
-> 최종 업데이트: 2026-04-12
+> 최종 업데이트: 2026-04-13
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
+
+## 2026-04-13: 주간전략보고서 조치 — WebSocket 수정, 봇 차단, QA 개선, 보고 시스템 고도화
+
+- [Proptalk] WebSocket 소켓 누수 수정 (Bad file descriptor 78회/주)
+  - websocket.py: disconnect 핸들러에 room 정리 + sid↔user_id 추적 추가
+  - models.py: DB 연결 풀 dead connection 자동 감지/교체
+  - routes_messages.py: 백그라운드 emit 8곳에 _safe_emit() 안전장치 적용
+  - app.py: ping_timeout 60→90초, ping_interval 25→30초 조정
+- [인프라] IP 직접 접근 + 봇/스캐너 트래픽 차단
+  - config/nginx/security-block.conf 신규 — HTTP/HTTPS default_server 444 반환
+  - 차단 로그: logs/nginx/blocked_access.log
+- [인프라] QA 모니터링 파이프라인 확장
+  - qa_collector.py: journalctl 기반 service_errors(daily), service_error_trend_7d(weekly) 추가
+  - 기존 billing_error_logs만 → 4개 서비스 에러 전체 추적으로 확장
+- [인프라] 주간보고 조치 추적 시스템 구축
+  - report_storage.py: propnet_report_actions 테이블 + save_actions/get_last_weekly_report 함수
+  - aggregator.py: 주간보고 시 지난주 보고서+조치 결과를 COO 프롬프트에 자동 포함
+  - prompts.py: COO 주간 프롬프트에 "지난주 조치 항목 추적" 섹션 추가 + 깨진 문자 수정
+  - 이번 주(4/13) 조치 결과 7건 DB 저장 (resolved 4, deferred 3)
 
 ## 2026-04-12: AI 일간/주간 보고 시스템 구축
 

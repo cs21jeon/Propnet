@@ -5,7 +5,8 @@ import os
 import json
 import logging
 import psycopg2
-from datetime import datetime
+import psycopg2.extras
+from datetime import datetime, date, timedelta
 from config import Config
 
 logger = logging.getLogger(__name__)
@@ -32,25 +33,129 @@ CREATE TABLE IF NOT EXISTS propnet_reports (
 );
 """
 
+# 조치 결과 추적 테이블
+CREATE_ACTIONS_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS propnet_report_actions (
+    id SERIAL PRIMARY KEY,
+    report_date DATE NOT NULL,
+    item_number INTEGER NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    department VARCHAR(50),
+    status VARCHAR(20) DEFAULT 'open',
+    resolution TEXT,
+    resolved_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(report_date, item_number)
+);
+"""
+
+
+def _get_conn():
+    """DB 연결 헬퍼"""
+    return psycopg2.connect(
+        host=Config.MAIN_DB_HOST,
+        port=Config.MAIN_DB_PORT,
+        dbname=Config.MAIN_DB_NAME,
+        user=Config.MAIN_DB_USER,
+        password=Config.MAIN_DB_PASS,
+        connect_timeout=10,
+    )
+
 
 def ensure_table():
-    """propnet_reports 테이블이 없으면 생성"""
+    """propnet_reports + propnet_report_actions 테이블이 없으면 생성"""
     try:
-        conn = psycopg2.connect(
-            host=Config.MAIN_DB_HOST,
-            port=Config.MAIN_DB_PORT,
-            dbname=Config.MAIN_DB_NAME,
-            user=Config.MAIN_DB_USER,
-            password=Config.MAIN_DB_PASS,
-            connect_timeout=10,
-        )
+        conn = _get_conn()
         with conn:
             with conn.cursor() as cur:
                 cur.execute(CREATE_TABLE_SQL)
+                cur.execute(CREATE_ACTIONS_TABLE_SQL)
         conn.close()
-        logger.info("propnet_reports 테이블 확인/생성 완료")
+        logger.info("propnet_reports + propnet_report_actions 테이블 확인/생성 완료")
     except Exception as e:
         logger.error(f"테이블 생성 실패: {e}")
+
+
+# ============================================================
+# 조치 결과 관리
+# ============================================================
+
+def save_actions(report_date: str, actions: list):
+    """
+    주간보고 조치 항목 저장 (UPSERT)
+    actions = [
+        {'item_number': 1, 'title': '...', 'department': '...', 'status': 'resolved', 'resolution': '...'},
+        ...
+    ]
+    """
+    try:
+        conn = _get_conn()
+        with conn:
+            with conn.cursor() as cur:
+                for action in actions:
+                    cur.execute("""
+                        INSERT INTO propnet_report_actions
+                            (report_date, item_number, title, department, status, resolution, resolved_at)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (report_date, item_number) DO UPDATE SET
+                            status = EXCLUDED.status,
+                            resolution = EXCLUDED.resolution,
+                            resolved_at = EXCLUDED.resolved_at
+                    """, (
+                        report_date,
+                        action['item_number'],
+                        action['title'],
+                        action.get('department', ''),
+                        action.get('status', 'open'),
+                        action.get('resolution', ''),
+                        datetime.now() if action.get('status') == 'resolved' else None,
+                    ))
+        conn.close()
+        logger.info(f"조치 항목 {len(actions)}건 저장 완료 (report_date={report_date})")
+    except Exception as e:
+        logger.error(f"조치 항목 저장 실패: {e}")
+
+
+def get_last_weekly_report() -> dict:
+    """직전 주간보고서 + 조치 결과 조회"""
+    try:
+        conn = _get_conn()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            # 직전 주간보고서
+            cur.execute("""
+                SELECT report_date, executive_summary, critical_issues, recommendations
+                FROM propnet_reports
+                WHERE report_type = 'weekly'
+                ORDER BY report_date DESC
+                LIMIT 1
+            """)
+            report = cur.fetchone()
+            if not report:
+                conn.close()
+                return {}
+
+            report_date = report['report_date']
+
+            # 해당 보고서의 조치 결과
+            cur.execute("""
+                SELECT item_number, title, department, status, resolution
+                FROM propnet_report_actions
+                WHERE report_date = %s
+                ORDER BY item_number
+            """, (report_date,))
+            actions = cur.fetchall()
+
+        conn.close()
+        return {
+            'report_date': report_date.isoformat() if hasattr(report_date, 'isoformat') else str(report_date),
+            'executive_summary': report.get('executive_summary', ''),
+            'critical_issues': report.get('critical_issues', []),
+            'recommendations': report.get('recommendations', []),
+            'actions': [dict(a) for a in actions],
+        }
+    except Exception as e:
+        logger.error(f"직전 주간보고 조회 실패: {e}")
+        return {}
 
 
 def save_report(report_data: dict, dry_run: bool = False):

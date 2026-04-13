@@ -29,6 +29,12 @@ def aggregate_reports(analyzer, department_reports: dict, raw_metrics: dict,
 
     reports_text = '\n'.join(lines)
 
+    # 주간보고인 경우 지난주 보고서 + 조치 결과 추가
+    if mode == 'weekly':
+        prev_context = _build_previous_week_context()
+        if prev_context:
+            reports_text = prev_context + "\n---\n\n" + reports_text
+
     # Claude COO 분석
     coo_text, tokens = analyzer.analyze_coo(reports_text, mode)
 
@@ -83,3 +89,34 @@ def _find_errors(department_reports: dict) -> list:
         for dept, r in department_reports.items()
         if r.get('raw_only')
     ]
+
+
+def _build_previous_week_context() -> str:
+    """직전 주간보고서 + 조치 결과를 텍스트로 구성"""
+    try:
+        from storage.report_storage import get_last_weekly_report
+        prev = get_last_weekly_report()
+        if not prev or not prev.get('executive_summary'):
+            return ''
+
+        lines = [
+            f"# [참고] 지난주 주간보고 ({prev['report_date']})\n",
+            "## 지난주 요약 (핵심만 발췌)",
+            prev['executive_summary'][:2000],  # 토큰 절약을 위해 2000자 제한
+        ]
+
+        actions = prev.get('actions', [])
+        if actions:
+            lines.append("\n## 지난주 조치 항목 처리 결과")
+            for a in actions:
+                status_icon = '✅' if a['status'] == 'resolved' else '⏳' if a['status'] == 'deferred' else '❌'
+                resolution = f" — {a['resolution']}" if a.get('resolution') else ''
+                lines.append(f"- {status_icon} [{a['status']}] #{a['item_number']} {a['title']}{resolution}")
+        else:
+            lines.append("\n## 지난주 조치 항목 처리 결과")
+            lines.append("- (등록된 조치 항목 없음)")
+
+        return '\n'.join(lines)
+    except Exception as e:
+        logger.warning(f"지난주 보고서 참조 실패: {e}")
+        return ''
