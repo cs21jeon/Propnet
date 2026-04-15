@@ -114,6 +114,7 @@ PropNet 서비스 이용약관
 
 [전체 회원 - 필수]
 - 이메일 주소, 이름, 프로필 사진 (Google 계정 연동)
+- Google OAuth 인증 토큰 (Google Drive 백업 연동용)
 - 자동 수집: 기기 정보, IP 주소, 접속 일시, 앱 버전
 
 [중개사(Agent) 회원 - 추가 필수]
@@ -136,8 +137,9 @@ PropNet 서비스 이용약관
 3. 제3자 제공
 - OpenAI (미국): 음성 파일 → Whisper API (STT 변환)
 - Anthropic (미국): 변환 텍스트 → Claude API (AI 요약)
-- Google (미국): 계정 인증, Google Drive 백업
+- Google (미국): 계정 인증, Google Drive 백업 (OAuth 인증 토큰 저장)
 - 토스페이먼츠 (한국): 결제 처리
+- 국토교통부 VWorld API (한국): 주소 → 좌표 변환 (지오코딩)
 
 4. 보관 기간
 - 회원 정보: 탈퇴 시까지 (즉시 삭제)
@@ -168,6 +170,7 @@ PropNet 서비스 이용약관
   static const String privacySummary = '''
 [수집하는 개인정보]
 - 필수: 이메일, 이름, 프로필 사진 (Google 계정)
+- Google OAuth 인증 토큰 (Google Drive 백업 연동용)
 - 중개사 추가: 사무소명, 등록번호, 사업자번호, 대표자명, 소재지
 
 [수집 목적]
@@ -186,25 +189,20 @@ PropNet 서비스 이용약관
 
 PropNet 서비스 제공을 위해 아래와 같이 개인정보를 국외로 이전합니다.
 
-1. Google LLC (미국)
-   - 이전 항목: OAuth 인증 정보
-   - 이전 목적: Google 계정 로그인 인증
-   - 보유 기간: Google 개인정보 처리방침에 따름
-
-2. 공공데이터 포털 (한국)
-   - 이전 항목: 조회 요청 주소 정보
-   - 이전 목적: 건축물대장, 토지대장 정보 조회
-   - 보유 기간: API 호출 시 즉시 처리
-
-3. OpenAI, Inc. (미국) - Proptalk 이용 시
+1. OpenAI, Inc. (미국) - Proptalk 이용 시
    - 이전 항목: 음성 파일
    - 이전 목적: Whisper API를 통한 음성-텍스트 변환(STT)
+   - 보유 기간: 처리 즉시 삭제 (OpenAI는 API 데이터를 학습에 사용하지 않음)
+
+2. Anthropic, PBC (미국) - Proptalk 이용 시
+   - 이전 항목: STT 변환 텍스트
+   - 이전 목적: Claude API를 통한 대화 내용 AI 요약
    - 보유 기간: 처리 즉시 삭제
 
-4. Anthropic, PBC (미국) - Proptalk 이용 시
-   - 이전 항목: STT 변환 텍스트
-   - 이전 목적: Claude API를 통한 AI 요약
-   - 보유 기간: 처리 즉시 삭제
+3. Google LLC (미국)
+   - 이전 항목: OAuth 인증 정보, 음성 파일 (Drive 백업 시)
+   - 이전 목적: Google 계정 로그인 인증, Google Drive 파일 백업
+   - 보유 기간: Google 개인정보 처리방침에 따름 (Drive 백업 파일은 사용자가 직접 관리)
 
 위 업체들은 각각의 보안 체계(TLS 암호화, 접근 통제 등)를 통해 데이터를 보호합니다.
 

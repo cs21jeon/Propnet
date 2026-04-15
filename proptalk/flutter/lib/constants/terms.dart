@@ -74,6 +74,7 @@ class AppTerms {
 
 1. 수집 항목
  - 필수: 이메일, 이름, 프로필 사진 (Google 계정 연동)
+ - Google OAuth 인증 토큰 (Google Drive 백업 연동용)
  - Proptalk 이용 시: 음성 파일, STT 변환 텍스트, AI 요약 결과, 파일명 내 메타데이터
  - 중개사(Agent) 추가: 사무소명, 중개사등록번호, 사업자등록번호, 대표자명, 소재지
  - 자동 수집: 기기 정보, IP 주소, 접속 일시
@@ -152,6 +153,7 @@ class AppTerms {
 
 1. 회원가입 시 수집 항목 (전체 회원)
  - 필수: 이메일 주소, 이름, 프로필 사진 (Google 계정 연동)
+ - Google OAuth 인증 토큰 (Google Drive 백업 연동용)
  - 자동 수집: 기기 정보, IP 주소, 접속 일시, 앱 버전
 
 2. 중개사(Agent) 회원 추가 수집 항목
@@ -179,8 +181,9 @@ class AppTerms {
 
  - OpenAI, Inc. (미국): 음성 파일 → Whisper API를 통한 음성-텍스트 변환
  - Anthropic, PBC (미국): 변환 텍스트 → Claude API를 통한 대화 내용 요약
- - Google LLC (미국): OAuth 인증, Google Drive 음성 파일 백업
+ - Google LLC (미국): OAuth 인증, Google Drive 음성 파일 백업 (OAuth 인증 토큰 저장)
  - 주식회사 토스페이먼츠 (한국): 결제 처리 (카드번호는 당사 서버에 저장하지 않음)
+ - 국토교통부 VWorld API (한국): 주소 → 좌표 변환 (지오코딩)
 
 이 외에 이용자의 개인정보를 제3자에게 제공하지 않습니다.
 단, 이용자 사전 동의, 법령 요구, 수사 목적의 적법한 요청은 예외입니다.
