@@ -101,6 +101,10 @@ function ProptalkApp() {
         // ── Toasts ──
         toasts: [],
 
+        // ── Message menu ──
+        msgMenu: { show: false, x: 0, y: 0, msg: null },
+        deleteConfirm: { show: false, msg: null, text: '' },
+
         // ── Computed ──
         get isRoomAdmin() {
             if (!this.currentRoom || !this.user) return false;
@@ -716,6 +720,22 @@ function ProptalkApp() {
                 // Reload rooms to refresh unread counts
                 this.loadRooms();
             });
+
+            // 메시지 삭제
+            this.socket.on('message_deleted', (data) => {
+                if (data.room_id === this.currentRoom?.id) {
+                    const ids = new Set(data.deleted_ids || [data.message_id]);
+                    this.messages = this.messages.filter(m => !ids.has(m.id));
+                }
+            });
+
+            // 리액션 업데이트
+            this.socket.on('reaction_updated', (data) => {
+                if (data.room_id === this.currentRoom?.id) {
+                    const msg = this.messages.find(m => m.id === data.message_id);
+                    if (msg) msg.reactions = data.reactions;
+                }
+            });
         },
 
         _updateRoomLastMessage(msg) {
@@ -1267,6 +1287,103 @@ function ProptalkApp() {
             setTimeout(() => {
                 this.toasts = this.toasts.filter(x => x.id !== t.id);
             }, 3000);
+        },
+
+        // ============================================================
+        // Message context menu + delete + reactions
+        // ============================================================
+        showMsgMenu(event, msg) {
+            // 위치 계산 (화면 밖으로 나가지 않도록)
+            const x = Math.min(event.clientX, window.innerWidth - 200);
+            const y = Math.min(event.clientY, window.innerHeight - 250);
+            this.msgMenu = { show: true, x, y, msg };
+        },
+
+        isRoomAdmin() {
+            if (!this.currentRoom || !this.members || !this.user) return false;
+            const me = this.members.find(m => m.id === this.user.id);
+            return me?.role === 'admin';
+        },
+
+        replyToMsg(msg) {
+            // 답글 기능 (기존 입력창에 포커스)
+            if (msg) {
+                this.inputText = '';
+                this.$refs.inputArea?.focus();
+                this.toast(`"${(msg.content || '').substring(0, 20)}..."에 답글`, 'info');
+            }
+        },
+
+        copyMsgContent(msg) {
+            if (!msg) return;
+            let text = msg.content || '';
+            // 음성 메시지면 요약도 포함
+            if (msg.type === 'audio' && msg.audio?.transcript_summary) {
+                text += '\n\n' + msg.audio.transcript_summary;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                this.toast('복사되었습니다', 'info');
+            });
+        },
+
+        confirmDeleteMsg(msg) {
+            if (!msg) return;
+            let text = '이 메시지를 삭제하시겠습니까?';
+            if (msg.type === 'audio') text += '\nGoogle Drive 파일과 기록도 함께 삭제됩니다.';
+            else if (msg.type === 'file') text += '\nGoogle Drive 파일도 함께 삭제됩니다.';
+            this.deleteConfirm = { show: true, msg, text };
+        },
+
+        async executeDeleteMsg() {
+            const msg = this.deleteConfirm.msg;
+            this.deleteConfirm.show = false;
+            if (!msg) return;
+            try {
+                const res = await this.api(`/api/messages/${msg.id}`, { method: 'DELETE' });
+                if (res?.ok) {
+                    const data = await res.json();
+                    const ids = new Set(data.deleted_ids || [msg.id]);
+                    this.messages = this.messages.filter(m => !ids.has(m.id));
+                    this.toast('메시지가 삭제되었습니다', 'info');
+                } else {
+                    const err = await res?.json().catch(() => ({}));
+                    this.toast(err.error || '삭제 실패', 'error');
+                }
+            } catch (e) {
+                this.toast('삭제 실패: ' + e.message, 'error');
+            }
+        },
+
+        async toggleReaction(messageId, emoji) {
+            if (!messageId || !emoji) return;
+            try {
+                const res = await this.api(`/api/messages/${messageId}/reactions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ emoji }),
+                });
+                if (res?.ok) {
+                    const data = await res.json();
+                    const msg = this.messages.find(m => m.id === messageId);
+                    if (msg) msg.reactions = data.reactions;
+                }
+            } catch (e) {
+                console.error('[Reaction]', e);
+            }
+        },
+
+        groupReactions(reactions) {
+            if (!reactions || !reactions.length) return [];
+            const groups = {};
+            for (const r of reactions) {
+                if (!groups[r.emoji]) {
+                    groups[r.emoji] = { emoji: r.emoji, count: 0, mine: false, users: [] };
+                }
+                groups[r.emoji].count++;
+                groups[r.emoji].users.push(r.user_name);
+                if (r.user_id === this.user?.id) groups[r.emoji].mine = true;
+            }
+            return Object.values(groups);
         },
     };
 }

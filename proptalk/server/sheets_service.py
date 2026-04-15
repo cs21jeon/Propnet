@@ -175,3 +175,71 @@ def append_record(user_tokens, folder_id, room_name, record_data):
     except Exception as e:
         logger.error(f"[Sheets] 레코드 추가 실패: {e}")
         return False
+
+
+def delete_record(user_tokens, folder_id, room_name, filename):
+    """
+    스프레드시트에서 파일명이 일치하는 행 삭제
+    filename: 삭제할 레코드의 '파일명' 컬럼 값
+    """
+    try:
+        spreadsheet_id, updated_tokens = get_or_create_spreadsheet(
+            user_tokens, folder_id, room_name
+        )
+        sheets_svc, _ = _get_sheets_service(user_tokens)
+        safe_name = _sanitize_folder_name(room_name)
+
+        # 전체 데이터 읽기
+        result = sheets_svc.spreadsheets().values().get(
+            spreadsheetId=spreadsheet_id,
+            range=f"'{safe_name}'!A:K"
+        ).execute()
+        rows = result.get('values', [])
+
+        # 파일명 컬럼(B, index 1)에서 매칭되는 행 찾기 (역순으로 삭제)
+        rows_to_delete = []
+        for i, row in enumerate(rows):
+            if i == 0:  # 헤더 건너뛰기
+                continue
+            if len(row) > 1 and row[1] == filename:
+                rows_to_delete.append(i)
+
+        if not rows_to_delete:
+            logger.info(f"[Sheets] 삭제할 행 없음: {filename}")
+            return True
+
+        # 역순으로 삭제 (인덱스 안 밀리도록)
+        from drive_service import get_drive_service
+        drive_svc, _ = get_drive_service(user_tokens)
+
+        # sheetId 조회
+        spreadsheet_meta = sheets_svc.spreadsheets().get(
+            spreadsheetId=spreadsheet_id,
+            fields='sheets.properties'
+        ).execute()
+        sheet_id = spreadsheet_meta['sheets'][0]['properties']['sheetId']
+
+        requests = []
+        for row_idx in sorted(rows_to_delete, reverse=True):
+            requests.append({
+                'deleteDimension': {
+                    'range': {
+                        'sheetId': sheet_id,
+                        'dimension': 'ROWS',
+                        'startIndex': row_idx,
+                        'endIndex': row_idx + 1,
+                    }
+                }
+            })
+
+        sheets_svc.spreadsheets().batchUpdate(
+            spreadsheetId=spreadsheet_id,
+            body={'requests': requests}
+        ).execute()
+
+        logger.info(f"[Sheets] 행 삭제 완료: {filename} ({len(rows_to_delete)}행)")
+        return True
+
+    except Exception as e:
+        logger.error(f"[Sheets] 레코드 삭제 실패: {e}")
+        return False

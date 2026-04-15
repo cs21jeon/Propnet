@@ -238,6 +238,25 @@ class ApiService {
     return _handleResponse(response);
   }
   
+  /// 메시지 삭제
+  Future<Map<String, dynamic>> deleteMessage(int messageId) async {
+    final response = await _client.delete(
+      Uri.parse('$baseUrl/api/messages/$messageId'),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  /// 이모지 리액션 토글
+  Future<Map<String, dynamic>> toggleReaction(int messageId, String emoji) async {
+    final response = await _client.post(
+      Uri.parse('$baseUrl/api/messages/$messageId/reactions'),
+      headers: _headers,
+      body: jsonEncode({'emoji': emoji}),
+    );
+    return _handleResponse(response);
+  }
+
   /// 음성 파일 업로드
   Future<Map<String, dynamic>> uploadAudio(int roomId, File audioFile, {String language = 'ko'}) async {
     final uri = Uri.parse('$baseUrl/api/rooms/$roomId/audio');

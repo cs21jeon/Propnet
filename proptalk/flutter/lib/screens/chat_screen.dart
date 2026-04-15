@@ -97,6 +97,8 @@ class _ChatScreenState extends State<ChatScreen> {
   StreamSubscription? _typingSub;
   StreamSubscription? _reconnectSub;
   StreamSubscription? _readUpdateSub;
+  StreamSubscription? _messageDeletedSub;
+  StreamSubscription? _reactionUpdatedSub;
 
   // 읽음 상태: user_id -> last_read_message_id
   Map<int, int> _readStatus = {};
@@ -116,6 +118,9 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _searchController = TextEditingController();
   int? _highlightedMessageId;
 
+  // 방장 여부 (삭제 권한용)
+  bool _isRoomAdmin = false;
+
   // dispose에서 안전하게 사용하기 위해 참조 저장
   late final AuthService _auth;
   late String _roomName;
@@ -130,6 +135,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _loadMessages();
     _setupWebSocket();
     _loadReadStatus();
+    _loadRoomRole();
   }
 
   void _onScroll() {
@@ -159,6 +165,8 @@ class _ChatScreenState extends State<ChatScreen> {
     _typingSub?.cancel();
     _reconnectSub?.cancel();
     _readUpdateSub?.cancel();
+    _messageDeletedSub?.cancel();
+    _reactionUpdatedSub?.cancel();
     _textController.dispose();
     _searchController.dispose();
     _recorder.dispose();
@@ -181,6 +189,20 @@ class _ChatScreenState extends State<ChatScreen> {
             for (var s in status)
               s['user_id'] as int: s['last_read_message_id'] as int
           };
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _loadRoomRole() async {
+    try {
+      final api = context.read<ApiService>();
+      final data = await api.getRoom(widget.roomId);
+      final members = data['members'] as List? ?? [];
+      final myId = _auth.currentUser?['id'];
+      if (mounted) {
+        setState(() {
+          _isRoomAdmin = members.any((m) => m['id'] == myId && m['role'] == 'admin');
         });
       }
     } catch (_) {}
@@ -328,6 +350,28 @@ class _ChatScreenState extends State<ChatScreen> {
         final userId = data['user_id'] as int;
         final lastReadId = data['last_read_message_id'] as int;
         _readStatus[userId] = lastReadId;
+      });
+    });
+
+    // 메시지 삭제
+    _messageDeletedSub = socket.onMessageDeleted.listen((data) {
+      if (!mounted) return;
+      final deletedIds = (data['deleted_ids'] as List?)?.map((e) => e as int).toSet() ?? {};
+      setState(() {
+        _messages.removeWhere((m) => deletedIds.contains(m['id']));
+      });
+    });
+
+    // 리액션 업데이트
+    _reactionUpdatedSub = socket.onReactionUpdated.listen((data) {
+      if (!mounted) return;
+      final messageId = data['message_id'] as int;
+      final reactions = data['reactions'] as List?;
+      setState(() {
+        final idx = _messages.indexWhere((m) => m['id'] == messageId);
+        if (idx >= 0) {
+          _messages[idx] = {..._messages[idx], 'reactions': reactions};
+        }
       });
     });
   }
@@ -1234,6 +1278,117 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   // ============================================================
+  // 메시지 삭제 확인
+  // ============================================================
+  void _confirmDeleteMessage(Map<String, dynamic> msg) {
+    final msgType = msg['type'] ?? 'text';
+    String desc = '이 메시지를 삭제하시겠습니까?';
+    if (msgType == 'audio') {
+      desc += '\nGoogle Drive 파일과 기록도 함께 삭제됩니다.';
+    } else if (msgType == 'file') {
+      desc += '\nGoogle Drive 파일도 함께 삭제됩니다.';
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('메시지 삭제'),
+        content: Text(desc),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                final api = context.read<ApiService>();
+                final result = await api.deleteMessage(msg['id'] as int);
+                final deletedIds = (result['deleted_ids'] as List?)?.map((e) => e as int).toSet() ?? {msg['id'] as int};
+                if (mounted) {
+                  setState(() {
+                    _messages.removeWhere((m) => deletedIds.contains(m['id']));
+                  });
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('삭제 실패: $e')),
+                  );
+                }
+              }
+            },
+            style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+            child: const Text('삭제'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // 리액션 배지 위젯
+  // ============================================================
+  Widget _buildReactionBadges(Map<String, dynamic> msg, bool isMe) {
+    final reactions = msg['reactions'] as List?;
+    if (reactions == null || reactions.isEmpty) return const SizedBox.shrink();
+
+    // 이모지별 그룹핑
+    final Map<String, List<String>> grouped = {};
+    for (final r in reactions) {
+      final emoji = r['emoji'] as String;
+      final name = r['user_name'] as String? ?? '';
+      grouped.putIfAbsent(emoji, () => []).add(name);
+    }
+
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Wrap(
+        spacing: 4,
+        runSpacing: 2,
+        alignment: isMe ? WrapAlignment.end : WrapAlignment.start,
+        children: grouped.entries.map((entry) {
+          final myId = _auth.currentUser?['id'];
+          final isMine = reactions.any((r) => r['emoji'] == entry.key && r['user_id'] == myId);
+          return GestureDetector(
+            onTap: () async {
+              try {
+                final api = context.read<ApiService>();
+                await api.toggleReaction(msg['id'] as int, entry.key);
+              } catch (_) {}
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: isMine
+                    ? theme.colorScheme.primaryContainer
+                    : theme.colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(10),
+                border: isMine
+                    ? Border.all(color: theme.colorScheme.primary, width: 1)
+                    : null,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(entry.key, style: const TextStyle(fontSize: 14)),
+                  if (entry.value.length > 1) ...[
+                    const SizedBox(width: 2),
+                    Text('${entry.value.length}',
+                        style: theme.textTheme.bodySmall?.copyWith(fontSize: 11)),
+                  ],
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // ============================================================
   // 메시지 위젯 빌더
   // ============================================================
   Widget _buildMessageItem(Map<String, dynamic> msg, {bool showName = true}) {
@@ -1272,12 +1427,46 @@ class _ChatScreenState extends State<ChatScreen> {
             textToCopy = textToCopy.isNotEmpty ? '$textToCopy\n\n$replyTexts' : replyTexts;
           }
         }
+        final canDelete = isMe || _isRoomAdmin;
         showModalBottomSheet(
           context: context,
           builder: (ctx) => SafeArea(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // 이모지 리액션 바
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: ['👍', '❤️', '😂', '😮', '😢', '🙏'].map((emoji) {
+                      return GestureDetector(
+                        onTap: () async {
+                          Navigator.pop(ctx);
+                          try {
+                            final api = context.read<ApiService>();
+                            await api.toggleReaction(msg['id'] as int, emoji);
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('리액션 실패: $e'), duration: const Duration(seconds: 1)),
+                              );
+                            }
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.reply),
                   title: const Text('답글'),
@@ -1294,8 +1483,17 @@ class _ChatScreenState extends State<ChatScreen> {
                       Navigator.pop(ctx);
                       Clipboard.setData(ClipboardData(text: textToCopy));
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('메시지가 복사되었습니다'), duration: Duration(seconds: 1)),
+                        const SnackBar(content: Text('메시지가 복사되었습니다'), duration: const Duration(seconds: 1)),
                       );
+                    },
+                  ),
+                if (canDelete)
+                  ListTile(
+                    leading: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
+                    title: Text('삭제', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _confirmDeleteMessage(msg);
                     },
                   ),
               ],
@@ -1657,6 +1855,9 @@ class _ChatScreenState extends State<ChatScreen> {
               ],
             ),
           ),
+
+          // 이모지 리액션 배지
+          _buildReactionBadges(msg, isMe),
 
           // 댓글 (replies) — 파일정보 + 요약 텍스트가 여기에 표시됨
           if (replies.isNotEmpty) ...[

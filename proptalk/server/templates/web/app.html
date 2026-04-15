@@ -164,7 +164,14 @@
 
                         <!-- Normal message (x-show instead of x-if to preserve Alpine scope for expand/collapse) -->
                         <div class="message-row" :class="{'own': msg.user_id === user?.id}"
-                             x-show="msg.type !== 'system'">
+                             x-show="msg.type !== 'system'"
+                             @contextmenu.prevent="showMsgMenu($event, msg)">
+                                <!-- Hover action button -->
+                                <div class="msg-hover-actions">
+                                    <button class="btn-msg-menu" @click.stop="showMsgMenu($event, msg)" title="메뉴">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+                                    </button>
+                                </div>
                                 <img class="msg-avatar"
                                      :src="msg._avatar || ''"
                                      onerror="this.style.display='none'"
@@ -252,10 +259,60 @@
                                         <span class="msg-unread" x-show="getUnreadCount(msg) > 0" x-text="getUnreadCount(msg)"></span>
                                         <span x-text="formatTime(msg.created_at)"></span>
                                     </div>
+                                    <!-- Reaction badges -->
+                                    <div class="msg-reactions" x-show="msg.reactions && msg.reactions.length > 0">
+                                        <template x-for="group in groupReactions(msg.reactions || [])" :key="group.emoji">
+                                            <button class="reaction-badge"
+                                                    :class="{'mine': group.mine}"
+                                                    @click.stop="toggleReaction(msg.id, group.emoji)">
+                                                <span x-text="group.emoji"></span>
+                                                <span class="reaction-count" x-show="group.count > 1" x-text="group.count"></span>
+                                            </button>
+                                        </template>
+                                    </div>
                                 </div>
                         </div>
                     </div>
                 </template>
+            </div>
+
+            <!-- Message context menu -->
+            <div class="msg-context-menu" x-show="msgMenu.show" x-cloak
+                 :style="'top:' + msgMenu.y + 'px; left:' + msgMenu.x + 'px'"
+                 @click.outside="msgMenu.show = false">
+                <div class="msg-menu-reactions">
+                    <template x-for="emoji in ['👍','❤️','😂','😮','😢','🙏']" :key="emoji">
+                        <button class="msg-menu-emoji" @click="toggleReaction(msgMenu.msg?.id, emoji); msgMenu.show = false"
+                                x-text="emoji"></button>
+                    </template>
+                </div>
+                <div class="msg-menu-divider"></div>
+                <button class="msg-menu-item" @click="replyToMsg(msgMenu.msg); msgMenu.show = false">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>
+                    답글
+                </button>
+                <button class="msg-menu-item" @click="copyMsgContent(msgMenu.msg); msgMenu.show = false">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    복사
+                </button>
+                <button class="msg-menu-item msg-menu-delete"
+                        x-show="msgMenu.msg && (msgMenu.msg.user_id === user?.id || isRoomAdmin())"
+                        @click="confirmDeleteMsg(msgMenu.msg); msgMenu.show = false">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    삭제
+                </button>
+            </div>
+
+            <!-- Delete confirm dialog -->
+            <div class="modal-overlay" x-show="deleteConfirm.show" x-cloak @click.self="deleteConfirm.show = false">
+                <div class="modal-dialog">
+                    <div class="modal-title">메시지 삭제</div>
+                    <div class="modal-body" x-text="deleteConfirm.text"></div>
+                    <div class="modal-actions">
+                        <button class="btn-modal btn-cancel" @click="deleteConfirm.show = false">취소</button>
+                        <button class="btn-modal btn-danger" @click="executeDeleteMsg()">삭제</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Typing indicator -->

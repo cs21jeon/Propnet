@@ -13,7 +13,7 @@ from datetime import datetime, date
 from flask import request, jsonify, g, send_file
 from werkzeug.utils import secure_filename
 from auth import login_required
-from models import Room, Message, AudioFile, FileAttachment
+from models import Room, Message, AudioFile, FileAttachment, query_one, query_all
 from config import Config
 
 
@@ -562,6 +562,158 @@ def register_message_routes(app, socketio):
                 return jsonify({'error': '파일 다운로드에 실패했습니다'}), 500
 
         return jsonify({'error': '파일이 만료되었거나 존재하지 않습니다'}), 404
+
+
+    # ============================================================
+    # 메시지 삭제 (본인 or 방장)
+    # ============================================================
+    @app.route('/api/messages/<int:message_id>', methods=['DELETE'])
+    @login_required
+    def delete_message(message_id):
+        """
+        메시지 삭제 — DB, Google Drive, Google Sheets, 로컬 파일 모두 정리
+        권한: 본인 메시지 OR 방 admin
+        """
+        msg = Message.find_by_id(message_id)
+        if not msg:
+            return jsonify({'error': '메시지를 찾을 수 없습니다'}), 404
+
+        room_id = msg['room_id']
+        role = Room.get_member_role(room_id, g.user_id)
+        if not role:
+            return jsonify({'error': '접근 권한이 없습니다'}), 403
+
+        is_owner = msg['user_id'] == g.user_id
+        is_admin = role == 'admin'
+        if not is_owner and not is_admin:
+            return jsonify({'error': '삭제 권한이 없습니다'}), 403
+
+        room = Room.find_by_id(room_id)
+        msg_type = msg['type']
+        deleted_ids = [message_id]
+
+        # --- 1. 음성 파일 정리 ---
+        if msg_type == 'audio':
+            audio = query_one(
+                "SELECT * FROM audio_files WHERE message_id = %s", (message_id,)
+            )
+            if audio:
+                # Google Drive 삭제
+                if audio.get('drive_file_id'):
+                    try:
+                        owner = Room.get_owner(room_id)
+                        if owner and owner.get('google_tokens'):
+                            from drive_service import delete_from_drive
+                            delete_from_drive(owner['google_tokens'], audio['drive_file_id'])
+                            logger.info(f"[Delete] Drive 파일 삭제: {audio['drive_file_id']}")
+
+                            # Google Sheets 행 삭제
+                            if room.get('enable_sheets_logging') and room.get('drive_folder_id'):
+                                try:
+                                    from sheets_service import delete_record
+                                    delete_record(
+                                        owner['google_tokens'],
+                                        room['drive_folder_id'],
+                                        room['name'],
+                                        audio['original_filename']
+                                    )
+                                except Exception as e:
+                                    logger.warning(f"[Delete] Sheets 행 삭제 실패: {e}")
+                    except Exception as e:
+                        logger.warning(f"[Delete] Drive 삭제 실패: {e}")
+
+                # 로컬 파일 삭제
+                ext = audio['original_filename'].rsplit('.', 1)[1].lower() if '.' in (audio['original_filename'] or '') else 'mp3'
+                local_path = os.path.join(Config.AUDIO_FOLDER, f"{audio['id']}.{ext}")
+                if os.path.exists(local_path):
+                    os.remove(local_path)
+                    logger.info(f"[Delete] 로컬 파일 삭제: {local_path}")
+
+                # usage_logs 정리
+                from models import execute as db_execute
+                db_execute("DELETE FROM usage_logs WHERE audio_file_id = %s", (audio['id'],))
+
+        # --- 2. 첨부 파일 정리 ---
+        if msg_type == 'file':
+            attachment = query_one(
+                "SELECT * FROM file_attachments WHERE message_id = %s", (message_id,)
+            )
+            if attachment and attachment.get('drive_file_id'):
+                try:
+                    owner = Room.get_owner(room_id)
+                    if owner and owner.get('google_tokens'):
+                        from drive_service import delete_from_drive
+                        delete_from_drive(owner['google_tokens'], attachment['drive_file_id'])
+                        logger.info(f"[Delete] Drive 첨부파일 삭제: {attachment['drive_file_id']}")
+                except Exception as e:
+                    logger.warning(f"[Delete] 첨부파일 Drive 삭제 실패: {e}")
+
+        # --- 3. 자식 메시지(replies) ID 수집 ---
+        replies = query_all(
+            "SELECT id FROM messages WHERE parent_id = %s", (message_id,)
+        )
+        deleted_ids.extend([r['id'] for r in replies])
+
+        # --- 4. DB 삭제 (CASCADE: audio_files, file_attachments, replies, reactions) ---
+        # replies의 parent_id가 SET NULL이므로 명시적 삭제
+        from models import execute as db_execute
+        if replies:
+            placeholders = ','.join(['%s'] * len(replies))
+            db_execute(
+                f"DELETE FROM messages WHERE id IN ({placeholders})",
+                tuple(r['id'] for r in replies)
+            )
+        db_execute("DELETE FROM messages WHERE id = %s", (message_id,))
+
+        logger.info(f"[Delete] 메시지 삭제 완료: msg_id={message_id}, type={msg_type}")
+
+        # --- 5. WebSocket 알림 ---
+        socketio.emit('message_deleted', {
+            'message_id': message_id,
+            'deleted_ids': deleted_ids,
+            'room_id': room_id,
+        }, room=f'room_{room_id}')
+
+        return jsonify({'success': True, 'deleted_ids': deleted_ids})
+
+
+    # ============================================================
+    # 이모지 리액션 토글
+    # ============================================================
+    @app.route('/api/messages/<int:message_id>/reactions', methods=['POST'])
+    @login_required
+    def toggle_reaction(message_id):
+        """
+        리액션 토글 (있으면 제거, 없으면 추가)
+        Request: { "emoji": "👍" }
+        """
+        from models import Reaction
+
+        msg = Message.find_by_id(message_id)
+        if not msg:
+            return jsonify({'error': '메시지를 찾을 수 없습니다'}), 404
+
+        if not Room.is_member(msg['room_id'], g.user_id):
+            return jsonify({'error': '접근 권한이 없습니다'}), 403
+
+        data = request.get_json()
+        emoji = data.get('emoji', '').strip()
+        if emoji not in Reaction.ALLOWED_EMOJIS:
+            return jsonify({'error': '허용되지 않는 이모지입니다'}), 400
+
+        action, reactions = Reaction.toggle(message_id, g.user_id, emoji)
+
+        # WebSocket 알림
+        socketio.emit('reaction_updated', {
+            'message_id': message_id,
+            'room_id': msg['room_id'],
+            'reactions': _serialize(reactions),
+        }, room=f'room_{msg["room_id"]}')
+
+        return jsonify({
+            'action': action,
+            'reactions': _serialize(reactions),
+        })
 
 
 # ============================================================

@@ -975,3 +975,143 @@ body.dark .search-highlight { animation: highlightFadeDark 2s ease; }
 body.dark .file-info-card { background: var(--primary-light); }
 body.dark .btn-cancel { background: var(--bg-card); border-color: var(--border); color: var(--text-secondary); }
 body.dark .btn-cancel:hover { background: var(--bg-white); }
+
+/* ============================================================
+   Message context menu + Reactions + Delete
+   ============================================================ */
+
+/* Hover actions button */
+.message-row { position: relative; }
+.msg-hover-actions {
+    position: absolute;
+    top: 0; right: 8px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 5;
+}
+.message-row:hover .msg-hover-actions { opacity: 1; }
+.message-row.own .msg-hover-actions { right: auto; left: 8px; }
+.btn-msg-menu {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 6px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    line-height: 1;
+}
+.btn-msg-menu:hover { background: var(--bg-card); }
+
+/* Context menu */
+.msg-context-menu {
+    position: fixed;
+    z-index: 1000;
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    min-width: 180px;
+    padding: 4px 0;
+    overflow: hidden;
+}
+.msg-menu-reactions {
+    display: flex;
+    gap: 4px;
+    padding: 8px 12px;
+    justify-content: center;
+}
+.msg-menu-emoji {
+    font-size: 22px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 8px;
+    transition: background 0.15s;
+}
+.msg-menu-emoji:hover { background: var(--bg-card); }
+.msg-menu-divider { height: 1px; background: var(--border); margin: 0; }
+.msg-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-primary);
+    text-align: left;
+}
+.msg-menu-item:hover { background: var(--bg-card); }
+.msg-menu-delete { color: #DC3545; }
+.msg-menu-delete:hover { background: #FFF0F0; }
+
+/* Reaction badges */
+.msg-reactions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+.message-row.own .msg-reactions { justify-content: flex-end; }
+.reaction-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s;
+}
+.reaction-badge:hover { background: var(--bg-white); border-color: var(--primary); }
+.reaction-badge.mine { background: var(--primary-light); border-color: var(--primary); }
+.reaction-count { font-size: 11px; color: var(--text-secondary); }
+
+/* Delete confirm modal */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.modal-dialog {
+    background: var(--bg-white);
+    border-radius: 16px;
+    padding: 24px;
+    min-width: 320px;
+    max-width: 400px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+}
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+.modal-body { font-size: 14px; color: var(--text-secondary); white-space: pre-line; margin-bottom: 20px; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-modal {
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+.btn-cancel { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); }
+.btn-cancel:hover { background: var(--border); }
+.btn-danger { background: #DC3545; color: #fff; }
+.btn-danger:hover { background: #C82333; }
+
+/* Dark mode overrides */
+body.dark .msg-context-menu { background: #1E1E2E; border-color: #3A3A4A; }
+body.dark .msg-menu-item:hover { background: #2A2A3A; }
+body.dark .msg-menu-delete:hover { background: #3A2020; }
+body.dark .msg-menu-emoji:hover { background: #2A2A3A; }
+body.dark .reaction-badge { background: #2A2A3A; border-color: #3A3A4A; }
+body.dark .reaction-badge.mine { background: #1A3A5A; border-color: var(--primary); }
+body.dark .modal-dialog { background: #1E1E2E; }
+body.dark .btn-msg-menu { background: #2A2A3A; border-color: #3A3A4A; }

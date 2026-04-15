@@ -216,6 +216,15 @@ class Room:
         return result is not None
 
     @staticmethod
+    def get_member_role(room_id, user_id):
+        """멤버 역할 조회. 멤버가 아니면 None"""
+        result = query_one(
+            "SELECT role FROM room_members WHERE room_id = %s AND user_id = %s",
+            (room_id, user_id)
+        )
+        return result['role'] if result else None
+
+    @staticmethod
     def remove_member(room_id, user_id):
         return execute(
             """DELETE FROM room_members
@@ -277,6 +286,10 @@ class Message:
                VALUES (%s, %s, %s, %s, %s) RETURNING *""",
             (room_id, user_id, msg_type, content, parent_id)
         )
+
+    @staticmethod
+    def find_by_id(message_id):
+        return query_one("SELECT * FROM messages WHERE id = %s", (message_id,))
     
     @staticmethod
     def list_for_room(room_id, limit=50, before_id=None):
@@ -293,7 +306,14 @@ class Message:
                               'user_name', ru.name, 'created_at', r.created_at
                           ) ORDER BY r.created_at)
                           FROM messages r JOIN users ru ON r.user_id = ru.id
-                          WHERE r.parent_id = m.id AND r.type != 'text') as replies
+                          WHERE r.parent_id = m.id AND r.type != 'text') as replies,
+                          (SELECT json_agg(json_build_object(
+                              'emoji', mr.emoji, 'user_id', mr.user_id,
+                              'user_name', mru.name
+                          ))
+                          FROM message_reactions mr
+                          JOIN users mru ON mr.user_id = mru.id
+                          WHERE mr.message_id = m.id) as reactions
                    FROM messages m
                    JOIN users u ON m.user_id = u.id
                    LEFT JOIN audio_files af ON af.message_id = m.id
@@ -317,7 +337,14 @@ class Message:
                           'user_name', ru.name, 'created_at', r.created_at
                       ) ORDER BY r.created_at)
                       FROM messages r JOIN users ru ON r.user_id = ru.id
-                      WHERE r.parent_id = m.id AND r.type != 'text') as replies
+                      WHERE r.parent_id = m.id AND r.type != 'text') as replies,
+                      (SELECT json_agg(json_build_object(
+                          'emoji', mr.emoji, 'user_id', mr.user_id,
+                          'user_name', mru.name
+                      ))
+                      FROM message_reactions mr
+                      JOIN users mru ON mr.user_id = mru.id
+                      WHERE mr.message_id = m.id) as reactions
                FROM messages m
                JOIN users u ON m.user_id = u.id
                LEFT JOIN audio_files af ON af.message_id = m.id
@@ -640,4 +667,44 @@ class DeviceToken:
                 FROM device_tokens
                 WHERE user_id IN ({placeholders})""",
             tuple(user_ids)
+        )
+
+
+# ============================================================
+# Reaction 모델 (이모지 리액션)
+# ============================================================
+class Reaction:
+    ALLOWED_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙏']
+
+    @staticmethod
+    def toggle(message_id, user_id, emoji):
+        """리액션 토글: 있으면 삭제, 없으면 추가. 반환: ('added'|'removed', reactions)"""
+        existing = query_one(
+            "SELECT id FROM message_reactions WHERE message_id = %s AND user_id = %s AND emoji = %s",
+            (message_id, user_id, emoji)
+        )
+        if existing:
+            execute("DELETE FROM message_reactions WHERE id = %s", (existing['id'],))
+            action = 'removed'
+        else:
+            execute(
+                """INSERT INTO message_reactions (message_id, user_id, emoji)
+                   VALUES (%s, %s, %s)
+                   ON CONFLICT (message_id, user_id, emoji) DO NOTHING""",
+                (message_id, user_id, emoji)
+            )
+            action = 'added'
+        reactions = Reaction.list_for_message(message_id)
+        return action, reactions
+
+    @staticmethod
+    def list_for_message(message_id):
+        """메시지의 리액션 목록 (이모지별 그룹)"""
+        return query_all(
+            """SELECT mr.emoji, mr.user_id, u.name as user_name
+               FROM message_reactions mr
+               JOIN users u ON mr.user_id = u.id
+               WHERE mr.message_id = %s
+               ORDER BY mr.created_at""",
+            (message_id,)
         )
