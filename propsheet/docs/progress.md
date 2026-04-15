@@ -1,6 +1,15 @@
 # PropSheet 개발 진행 기록
 
-> 최종 업데이트: 2026-04-13
+> 최종 업데이트: 2026-04-15
+
+## 2026-04-15: 워크스페이스 DB 우클릭 컨텍스트 메뉴
+
+- DB 카드/목록 아이템에 우클릭 시 커스텀 컨텍스트 메뉴 표시
+  - "새 탭에서 열기" / "새 창에서 열기" 2개 옵션
+  - 새 창은 화면 80% 크기로 중앙에 독립 윈도우로 열림
+- `workspaces.js`: getDatabaseUrl() 헬퍼 추출, showContextMenu/openInNewTab/openInNewWindow 추가
+- `workspaces.html`: DB 카드에 @contextmenu 바인딩 + 메뉴 HTML
+- `workspaces.css`: 컨텍스트 메뉴 스타일 (라이트/다크모드)
 
 ## 2026-04-13: 현황→등록 변경 시 PropMap 광고 면책 확인 다이얼로그
 
