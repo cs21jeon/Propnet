@@ -1,7 +1,31 @@
 # PropNet 통합 개발 진행 기록
 
-> 최종 업데이트: 2026-04-15
+> 최종 업데이트: 2026-04-16
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
+
+## 2026-04-16: goldenrabbit.biz 금토끼부동산 홈페이지 전용화 + 네이버 검색 정리
+
+- [통합/인프라] goldenrabbit.biz 역할 재정의 — 금토끼부동산 홈페이지 외 모든 서비스는 propnet.kr로 일원화
+- [인프라] 서버 루트 favicon 교체: 금토끼(85KB) → PropNet 아이콘(6KB)
+  - `frontend/public/favicon.ico`, `favicon.png` 교체, 기존 파일은 `favicon_backup_20260416.*`로 백업
+  - 로컬: `assets/images/Propnet_icon_transparent_half size_512X512.png`를 Pillow로 ico/png 변환
+  - 네이버 검색 결과의 propnet.kr 옆 아이콘이 PropNet 아이콘으로 갱신될 예정
+- [인프라] Nginx `goldenrabbit.conf` 대규모 정리
+  - 301 리다이렉트 추가: `/proptalk/`, `/proppedia/`, `/admin/`, `/property-manager`, `/services`, `/legal/`
+  - location 블록 삭제: `/app/dashboard`, `/app/api/admin/` (백엔드 라우트 부재)
+  - 유지: `/api/*`(홈페이지 의존), `/property/{id}`(SNS 공유), `/shorts`, `/(auth|webhook|deauth)/threads`, `/voiceroom/*`, `/app/api/`(구버전 앱 호환)
+  - `/legal/`은 `^~` 수식어 사용으로 regex `\.html$` 블록보다 우선 매칭 처리
+- [인프라] goldenrabbit.biz 전용 robots.txt + sitemap.xml 분리
+  - Nginx `location = /robots.txt`에서 홈페이지만 Allow, 나머지 전부 Disallow
+  - `frontend/public/sitemap_goldenrabbit.xml` 신규 — 홈페이지 1개 URL만 포함
+  - 기존 propnet.kr용 `sitemap.xml`과 완전 분리 (도메인 불일치 방지)
+- [PropSheet/공통] Property Manager (구 UI) 진입점을 Proppedia로 재지정
+  - `backend/property-manager/app.py:126` — `redirect('/propsheet/')` → `redirect('/proppedia/')`
+  - Property Manager의 후속 서비스는 Proppedia(건축물 정보 조회)이므로 역사적 연속성 유지
+  - `property-manager`, `proppedia`, `propsheet` 3개 서비스 재시작
+- [운영] 네이버 서치어드바이저 후속 작업 필요
+  - goldenrabbit.biz: robots.txt 재수집, sitemap 재제출, 레거시 URL 10개 삭제 요청, 홈페이지 재수집
+  - propnet.kr: 신규 URL 5개 수집 요청 (`/proptalk/guide`, `/proppedia/guide/`, `/guide/agent/`, `/propmap/`, `/proppedia/`)
 
 ## 2026-04-15: 법적 문서 통합 점검 + 약관/개인정보처리방침 업데이트
 
