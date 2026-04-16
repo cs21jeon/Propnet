@@ -1,4 +1,35 @@
-업데이트 현황 (2026-04-13)
+업데이트 현황 (2026-04-17)
+
+## 2026-04-17: v1.1.0+15 — 드로어 "PropNet 전체 서비스" 외부 링크 추가 + 랜딩 라벨 통일
+
+- 드로어 신규 섹션 "외부 서비스" → "PropNet 전체 서비스" 항목 추가
+  - `Icons.public`, 기본 브랜드 컬러, 서브타이틀 "웹 브라우저에서 열기"
+  - onTap: `url_launcher` + `LaunchMode.externalApplication`로 `https://propnet.kr/` 외부 브라우저 실행
+  - 기존 `/app_drawer.dart`에 `import 'package:url_launcher/url_launcher.dart';` 추가
+- Proppedia 랜딩 페이지(`marketing/proppedia/index.html`) 헤더 라벨 통일: "PropNet 홈" → "PropNet 전체 서비스"
+- Google Play 정책 점검 결과: B2B SaaS(공인중개사 대상) + 실물 부동산 서비스로, 외부 결제/웹 링크 허용 범위 — 정책 위반 리스크 없음
+
+## 2026-04-17: v1.1.0+14 — WebView User-Agent 표준 Chrome으로 위장
+
+- `PropMapWebScreen`에 `..setUserAgent(...)` 추가 (WebView 기본 UA의 "wv" 플래그 제거)
+  - 목적: Kakao Maps SDK가 WebView 감지 시 건물 레이블 디버그 레이어 렌더링 이슈 회피 시도
+  - 결과: 이슈 미해결 — 확인 결과 모바일 Chrome 브라우저에서도 동일 현상 발생(Kakao 모바일 웹 자체의 고해상도 타일 렌더 특성). WebView 고유 문제 아님
+- UA 위장 자체는 남겨둠(네이티브 앱처럼 인식되도록 하는 일반적 효과)
+
+## 2026-04-16: v1.1.0+13 — 드로어 메뉴 "부동산매물지도" 추가 (PropMap WebView 임베드)
+
+- 드로어 메뉴 "금토끼부동산" → "부동산매물지도"로 변경 (앱 성격을 부동산 정보 통합 허브로 재정의)
+  - 아이콘: `Icons.map`, 컬러: `#136dec` (PropMap 브랜드 블루)
+  - 서브타이틀: "지도에서 중개사무소·매물 찾기"
+- `/propmap-web` 라우트 신설: `https://propnet.kr/propmap/` 를 WebView로 임베드
+  - 신규 파일: `lib/presentation/screens/property/propmap_web_screen.dart`
+  - 패키지 추가: `webview_flutter: ^4.7.0` (설치된 버전 4.13.1)
+  - AppBar(제목 + 새로고침 버튼), 상단 LinearProgressIndicator, PopScope로 WebView 내부 history 처리
+  - `context.mounted` 가드로 async gap 안전 확보
+- `AppType` enum에 `propmap` 추가 및 드로어 헤더 파란 지도 분기 추가
+- 기존 `/property`, `/property/list`, `/property/detail/:recordId`, `/property/map`, `/property/search`, `/property/search-map` 라우트 및 `property_home_screen.dart` 등 네이티브 화면은 **SNS 공유 딥링크(goldenrabbit.biz/property/recXXX → 앱)용으로 보존**
+- Android: `minSdk = flutter.minSdkVersion`(기본 21) 사용 중이므로 webview_flutter 최소 API 19 요구사항 충족. `<uses-permission android:name="android.permission.INTERNET" />` 이미 등록됨
+- iOS: propnet.kr은 HTTPS이므로 `NSAppTransportSecurity` 예외 불필요 (Info.plist 기본값 OK)
 
 ## 2026-04-13: 집합건물 전체 매도 시 단일부동산 저장 분기
 

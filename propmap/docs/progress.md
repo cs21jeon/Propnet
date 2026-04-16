@@ -1,6 +1,24 @@
 # PropMap 개발 진행 기록
 
-> 최종 업데이트: 2026-04-16
+> 최종 업데이트: 2026-04-17
+
+## 2026-04-17: 모바일 반응형 전면 개선 (Proppedia 앱 WebView 대응)
+
+- `propmap/index.html` 바텀시트 UX
+  - Safe area 적용: `viewport-fit=cover` + `env(safe-area-inset-bottom)` — 기기 홈버튼/제스처바 회피
+  - 모바일 접힘 상태에서 PropMap 로고 대신 "N개 중개사무소 보기 ▲" 힌트 라벨 노출 (`renderAgentList`에서 지도 범위 내 개수 실시간 동기화)
+  - 중개사 카드 탭 시 시트 자동 닫힘 로직 제거 (연속 선택을 위해 유지)
+  - 에이전트 카드 높이 절반 축소: 아바타 48→32px, padding 12→6px, 전화번호 숨김, 폰트 축소
+  - 시트 `max-height: 75vh → 50vh`로 지도 가시 영역 확보
+- `propmap/map.html` 및 에이전트별 `{goldenrabbit,silverrabbit,propnet}/map.html`
+  - 모바일(≤768px)에서 우측 필터 패널을 기본 숨김 → 우측 상단 "필터" 토글 버튼 추가
+  - JS: `filterToggleBtn` 클릭 시 `.filter-panel.open` 토글 (+ 버튼 activated 스타일)
+- 에이전트별 페이지(`goldenrabbit/index.html` 등) "PropMap 전체 매물지도로 돌아가기" 버튼 강조 — 풀폭 파란색(#136dec) + 화살표 아이콘 (Python 스크립트로 3개 파일 일괄 패치)
+- propnet.kr 랜딩(`/propnet/index.html`) 모바일 overflow 수정
+  - `html, body { overflow-x: hidden; max-width: 100%; }` 전역 방어
+  - `header`에 `left:0; right:0; max-width: 100vw;` + `.header-content { flex-wrap: wrap; min-width: 0; }` 보강
+  - 600px 이하 전용: `.services-grid` 1열 전환(기존 968px→2열 규칙 하위에 없던 케이스 보완), 헤더 로고/폰트 축소
+- 랜딩(`/propnet/`, `/proppedia/`) 헤더 라벨 통일: "PropNet 홈" → "PropNet 전체 서비스"
 
 ## 2026-04-16: Week 4 마무리 — 매칭 로직 정교화 + C안 + 전체 agent + 샘플 워크스페이스
 

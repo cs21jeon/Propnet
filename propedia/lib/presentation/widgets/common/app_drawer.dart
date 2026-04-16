@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:propedia/core/constants/app_colors.dart';
 import 'package:propedia/presentation/providers/app_info_provider.dart';
 
 /// 현재 앱 타입
 enum AppType {
   main, // 부동산정보조회 (Proppedia)
-  property, // 금토끼부동산 매물
+  property, // 금토끼부동산 매물 (SNS 공유 딥링크/내부 카테고리 링크용 네이티브 화면)
+  propmap, // 부동산매물지도 (propnet.kr/propmap/ WebView)
 }
 
 /// 앱 공통 드로어 (햄버거 메뉴)
@@ -70,17 +72,54 @@ class AppDrawer extends ConsumerWidget {
                     },
                   ),
 
-                  // 금토끼부동산
+                  // 부동산매물지도 (PropMap 통합지도 WebView)
                   _DrawerItem(
-                    icon: Icons.home_work,
-                    title: '금토끼부동산',
-                    subtitle: '매물 정보 조회',
-                    isSelected: currentApp == AppType.property,
-                    color: const Color(0xFFD4AF37),
+                    icon: Icons.map,
+                    title: '부동산매물지도',
+                    subtitle: '지도에서 중개사무소·매물 찾기',
+                    isSelected: currentApp == AppType.propmap,
+                    color: const Color(0xFF136dec),
                     onTap: () {
                       Navigator.pop(context);
-                      if (currentApp != AppType.property) {
-                        context.go('/property');
+                      if (currentApp != AppType.propmap) {
+                        context.go('/propmap-web');
+                      }
+                    },
+                  ),
+
+                  const Divider(height: 32),
+
+                  // 외부 서비스 섹션
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Text(
+                      '외부 서비스',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ),
+
+                  // PropNet 전체 서비스 (웹)
+                  _DrawerItem(
+                    icon: Icons.public,
+                    title: 'PropNet 전체 서비스',
+                    subtitle: '웹 브라우저에서 열기',
+                    isSelected: false,
+                    color: AppColors.primary,
+                    onTap: () async {
+                      Navigator.pop(context);
+                      final uri = Uri.parse('https://propnet.kr/');
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(
+                          uri,
+                          mode: LaunchMode.externalApplication,
+                        );
                       }
                     },
                   ),
@@ -174,6 +213,48 @@ class AppDrawer extends ConsumerWidget {
                 ),
                 Text(
                   '부동산백과',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    } else if (currentApp == AppType.propmap) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: const Color(0xFF136dec).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.map,
+                color: Color(0xFF136dec),
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '부동산매물지도',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF136dec),
+                  ),
+                ),
+                Text(
+                  '중개사무소·매물 통합 조회',
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey[600],

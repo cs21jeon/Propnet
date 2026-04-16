@@ -1,7 +1,7 @@
 name: propedia
 description: Propedia - 부동산백과
 publish_to: 'none'
-version: 1.1.0+12
+version: 1.1.0+15
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -34,6 +34,9 @@ dependencies:
   # 지도
   kakao_map_plugin: ^0.4.0
   geolocator: ^11.0.0
+
+  # WebView (부동산매물지도 /propmap/ 임베드용)
+  webview_flutter: ^4.7.0
 
   # JSON
   freezed_annotation: ^2.4.1

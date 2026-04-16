@@ -21,6 +21,7 @@ import 'package:propedia/presentation/screens/property/property_detail_screen.da
 import 'package:propedia/presentation/screens/property/property_map_screen.dart';
 import 'package:propedia/presentation/screens/property/property_search_screen.dart';
 import 'package:propedia/presentation/screens/property/property_search_map_screen.dart';
+import 'package:propedia/presentation/screens/property/propmap_web_screen.dart';
 import 'package:propedia/data/dto/property_dto.dart';
 
 // 인증 상태 변경을 감지하는 Listenable
@@ -140,7 +141,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
       ),
-      // 매물 관련 라우트
+      // 부동산매물지도 (PropMap 통합지도 WebView)
+      GoRoute(
+        path: '/propmap-web',
+        builder: (context, state) => const PropMapWebScreen(),
+      ),
+      // 매물 관련 라우트 (SNS 공유 딥링크 및 내부 카테고리 링크용으로 유지)
       GoRoute(
         path: '/property',
         builder: (context, state) => const PropertyHomeScreen(),

@@ -1,7 +1,24 @@
 # PropNet 통합 개발 진행 기록
 
-> 최종 업데이트: 2026-04-16
+> 최종 업데이트: 2026-04-17
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
+
+## 2026-04-17: Propedia 앱 → PropMap WebView 통합 + 모바일 UX 전면 개선
+
+- [Propedia] 드로어 메뉴 "금토끼부동산" → "부동산매물지도" 개편
+  - `/propmap-web` 라우트 + `PropMapWebScreen`으로 `https://propnet.kr/propmap/` WebView 임베드
+  - `webview_flutter: ^4.7.0` 신규 의존성, v1.1.0+13 빌드
+  - SNS 공유 딥링크(`/property/*`) 및 네이티브 매물 화면은 모두 보존
+- [Propedia] 드로어 "외부 서비스 → PropNet 전체 서비스" 링크 추가 (v1.1.0+15)
+  - `url_launcher` + `LaunchMode.externalApplication`로 외부 브라우저 실행
+  - Google Play 정책: B2B SaaS(공인중개사 대상) + 실물 부동산 서비스라 외부 결제 링크 허용 범위 확인
+- [PropMap] 모바일 WebView 임베드 전제로 `propmap/index.html`·`map.html` 전면 리팩터
+  - Safe area(env(safe-area-inset-bottom)), 바텀시트 max-height 50vh, 중개사 힌트 라벨, 필터 토글 버튼
+  - 에이전트별 페이지 4곳(`{goldenrabbit,silverrabbit,propnet}/map.html`)에도 필터 토글 일괄 적용
+- [PropNet 랜딩] 모바일 overflow 수정
+  - `html, body { overflow-x: hidden }`, 헤더 `left:0; right:0; max-width: 100vw`, `.services-grid` 모바일 1열 전환, 헤더 로고/버튼 축소
+  - 헤더 라벨 통일: `/propnet/` 및 `/proppedia/` 랜딩의 "PropNet 홈" → "PropNet 전체 서비스"
+- [배경] Proppedia 앱 네이티브 지도 → 웹 지도 WebView로 전환 과정에서 모바일 Chrome 공통 현상(Kakao 모바일 타일의 반투명 건물 레이블)을 확인. WebView UA 위장 시도(`setUserAgent`, v1.1.0+14) — 효과 없으나 향후 확인 위해 남김
 
 ## 2026-04-16: 동별 클러스터링 + 부속지번 수렴 (Week 2~4 + 샘플 워크스페이스)
 
