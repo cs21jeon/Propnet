@@ -3,6 +3,49 @@
 > 최종 업데이트: 2026-04-16
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
 
+## 2026-04-16: 동별 클러스터링 + 부속지번 수렴 (Week 2~4 + 샘플 워크스페이스)
+
+- [PropMap/PropSheet/Propedia] 대단지(파크리오 등) 매물 표시가 지번 1점에 뭉치던 문제 해결
+  - "지번 중심" → "건물 중심" 좌표 체계로 전환
+  - VWorld `LT_C_BLDGINFO` (GIS건물통합 WFS) 기반 동별 폴리곤·좌표 확보
+  - 부속지번(신천동 20-6 등) → 본번(신천동 17/20) 자동 리다이렉트
+- [PropSheet DB] 신규 공용 캐시 테이블 `building_dong_geometry`
+  - `bd_mgt_sn`(건물관리번호 25자 PK) + `pnu/dong_nm` UNIQUE + GIN geometry
+  - 실제 공공 데이터 기반 **15,096건 동 캐시** 축적
+- [PropSheet DB] 운영 8개 + 샘플 3개 = **11개 agent 매물 테이블** 스키마 정합화
+  - `bd_mgt_sn` 컬럼 + partial index (CONCURRENTLY, 무중단)
+  - `coordinates_lat_orig` / `coordinates_lon_orig` 백업 컬럼 (C안)
+  - 480건 기존 좌표 `_orig`에 백업 후 건물 중심으로 덮어쓰기
+- [PropSheet/공통] UI 내부 시스템 필드 5개 숨김 처리
+  - `schema_service.py`의 SSoT NOT IN 확장: `bd_mgt_sn`, `coordinates_lat/lon`, `coordinates_lat_orig/lon_orig`
+  - PropSheet/Propedia/PropNet 모든 agent + 샘플 워크스페이스에 적용
+- [PropSheet] 새 공유 서비스 `ldareg_service.py` (NSDI 대지권등록정보 래퍼, 15056691)
+- [PropSheet] 새 확장 `cadastral_service_dong_ext.py`
+  - `get_building_by_coord`, `get_buildings_by_pnu`, `cache_building_geometry`, `resolve_to_main_pnu`
+  - VWorld WFS Filter XML 제거 → `LP_PA_CBND_BUBUN` attrFilter + BBOX 400m 후처리
+- [PropSheet] 새 라우트 `/api/propsheet/map/dong-coords` (property-manager + propsheet Blueprint 양쪽 등록)
+- [PropSheet] `propsheet_save_service.py` 매물 저장 시 동 필드 폴백 강화
+- [PropMap] 동 단위 클러스터 공통 모듈 `propmap/js/dong-cluster-renderer.js`
+  - 카카오맵 `zoom_changed` + `idle` 리스너, level<=3에서 동별 렌더
+  - 매물 있음 파랑 마커(카운트+동명) / 매물 없음 회색 점선 윤곽
+  - 중복 요청 방지 캐시, 기존 `createClusterPopup` 재사용
+- [PropMap] `propmap/map.html` `createClusterPopup` 확장 — 대표 이미지 + "동별 보기" 버튼 + 매물 동 배지
+- [PropMap] 3곳 동기 (map.html 메인 + index.html iframe 검색결과 + agent별 dir)
+- [Propedia 웹] `frontend/public/app/result.html` — 집합부동산 저장 시 `동` 빈 값 경고 표시
+- [스크립트] `scripts/warm_building_cache.py` — 캐시 워밍 + 배치 재좌표화
+  - `--dry-run/--agent/--rate-limit/--fallback-ldareg` 옵션
+  - 정교화된 매칭 로직 `_normalize_dong` + `_match_dong`
+- [스크립트] `scripts/_week4_5_template_migrate.sh` + `_template_dryrun.py` — 샘플 워크스페이스 전용 원샷 마이그레이션
+- [PropMap] 매칭률: 3.6% → 5.5% (전체 477건 기준, 상대 +53%)
+  - goldenrabbit 집합: 18.3% 유지 + 좌표 정확도 향상 (24건 덮어쓰기, 평균 22.3m)
+  - 큰 좌표 이동(100m+) 2건: 사당동 1157 (197m), 사당동 301-3 (260m) — 수동 검토 대상
+- [운영] 기능 플래그 `ENABLE_DONG_CLUSTERING=true` — 실사용자 공개 운영 중
+- 선행 조사 문서: `docs/research-dong-coordinates-2026-04-16.md`, `docs/vworld-16-api-final-proposal-2026-04-16.md`
+- 설계 문서: `docs/prd-propmap-dong-clustering.md`, `docs/tech-design-dong-clustering.md`, `docs/infra-dong-clustering-schema.md`, `docs/design-dong-clustering-ux.md`
+- 배포/QA 문서: `docs/deploy-log-dong-clustering-week2.md`, `docs/week3-deployment-guide.md`, `docs/week3-wfs-test-results.md`, `docs/week3-qa-report.md`, `docs/week4-final-qa-report.md`, `docs/week4-5-final-consolidated-report.md`
+- 증거 스크린샷: `propmap-initial.png`, `propmap-dong-clusters-final.png`, `propmap-zoom-out.png` (Playwright E2E)
+- Week 5 이관 과제: 매물등록 UI 동 필수화, `complex_master` 테이블(K-apt 연동) 기반 단지 통합, BLD_DIFF 케이스 분석
+
 ## 2026-04-16: goldenrabbit.biz 금토끼부동산 홈페이지 전용화 + 네이버 검색 정리
 
 - [통합/인프라] goldenrabbit.biz 역할 재정의 — 금토끼부동산 홈페이지 외 모든 서비스는 propnet.kr로 일원화

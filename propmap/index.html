@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>PropMap - 통합 매물지도</title>
     <link rel="icon" href="/propmap/assets/logo/Propmap_transparent_full%20size.png" type="image/png">
     <meta name="description" content="전국 부동산 중개사무소 매물을 한눈에. PropMap 통합 매물지도">
@@ -181,33 +181,78 @@
         .panel-toggle:hover { background: #f8fafc; }
 
         /* ===== 모바일 하단 시트 ===== */
+        .sheet-hint { display: none; }
+
         @media (max-width: 768px) {
             .app { flex-direction: column; }
             .map-area { flex: 1; }
             .side-panel {
                 position: fixed; bottom: 0; left: 0; right: 0; width: 100%;
-                height: auto; max-height: 70vh; border-left: none;
+                height: auto; max-height: 50vh; border-left: none;
                 border-top: 1px solid #e2e8f0; border-radius: 20px 20px 0 0;
                 box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-                transform: translateY(calc(100% - 72px));
+                padding-bottom: env(safe-area-inset-bottom);
+                transform: translateY(calc(100% - 64px - env(safe-area-inset-bottom)));
                 transition: transform 0.3s ease;
             }
             .side-panel.expanded { transform: translateY(0); }
-            .side-panel.collapsed { transform: translateY(calc(100% - 72px)); }
+            .side-panel.collapsed { transform: translateY(calc(100% - 64px - env(safe-area-inset-bottom))); }
 
             /* 드래그 핸들 */
             .sheet-handle {
-                display: flex; justify-content: center; padding: 10px 0 4px;
+                display: flex; justify-content: center; padding: 8px 0 2px;
                 cursor: grab;
             }
             .sheet-handle-bar {
                 width: 40px; height: 4px; background: #cbd5e1; border-radius: 2px;
             }
-            .panel-header { padding: 8px 16px 10px; }
+
+            /* collapsed 힌트 라벨 */
+            .panel-logo { display: none; }
+            .sheet-hint {
+                display: flex; align-items: center; justify-content: center;
+                gap: 8px; flex: 1; padding: 0;
+            }
+            .sheet-hint-icon {
+                font-size: 18px; color: #136dec;
+            }
+            .sheet-hint-count {
+                font-size: 14px; font-weight: 700; color: #0f172a;
+            }
+            .sheet-hint-label {
+                font-size: 14px; font-weight: 600; color: #334155;
+            }
+            .sheet-hint-arrow {
+                font-size: 16px; color: #64748b;
+                transition: transform 0.3s;
+            }
+            .side-panel.expanded .sheet-hint-arrow { transform: rotate(180deg); }
+
+            .panel-header { padding: 6px 16px 8px; }
             .panel-close { display: none; }
-            .sort-bar { padding: 8px 16px; }
-            .agent-list { padding: 8px 12px; }
-            .agent-card { padding: 12px 14px; }
+            .sort-bar { padding: 6px 16px 8px; }
+            .sort-bar .total { font-size: 12px; }
+            .sort-btn { padding: 3px 8px; font-size: 10px; }
+
+            /* 에이전트 카드 — 높이 절반으로 축소 */
+            .agent-list { padding: 6px 10px; }
+            .agent-card { padding: 6px 10px; margin-bottom: 4px; gap: 10px; border-radius: 10px; }
+            .agent-avatar { width: 32px; height: 32px; font-size: 13px; border-radius: 8px; }
+            .agent-name { font-size: 13px; }
+            .agent-meta { font-size: 10px; margin-top: 1px; }
+            .agent-meta span + span { display: none; } /* 전화번호 숨김, 주소만 */
+            .agent-count { font-size: 15px; }
+            .agent-count-label { font-size: 9px; margin-top: 0; }
+            .agent-distance { font-size: 10px; margin-top: 2px; }
+            .agent-page-link { padding: 1px 6px; font-size: 9px; margin-top: 2px; }
+            .agent-page-link .material-symbols-outlined { font-size: 11px; }
+
+            .panel-footer {
+                padding: 6px 16px;
+            }
+            .footer-links a { font-size: 10px; }
+            .footer-copy { font-size: 9px; }
+
             .panel-toggle { display: none; }
         }
         @media (min-width: 769px) {
@@ -314,6 +359,12 @@
                 <div class="panel-logo" id="panelLogo">
                     <img src="/propmap/assets/logo/Propmap_transparent_full%20size.png" alt="PropMap" id="panelLogoImg">
                     <span id="panelLogoText">PropMap</span>
+                </div>
+                <div class="sheet-hint" id="sheetHint">
+                    <span class="material-symbols-outlined sheet-hint-icon">apartment</span>
+                    <span class="sheet-hint-count" id="sheetHintCount">0</span>
+                    <span class="sheet-hint-label">개 중개사무소 보기</span>
+                    <span class="sheet-hint-arrow">▲</span>
                 </div>
                 <button class="panel-close" id="panelClose">&#10005;</button>
             </div>
@@ -559,6 +610,8 @@
         });
 
         document.getElementById('totalAgents').textContent = sorted.length + '개 사무소';
+        var hintCountEl = document.getElementById('sheetHintCount');
+        if (hintCountEl) hintCountEl.textContent = sorted.length;
 
         if (!sorted.length) {
             list.innerHTML = '<div class="loading-text">현재 지도 범위에 중개사무소가 없습니다.</div>';
@@ -627,16 +680,10 @@
 
     /* ===== 에이전트 선택 ===== */
     function selectAgent(slug) {
-        // 개별 토글
+        // 개별 토글 (시트는 닫지 않음 — 연속 선택을 위해 유지)
         selectedAgents[slug] = !selectedAgents[slug];
         syncMapFilter();
         renderAgentList();
-
-        // 모바일: 시트 닫기
-        if (window.innerWidth <= 768) {
-            document.getElementById('sidePanel').classList.remove('expanded');
-            document.getElementById('sidePanel').classList.add('collapsed');
-        }
     }
 
     function syncMapFilter() {
@@ -873,10 +920,10 @@
     (function() {
         var panel = document.getElementById('sidePanel');
         var handle = document.getElementById('sheetHandle');
+        var hint = document.getElementById('sheetHint');
         var startY = 0, startTransform = 0, isDragging = false;
 
-        // 모바일: 핸들 클릭으로 토글
-        handle.addEventListener('click', function() {
+        function toggleSheet() {
             if (panel.classList.contains('expanded')) {
                 panel.classList.remove('expanded');
                 panel.classList.add('collapsed');
@@ -884,7 +931,11 @@
                 panel.classList.remove('collapsed');
                 panel.classList.add('expanded');
             }
-        });
+        }
+
+        // 모바일: 핸들/힌트 영역 클릭으로 토글
+        handle.addEventListener('click', toggleSheet);
+        if (hint) hint.addEventListener('click', toggleSheet);
 
         // 터치 드래그
         handle.addEventListener('touchstart', function(e) {

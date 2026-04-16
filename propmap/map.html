@@ -49,6 +49,42 @@
             background: white; border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15); padding: 8px 6px;
         }
+
+        /* 필터 토글 버튼 (모바일 전용) */
+        .filter-toggle-btn {
+            display: none;
+            position: absolute; top: 46px; right: 8px; z-index: 1002;
+            align-items: center; justify-content: center; gap: 3px;
+            padding: 7px 10px; border: none; border-radius: 8px;
+            background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            cursor: pointer; font-size: 12px; font-weight: 700; color: #334155;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .filter-toggle-btn::before {
+            content: ''; display: inline-block; width: 12px; height: 12px;
+            background:
+                linear-gradient(#334155,#334155) 0 2px/12px 2px no-repeat,
+                linear-gradient(#334155,#334155) 0 6px/8px 2px no-repeat,
+                linear-gradient(#334155,#334155) 0 10px/4px 2px no-repeat;
+        }
+        .filter-toggle-btn.open { background: #334155; color: white; }
+        .filter-toggle-btn.open::before {
+            background:
+                linear-gradient(white,white) 0 2px/12px 2px no-repeat,
+                linear-gradient(white,white) 0 6px/8px 2px no-repeat,
+                linear-gradient(white,white) 0 10px/4px 2px no-repeat;
+        }
+
+        @media (max-width: 768px) {
+            .filter-toggle-btn { display: inline-flex; }
+            .filter-panel { display: none; }
+            .filter-panel.open {
+                display: flex;
+                top: 90px; /* 토글 버튼 아래로 */
+                max-height: calc(100vh - 110px);
+                overflow-y: auto;
+            }
+        }
         .subtype-float {
             position: fixed; z-index: 1001; background: white; border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15); padding: 8px 6px;
@@ -215,6 +251,53 @@
         }
         .cluster-popup .cluster-price {
             font-size: 10px; color: #64748b;
+        }
+        /* Week 3: 단지 팝업 대표 이미지 */
+        .cluster-popup .cluster-hero {
+            position: relative;
+            width: calc(100% + 24px);
+            margin: -10px -12px 8px -12px;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            background: #e5e7eb;
+            border-radius: 10px 10px 0 0;
+        }
+        .cluster-popup .cluster-hero img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+        }
+        .cluster-popup .cluster-hero-overlay {
+            position: absolute; bottom: 6px; right: 6px;
+            background: rgba(0,0,0,0.6); color: #fff;
+            font-size: 11px; font-weight: 700;
+            padding: 2px 8px; border-radius: 10px;
+        }
+        /* Week 3: 동별 보기 버튼 */
+        .cluster-popup .cluster-zoom-btn {
+            width: 100%; margin: 4px 0 8px 0;
+            padding: 6px 10px; font-size: 11px; font-weight: 600;
+            color: #1D4ED8; background: #eff6ff; border: 1px solid #bfdbfe;
+            border-radius: 6px; cursor: pointer; transition: background 0.15s;
+        }
+        .cluster-popup .cluster-zoom-btn:hover { background: #dbeafe; }
+        /* Week 3: 동 배지 */
+        .cluster-popup .cluster-dong-badge {
+            display: inline-block;
+            margin-left: 4px; padding: 1px 5px;
+            font-size: 9px; font-weight: 600;
+            background: #f1f5f9; color: #334155;
+            border-radius: 8px; vertical-align: middle;
+        }
+
+        /* Week 3: 동 단위 마커 (dong-cluster-renderer.js에서 인라인 스타일 사용하지만 hover 효과는 CSS에서) */
+        .dong-marker {
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .dong-marker:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25) !important;
+        }
+        .dong-marker.dong-empty:hover {
+            opacity: 0.7 !important;
         }
 
         /* 팝업 */
@@ -507,6 +590,9 @@
         <button class="map-type-btn" data-type="hybrid">중첩</button>
     </div>
 
+    <!-- 필터 토글 버튼 (모바일에서만 표시) -->
+    <button class="filter-toggle-btn" id="filterToggleBtn" aria-label="필터 보기/숨기기" type="button">필터</button>
+
     <!-- 필터 패널 -->
     <div class="filter-panel" id="filterPanel">
         <div class="filter-group-label">부동산유형</div>
@@ -599,6 +685,17 @@
     var LOGO_URL = '/propmap/assets/logo/Propmap_transparent.png';
     var TYPE_NAMES = {danil: '단일', jibhap: '집합', bubun: '부분'};
     var AGENT_COLORS = ['#e38000', '#6366F1', '#0EA5E9', '#EC4899', '#14B8A6', '#F59E0B', '#8B5CF6', '#EF4444'];
+
+    /* ===== 모바일 필터 패널 토글 (DOM 바인딩, 지도 로드와 무관) ===== */
+    (function() {
+        var btn = document.getElementById('filterToggleBtn');
+        var panel = document.getElementById('filterPanel');
+        if (!btn || !panel) return;
+        btn.addEventListener('click', function() {
+            var isOpen = panel.classList.toggle('open');
+            btn.classList.toggle('open', isOpen);
+        });
+    })();
 
     /* ===== URL 파라미터 파싱 ===== */
     var urlParams = new URLSearchParams(window.location.search);
@@ -1266,8 +1363,35 @@
             popupEl.className = 'cluster-popup';
 
             var address = group[0].address || '';
+
+            // Week 3: 대표 이미지 — 그룹 내 첫 번째 매물 사진 사용 (다양한 키 지원)
+            var representativePhoto = null;
+            for (var i = 0; i < group.length; i++) {
+                var g = group[i];
+                var photo = g.photo_url || g.thumbnail_url || g.image_url || g.대표사진 || null;
+                if (photo && typeof photo === 'string') {
+                    // "파일명.jpg (/uploads/...)" 포맷이면 괄호 안 경로만 추출
+                    var m = photo.match(/\(([^)]+)\)/);
+                    representativePhoto = m ? m[1] : photo;
+                    break;
+                }
+            }
+
             var h = '<button class="close-btn">&times;</button>';
+            if (representativePhoto) {
+                h += '<div class="cluster-hero">';
+                h += '<img src="' + escapeHtml(representativePhoto) + '" alt="' + escapeHtml(address) + '" onerror="this.parentNode.style.display=\'none\'">';
+                h += '<div class="cluster-hero-overlay">' + group.length + '건</div>';
+                h += '</div>';
+            }
             h += '<div class="cluster-title">' + escapeHtml(address) + ' (' + group.length + '건)</div>';
+
+            // Week 3: 현재 kakao level 이 동 뷰(<=3)가 아니면 "동별 보기" 버튼 노출
+            var currentLevel = (window._kakaoMap && window._kakaoMap.getLevel) ? window._kakaoMap.getLevel() : 99;
+            var showDongBtn = currentLevel > 3;
+            if (showDongBtn) {
+                h += '<button class="cluster-zoom-btn" data-action="zoom-dong">동별 보기 →</button>';
+            }
 
             var MARKER_COLORS = {
                 'danil-매매': '#1D4ED8', 'danil-전세': '#60A5FA', 'danil-월세': '#BFDBFE',
@@ -1282,17 +1406,32 @@
                 var dotColor = MARKER_COLORS[colorKey] || '#999';
                 var typeName = TYPE_NAMES[m.property_type] || '';
                 var priceText = m.price_label || '가격미정';
+                var dongBadge = (m.dong || m['동']) ? '<span class="cluster-dong-badge">' + escapeHtml(m.dong || m['동']) + '</span>' : '';
 
                 h += '<div class="cluster-item" data-idx="' + idx + '">';
                 h += '<div class="cluster-dot" style="background:' + dotColor + '"></div>';
                 h += '<div class="cluster-info">';
-                h += '<div class="cluster-agent">' + escapeHtml(agentName) + '</div>';
+                h += '<div class="cluster-agent">' + escapeHtml(agentName) + dongBadge + '</div>';
                 h += '<div class="cluster-price">' + escapeHtml(typeName + ' ' + (m.transaction_type || '') + ' ' + priceText) + '</div>';
                 h += '</div></div>';
             });
 
             popupEl.innerHTML = h;
             popupEl.querySelector('.close-btn').onclick = function() { closePopup(); };
+            if (showDongBtn) {
+                var zoomBtn = popupEl.querySelector('[data-action="zoom-dong"]');
+                if (zoomBtn) {
+                    zoomBtn.onclick = function(e) {
+                        e.stopPropagation();
+                        closePopup();
+                        map.setLevel(3, { anchor: position });
+                        // 렌더러가 있으면 강제 갱신
+                        if (window._dongRenderer && typeof window._dongRenderer.refresh === 'function') {
+                            setTimeout(function() { window._dongRenderer.refresh(); }, 100);
+                        }
+                    };
+                }
+            }
             popupEl.querySelectorAll('.cluster-item').forEach(function(item) {
                 item.addEventListener('click', function() {
                     var idx = parseInt(this.dataset.idx);
@@ -1478,8 +1617,28 @@
             .catch(function(err) {
                 console.error('매물 데이터 로딩 실패:', err);
                 document.getElementById('loading').classList.add('hidden');
+            })
+            .finally(function() {
+                // Week 3: 동 단위 클러스터 렌더러 초기화 (줌 인 시 동별 마커)
+                try {
+                    if (window.DongClusterRenderer && !window._dongRenderer) {
+                        window._dongRenderer = DongClusterRenderer.init({
+                            map: map,
+                            properties: function() {
+                                return Object.values(window._markerData || {});
+                            },
+                            apiUrl: '/propsheet/api/propsheet/map/dong-coords',
+                            zoomThreshold: 3,
+                            createClusterPopup: typeof createClusterPopup === 'function' ? createClusterPopup : null,
+                        });
+                    }
+                } catch (e) {
+                    console.warn('[dong-cluster] init 실패:', e);
+                }
             });
     });
     </script>
+    <!-- Week 3: 동 단위 클러스터 공통 모듈 -->
+    <script src="/propmap/js/dong-cluster-renderer.js?v=20260416d"></script>
 </body>
 </html>

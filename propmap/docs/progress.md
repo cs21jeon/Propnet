@@ -1,6 +1,50 @@
 # PropMap 개발 진행 기록
 
-> 최종 업데이트: 2026-04-13
+> 최종 업데이트: 2026-04-16
+
+## 2026-04-16: Week 4 마무리 — 매칭 로직 정교화 + C안 + 전체 agent + 샘플 워크스페이스
+
+- 매칭 로직 정교화 (`_normalize_dong` + `_match_dong`)
+  - `None`, `'동 없음'`, `' '` 등 빈 값 처리
+  - `'103'` ↔ `'103동'` 숫자 매칭
+  - 건물명 끝 공백 trim, 반각/전각 통일
+- C안 구현 (백업 후 덮어쓰기)
+  - `coordinates_lat_orig` / `coordinates_lon_orig` 컬럼 추가 (11개 테이블 전체)
+  - 480건 좌표 `_orig`에 백업 후 건물 중심으로 덮어쓰기 실행
+- UI 내부 필드 5개 숨김 처리 (`schema_service.py` SSoT NOT IN)
+  - `bd_mgt_sn`, `coordinates_lat/lon`, `coordinates_lat_orig/lon_orig`
+  - PropSheet/Propedia/PropNet 모든 agent + 샘플 워크스페이스 적용
+- 샘플 워크스페이스 동기화 (workspace_id=12, slug=template)
+  - `template_single/part/multi_unit` 3개 테이블 동일 구조 반영
+  - 신규 agent 가입 시 `CREATE TABLE LIKE`로 컬럼 자동 상속 확인
+  - 인덱스 재생성 로직은 Week 5 이관 과제로 정리
+- silverrabbit/propnet 6개 테이블 스키마 정합화
+- 매칭률: 3.6% → 5.5% (전체 477건 기준, 상대 +53%)
+- Playwright E2E 검증 완료 (파크리오 48개 주거동 + 부속지번 20-6 리다이렉트)
+- 관련 문서: `propmap/docs/week4-progress.md`, `docs/week4-5-final-consolidated-report.md`
+
+## 2026-04-16: Week 3 동 단위 클러스터링 + 단지 팝업 대표 이미지
+
+- 공통 모듈 신규: `propmap/js/dong-cluster-renderer.js`
+  - kakao `zoom_changed` 리스너, level<=3 에서 동 마커 렌더링
+  - `/propsheet/api/propsheet/map/dong-coords` 호출 + 중복 요청 방지 캐시
+  - 동별 매물 카운트 → 진한 파랑(매물 있음) / 반투명 점선 회색(매물 없음)
+  - 기존 `createClusterPopup` 재사용 (작업 지시 준수)
+- `propmap/map.html`:
+  - 동 마커 hover/empty CSS 추가
+  - `createClusterPopup` 확장: 대표 이미지(hero) + "동별 보기" 버튼 + 매물별 동 배지
+  - 스크립트 로드 + DongClusterRenderer.init 호출
+- `propmap/index.html`: iframe으로 map.html 사용 → 별도 수정 불필요
+- `frontend/public/propmap/index.html` / `frontend/public/index.html` / `frontend/public/map.html`: 서버 MCP 필요 (Week 3 별도 단계)
+- 백엔드 리팩터 연동:
+  - `cadastral_service_dong_ext.get_buildings_by_pnu` WFS Filter XML → VWorld Data API `LP_PA_CBND_BUBUN` attrFilter 전환
+  - BBOX 150m 반경 + PNU prefix 후처리 필터링
+  - `resolve_to_main_pnu`도 Filter XML 제거
+  - `routes/map_dong.py`에 `address` 쿼리 파라미터 추가 (/addrlink 폴백 힌트)
+- 캐시 워밍 스크립트 신규: `scripts/warm_building_cache.py`
+  - `--dry-run` / `--agent` / `--rate-limit` / `--fallback-ldareg` 옵션
+- 문서: `docs/week3-wfs-test-results.md`, `docs/week3-qa-report.md` 뼈대 작성
+- 기능 플래그 `ENABLE_DONG_CLUSTERING`은 여전히 false 유지 (QA 통과 시 on 예정)
 
 ## 2026-04-13: 마커 색상 체계 개편 + 중복 매물 클러스터 + 네비게이션 버튼
 
