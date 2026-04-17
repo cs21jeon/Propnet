@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'services/api_service.dart';
@@ -10,6 +12,7 @@ import 'screens/login_screen.dart';
 import 'screens/main_screen.dart';
 import 'screens/consent_screen.dart';
 import 'screens/chat_screen.dart';
+import 'screens/share_room_picker_screen.dart';
 import 'theme/app_theme.dart';
 import 'theme/theme_provider.dart';
 import 'widgets/propnet_footer.dart';
@@ -69,13 +72,72 @@ class VoiceRoomApp extends StatefulWidget {
 }
 
 class _VoiceRoomAppState extends State<VoiceRoomApp> {
+  static const _shareChannel = MethodChannel('biz.goldenrabbit.proptalk/share');
+
+  /// 외부 공유로 받은 파일 (처리 대기 중)
+  List<File>? _pendingSharedFiles;
+
   @override
   void initState() {
     super.initState();
+
     // 자동 로그인 시도
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AuthService>().tryAutoLogin();
     });
+
+    // 앱이 꺼져있을 때 공유로 시작된 경우 (초기 인텐트)
+    _checkInitialSharedFiles();
+
+    // 앱이 이미 실행 중일 때 공유 수신 (네이티브에서 호출)
+    _shareChannel.setMethodCallHandler((call) async {
+      if (call.method == 'onSharedFiles') {
+        final paths = List<String>.from(call.arguments as List);
+        _handleSharedPaths(paths);
+      }
+    });
+  }
+
+  Future<void> _checkInitialSharedFiles() async {
+    try {
+      final result = await _shareChannel.invokeMethod<List<dynamic>>('getSharedFiles');
+      if (result != null && result.isNotEmpty) {
+        _handleSharedPaths(result.cast<String>());
+      }
+    } catch (_) {
+      // 공유 인텐트 없이 일반 실행
+    }
+  }
+
+  /// 공유받은 파일 경로 처리
+  void _handleSharedPaths(List<String> paths) {
+    final audioFiles = paths
+        .map((p) => File(p))
+        .where((f) => f.existsSync())
+        .toList();
+
+    if (audioFiles.isEmpty) return;
+
+    final auth = context.read<AuthService>();
+    if (auth.isLoggedIn && !auth.consentRequired) {
+      _navigateToRoomPicker(audioFiles);
+    } else {
+      setState(() {
+        _pendingSharedFiles = audioFiles;
+      });
+    }
+  }
+
+  /// 방 선택 화면으로 이동
+  void _navigateToRoomPicker(List<File> files) {
+    final navigator = navigatorKey.currentState;
+    if (navigator != null) {
+      navigator.push(
+        MaterialPageRoute(
+          builder: (_) => ShareRoomPickerScreen(sharedFiles: files),
+        ),
+      );
+    }
   }
 
   @override
@@ -106,6 +168,14 @@ class _VoiceRoomAppState extends State<VoiceRoomApp> {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             context.read<BillingService>().loadBillingStatus();
           });
+          // 대기 중인 공유 파일이 있으면 방 선택 화면으로 이동
+          if (_pendingSharedFiles != null) {
+            final files = _pendingSharedFiles!;
+            _pendingSharedFiles = null;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _navigateToRoomPicker(files);
+            });
+          }
           return const MainScreen();
         },
       ),
