@@ -1,5 +1,30 @@
 업데이트 현황 (2026-04-17)
 
+## 2026-04-17: Propedia 통합 검색 — 지도 중심 UI + PropMap 개선
+
+### Propedia 앱
+- HomeScreen 전면 재설계: 카드 기반 → 전체 화면 카카오맵 + 플로팅 검색바
+  - 통합 검색 (`/api/search/unified`): 단지명/지번/도로명 자동 감지, 300ms 디바운스
+  - 지도 탭: 역지오코딩 → 필지 폴리곤 + 정보 카드 → "상세 조회" → ResultScreen
+  - 검색 결과 선택 → 지도 이동 + 마커 → 정보 카드 표시
+  - kIsWeb 폴백: 검색만 제공 (카카오맵 미지원)
+- 통합 검색 DTO/API/Repository/Provider 추가 (`UnifiedSearchResultItem`, `UnifiedSearchResponse`)
+- PropMap WebView 개선 (`propmap_web_screen.dart`)
+  - 위치 기억: SharedPreferences로 마지막 좌표/줌레벨 저장 → center 파라미터로 복원
+  - 위치 권한 자동 승인: Android `setGeolocationPermissionsPromptCallbacks`
+  - 앱 GPS 좌표를 `myloc=` 파라미터로 PropMap에 전달 → 내 위치 즉시 반응
+  - 하단 safe area: `MediaQuery.padding.bottom` 여백 → 홈 버튼 영역 가림 방지
+  - 타이틀: "부동산매물지도 PropMap"
+
+### Propedia 웹 (정적 HTML, 서버)
+- `/app/index.html` 전면 재작성: 전체 화면 카카오맵 + Tailwind 디자인 시스템
+  - unified-search.js 재사용 (PropMap에서 검증 완료)
+  - 지도 클릭 → `/app/api/map/click-jibun` → 정보 카드 → result.html 이동
+  - 헤더 아이콘: `proppedia_icon.png`
+  - 지도 클릭 안내 배지 ("지도를 탭하여 토지/건물 정보를 조회하세요")
+  - 사이드 메뉴: 기존 항목 통합 (검색기록/즐겨찾기/프로필/매물지도/가이드)
+  - 사용가이드: 새 창에서 열기 (`target="_blank"`)
+
 ## 2026-04-17: v1.1.0+15 — 드로어 "PropNet 전체 서비스" 외부 링크 추가 + 랜딩 라벨 통일
 
 - 드로어 신규 섹션 "외부 서비스" → "PropNet 전체 서비스" 항목 추가

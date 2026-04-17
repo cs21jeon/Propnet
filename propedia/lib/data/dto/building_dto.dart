@@ -336,3 +336,58 @@ class AreaInfoResponse with _$AreaInfoResponse {
   factory AreaInfoResponse.fromJson(Map<String, dynamic> json) =>
       _$AreaInfoResponseFromJson(json);
 }
+
+/// 통합 검색 결과 아이템
+@freezed
+class UnifiedSearchResultItem with _$UnifiedSearchResultItem {
+  const factory UnifiedSearchResultItem({
+    /// 결과 유형: 'complex', 'jibun', 'road'
+    required String type,
+    /// 아이콘 이모지
+    String? icon,
+    /// 주 표시 텍스트 (단지명 또는 주소)
+    required String label,
+    /// 보조 표시 텍스트 (유형·주소·세대수)
+    String? sublabel,
+    /// complex_master PK (type=complex 일 때)
+    @JsonKey(name: 'complex_pk') String? complexPk,
+    /// PNU 코드 (type=jibun 일 때)
+    String? pnu,
+    /// 건물관리번호 (type=road 일 때)
+    @JsonKey(name: 'bd_mgt_sn') String? bdMgtSn,
+    /// 중심 좌표 [lat, lon]
+    List<double>? center,
+    /// 좌표 [lat, lon] (jibun/road)
+    List<double>? coords,
+    /// 매칭된 별칭
+    @JsonKey(name: 'match_alias') String? matchAlias,
+    /// 세대수
+    @JsonKey(name: 'household_count') int? householdCount,
+    /// 검색 점수
+    double? score,
+    /// 지번 본번 (jibun 결과)
+    @JsonKey(name: 'lnbr_mnnm') String? lnbrMnnm,
+    /// 지번 부번 (jibun 결과)
+    @JsonKey(name: 'lnbr_slno') String? lnbrSlno,
+    /// 법정동코드 (jibun 결과)
+    @JsonKey(name: 'adm_cd') String? admCd,
+  }) = _UnifiedSearchResultItem;
+
+  factory UnifiedSearchResultItem.fromJson(Map<String, dynamic> json) =>
+      _$UnifiedSearchResultItemFromJson(json);
+}
+
+/// 통합 검색 응답
+@freezed
+class UnifiedSearchResponse with _$UnifiedSearchResponse {
+  const factory UnifiedSearchResponse({
+    required String query,
+    @JsonKey(name: 'detected_type') String? detectedType,
+    @Default([]) List<UnifiedSearchResultItem> results,
+    @JsonKey(name: 'elapsed_ms') int? elapsedMs,
+    String? error,
+  }) = _UnifiedSearchResponse;
+
+  factory UnifiedSearchResponse.fromJson(Map<String, dynamic> json) =>
+      _$UnifiedSearchResponseFromJson(json);
+}

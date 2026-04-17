@@ -55,4 +55,13 @@ class BuildingApi {
     );
     return AreaInfoResponse.fromJson(response.data);
   }
+
+  /// 통합 검색 (단지명/지번/도로명 자동 감지)
+  Future<UnifiedSearchResponse> searchUnified(String query, {int limit = 10}) async {
+    final response = await _dio.get(
+      '/api/search/unified',
+      queryParameters: {'q': query, 'limit': limit},
+    );
+    return UnifiedSearchResponse.fromJson(response.data);
+  }
 }

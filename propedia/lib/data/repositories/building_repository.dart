@@ -216,6 +216,20 @@ class BuildingRepository {
     }
   }
 
+  /// 통합 검색 (단지명/지번/도로명 자동 감지)
+  Future<UnifiedSearchResponse> searchUnified(String query, {int limit = 10}) async {
+    try {
+      debugPrint('📡 API 호출: searchUnified($query)');
+      final response = await _buildingApi.searchUnified(query, limit: limit);
+      debugPrint('📡 API 응답: ${response.results.length}건');
+      return response;
+    } on DioException catch (e) {
+      debugPrint('📡 API DioException: ${e.type} - ${e.message}');
+      final message = e.response?.data?['error'] ?? '검색 중 오류가 발생했습니다';
+      throw Exception(message);
+    }
+  }
+
   /// 법정동 검색 (지번 필터링 지원)
   Future<List<BjdongSearchItem>> searchBjdong(String query, {String? bun, String? ji}) async {
     try {

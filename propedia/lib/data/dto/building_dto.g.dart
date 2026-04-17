@@ -441,3 +441,71 @@ Map<String, dynamic> _$$AreaInfoResponseImplToJson(
       'area_info': instance.areaInfo,
       'error': instance.error,
     };
+
+_$UnifiedSearchResultItemImpl _$$UnifiedSearchResultItemImplFromJson(
+        Map<String, dynamic> json) =>
+    _$UnifiedSearchResultItemImpl(
+      type: json['type'] as String,
+      icon: json['icon'] as String?,
+      label: json['label'] as String,
+      sublabel: json['sublabel'] as String?,
+      complexPk: json['complex_pk'] as String?,
+      pnu: json['pnu'] as String?,
+      bdMgtSn: json['bd_mgt_sn'] as String?,
+      center: (json['center'] as List<dynamic>?)
+          ?.map((e) => (e as num).toDouble())
+          .toList(),
+      coords: (json['coords'] as List<dynamic>?)
+          ?.map((e) => (e as num).toDouble())
+          .toList(),
+      matchAlias: json['match_alias'] as String?,
+      householdCount: (json['household_count'] as num?)?.toInt(),
+      score: (json['score'] as num?)?.toDouble(),
+      lnbrMnnm: json['lnbr_mnnm'] as String?,
+      lnbrSlno: json['lnbr_slno'] as String?,
+      admCd: json['adm_cd'] as String?,
+    );
+
+Map<String, dynamic> _$$UnifiedSearchResultItemImplToJson(
+        _$UnifiedSearchResultItemImpl instance) =>
+    <String, dynamic>{
+      'type': instance.type,
+      'icon': instance.icon,
+      'label': instance.label,
+      'sublabel': instance.sublabel,
+      'complex_pk': instance.complexPk,
+      'pnu': instance.pnu,
+      'bd_mgt_sn': instance.bdMgtSn,
+      'center': instance.center,
+      'coords': instance.coords,
+      'match_alias': instance.matchAlias,
+      'household_count': instance.householdCount,
+      'score': instance.score,
+      'lnbr_mnnm': instance.lnbrMnnm,
+      'lnbr_slno': instance.lnbrSlno,
+      'adm_cd': instance.admCd,
+    };
+
+_$UnifiedSearchResponseImpl _$$UnifiedSearchResponseImplFromJson(
+        Map<String, dynamic> json) =>
+    _$UnifiedSearchResponseImpl(
+      query: json['query'] as String,
+      detectedType: json['detected_type'] as String?,
+      results: (json['results'] as List<dynamic>?)
+              ?.map((e) =>
+                  UnifiedSearchResultItem.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      elapsedMs: (json['elapsed_ms'] as num?)?.toInt(),
+      error: json['error'] as String?,
+    );
+
+Map<String, dynamic> _$$UnifiedSearchResponseImplToJson(
+        _$UnifiedSearchResponseImpl instance) =>
+    <String, dynamic>{
+      'query': instance.query,
+      'detected_type': instance.detectedType,
+      'results': instance.results,
+      'elapsed_ms': instance.elapsedMs,
+      'error': instance.error,
+    };

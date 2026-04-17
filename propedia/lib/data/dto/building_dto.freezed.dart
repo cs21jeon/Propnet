@@ -5206,3 +5206,824 @@ abstract class _AreaInfoResponse implements AreaInfoResponse {
   _$$AreaInfoResponseImplCopyWith<_$AreaInfoResponseImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
+
+UnifiedSearchResultItem _$UnifiedSearchResultItemFromJson(
+    Map<String, dynamic> json) {
+  return _UnifiedSearchResultItem.fromJson(json);
+}
+
+/// @nodoc
+mixin _$UnifiedSearchResultItem {
+  /// 결과 유형: 'complex', 'jibun', 'road'
+  String get type => throw _privateConstructorUsedError;
+
+  /// 아이콘 이모지
+  String? get icon => throw _privateConstructorUsedError;
+
+  /// 주 표시 텍스트 (단지명 또는 주소)
+  String get label => throw _privateConstructorUsedError;
+
+  /// 보조 표시 텍스트 (유형·주소·세대수)
+  String? get sublabel => throw _privateConstructorUsedError;
+
+  /// complex_master PK (type=complex 일 때)
+  @JsonKey(name: 'complex_pk')
+  String? get complexPk => throw _privateConstructorUsedError;
+
+  /// PNU 코드 (type=jibun 일 때)
+  String? get pnu => throw _privateConstructorUsedError;
+
+  /// 건물관리번호 (type=road 일 때)
+  @JsonKey(name: 'bd_mgt_sn')
+  String? get bdMgtSn => throw _privateConstructorUsedError;
+
+  /// 중심 좌표 [lat, lon]
+  List<double>? get center => throw _privateConstructorUsedError;
+
+  /// 좌표 [lat, lon] (jibun/road)
+  List<double>? get coords => throw _privateConstructorUsedError;
+
+  /// 매칭된 별칭
+  @JsonKey(name: 'match_alias')
+  String? get matchAlias => throw _privateConstructorUsedError;
+
+  /// 세대수
+  @JsonKey(name: 'household_count')
+  int? get householdCount => throw _privateConstructorUsedError;
+
+  /// 검색 점수
+  double? get score => throw _privateConstructorUsedError;
+
+  /// 지번 본번 (jibun 결과)
+  @JsonKey(name: 'lnbr_mnnm')
+  String? get lnbrMnnm => throw _privateConstructorUsedError;
+
+  /// 지번 부번 (jibun 결과)
+  @JsonKey(name: 'lnbr_slno')
+  String? get lnbrSlno => throw _privateConstructorUsedError;
+
+  /// 법정동코드 (jibun 결과)
+  @JsonKey(name: 'adm_cd')
+  String? get admCd => throw _privateConstructorUsedError;
+
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  @JsonKey(ignore: true)
+  $UnifiedSearchResultItemCopyWith<UnifiedSearchResultItem> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $UnifiedSearchResultItemCopyWith<$Res> {
+  factory $UnifiedSearchResultItemCopyWith(UnifiedSearchResultItem value,
+          $Res Function(UnifiedSearchResultItem) then) =
+      _$UnifiedSearchResultItemCopyWithImpl<$Res, UnifiedSearchResultItem>;
+  @useResult
+  $Res call(
+      {String type,
+      String? icon,
+      String label,
+      String? sublabel,
+      @JsonKey(name: 'complex_pk') String? complexPk,
+      String? pnu,
+      @JsonKey(name: 'bd_mgt_sn') String? bdMgtSn,
+      List<double>? center,
+      List<double>? coords,
+      @JsonKey(name: 'match_alias') String? matchAlias,
+      @JsonKey(name: 'household_count') int? householdCount,
+      double? score,
+      @JsonKey(name: 'lnbr_mnnm') String? lnbrMnnm,
+      @JsonKey(name: 'lnbr_slno') String? lnbrSlno,
+      @JsonKey(name: 'adm_cd') String? admCd});
+}
+
+/// @nodoc
+class _$UnifiedSearchResultItemCopyWithImpl<$Res,
+        $Val extends UnifiedSearchResultItem>
+    implements $UnifiedSearchResultItemCopyWith<$Res> {
+  _$UnifiedSearchResultItemCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? type = null,
+    Object? icon = freezed,
+    Object? label = null,
+    Object? sublabel = freezed,
+    Object? complexPk = freezed,
+    Object? pnu = freezed,
+    Object? bdMgtSn = freezed,
+    Object? center = freezed,
+    Object? coords = freezed,
+    Object? matchAlias = freezed,
+    Object? householdCount = freezed,
+    Object? score = freezed,
+    Object? lnbrMnnm = freezed,
+    Object? lnbrSlno = freezed,
+    Object? admCd = freezed,
+  }) {
+    return _then(_value.copyWith(
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as String,
+      icon: freezed == icon
+          ? _value.icon
+          : icon // ignore: cast_nullable_to_non_nullable
+              as String?,
+      label: null == label
+          ? _value.label
+          : label // ignore: cast_nullable_to_non_nullable
+              as String,
+      sublabel: freezed == sublabel
+          ? _value.sublabel
+          : sublabel // ignore: cast_nullable_to_non_nullable
+              as String?,
+      complexPk: freezed == complexPk
+          ? _value.complexPk
+          : complexPk // ignore: cast_nullable_to_non_nullable
+              as String?,
+      pnu: freezed == pnu
+          ? _value.pnu
+          : pnu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      bdMgtSn: freezed == bdMgtSn
+          ? _value.bdMgtSn
+          : bdMgtSn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      center: freezed == center
+          ? _value.center
+          : center // ignore: cast_nullable_to_non_nullable
+              as List<double>?,
+      coords: freezed == coords
+          ? _value.coords
+          : coords // ignore: cast_nullable_to_non_nullable
+              as List<double>?,
+      matchAlias: freezed == matchAlias
+          ? _value.matchAlias
+          : matchAlias // ignore: cast_nullable_to_non_nullable
+              as String?,
+      householdCount: freezed == householdCount
+          ? _value.householdCount
+          : householdCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      score: freezed == score
+          ? _value.score
+          : score // ignore: cast_nullable_to_non_nullable
+              as double?,
+      lnbrMnnm: freezed == lnbrMnnm
+          ? _value.lnbrMnnm
+          : lnbrMnnm // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lnbrSlno: freezed == lnbrSlno
+          ? _value.lnbrSlno
+          : lnbrSlno // ignore: cast_nullable_to_non_nullable
+              as String?,
+      admCd: freezed == admCd
+          ? _value.admCd
+          : admCd // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$UnifiedSearchResultItemImplCopyWith<$Res>
+    implements $UnifiedSearchResultItemCopyWith<$Res> {
+  factory _$$UnifiedSearchResultItemImplCopyWith(
+          _$UnifiedSearchResultItemImpl value,
+          $Res Function(_$UnifiedSearchResultItemImpl) then) =
+      __$$UnifiedSearchResultItemImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {String type,
+      String? icon,
+      String label,
+      String? sublabel,
+      @JsonKey(name: 'complex_pk') String? complexPk,
+      String? pnu,
+      @JsonKey(name: 'bd_mgt_sn') String? bdMgtSn,
+      List<double>? center,
+      List<double>? coords,
+      @JsonKey(name: 'match_alias') String? matchAlias,
+      @JsonKey(name: 'household_count') int? householdCount,
+      double? score,
+      @JsonKey(name: 'lnbr_mnnm') String? lnbrMnnm,
+      @JsonKey(name: 'lnbr_slno') String? lnbrSlno,
+      @JsonKey(name: 'adm_cd') String? admCd});
+}
+
+/// @nodoc
+class __$$UnifiedSearchResultItemImplCopyWithImpl<$Res>
+    extends _$UnifiedSearchResultItemCopyWithImpl<$Res,
+        _$UnifiedSearchResultItemImpl>
+    implements _$$UnifiedSearchResultItemImplCopyWith<$Res> {
+  __$$UnifiedSearchResultItemImplCopyWithImpl(
+      _$UnifiedSearchResultItemImpl _value,
+      $Res Function(_$UnifiedSearchResultItemImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? type = null,
+    Object? icon = freezed,
+    Object? label = null,
+    Object? sublabel = freezed,
+    Object? complexPk = freezed,
+    Object? pnu = freezed,
+    Object? bdMgtSn = freezed,
+    Object? center = freezed,
+    Object? coords = freezed,
+    Object? matchAlias = freezed,
+    Object? householdCount = freezed,
+    Object? score = freezed,
+    Object? lnbrMnnm = freezed,
+    Object? lnbrSlno = freezed,
+    Object? admCd = freezed,
+  }) {
+    return _then(_$UnifiedSearchResultItemImpl(
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as String,
+      icon: freezed == icon
+          ? _value.icon
+          : icon // ignore: cast_nullable_to_non_nullable
+              as String?,
+      label: null == label
+          ? _value.label
+          : label // ignore: cast_nullable_to_non_nullable
+              as String,
+      sublabel: freezed == sublabel
+          ? _value.sublabel
+          : sublabel // ignore: cast_nullable_to_non_nullable
+              as String?,
+      complexPk: freezed == complexPk
+          ? _value.complexPk
+          : complexPk // ignore: cast_nullable_to_non_nullable
+              as String?,
+      pnu: freezed == pnu
+          ? _value.pnu
+          : pnu // ignore: cast_nullable_to_non_nullable
+              as String?,
+      bdMgtSn: freezed == bdMgtSn
+          ? _value.bdMgtSn
+          : bdMgtSn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      center: freezed == center
+          ? _value._center
+          : center // ignore: cast_nullable_to_non_nullable
+              as List<double>?,
+      coords: freezed == coords
+          ? _value._coords
+          : coords // ignore: cast_nullable_to_non_nullable
+              as List<double>?,
+      matchAlias: freezed == matchAlias
+          ? _value.matchAlias
+          : matchAlias // ignore: cast_nullable_to_non_nullable
+              as String?,
+      householdCount: freezed == householdCount
+          ? _value.householdCount
+          : householdCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      score: freezed == score
+          ? _value.score
+          : score // ignore: cast_nullable_to_non_nullable
+              as double?,
+      lnbrMnnm: freezed == lnbrMnnm
+          ? _value.lnbrMnnm
+          : lnbrMnnm // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lnbrSlno: freezed == lnbrSlno
+          ? _value.lnbrSlno
+          : lnbrSlno // ignore: cast_nullable_to_non_nullable
+              as String?,
+      admCd: freezed == admCd
+          ? _value.admCd
+          : admCd // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$UnifiedSearchResultItemImpl implements _UnifiedSearchResultItem {
+  const _$UnifiedSearchResultItemImpl(
+      {required this.type,
+      this.icon,
+      required this.label,
+      this.sublabel,
+      @JsonKey(name: 'complex_pk') this.complexPk,
+      this.pnu,
+      @JsonKey(name: 'bd_mgt_sn') this.bdMgtSn,
+      final List<double>? center,
+      final List<double>? coords,
+      @JsonKey(name: 'match_alias') this.matchAlias,
+      @JsonKey(name: 'household_count') this.householdCount,
+      this.score,
+      @JsonKey(name: 'lnbr_mnnm') this.lnbrMnnm,
+      @JsonKey(name: 'lnbr_slno') this.lnbrSlno,
+      @JsonKey(name: 'adm_cd') this.admCd})
+      : _center = center,
+        _coords = coords;
+
+  factory _$UnifiedSearchResultItemImpl.fromJson(Map<String, dynamic> json) =>
+      _$$UnifiedSearchResultItemImplFromJson(json);
+
+  /// 결과 유형: 'complex', 'jibun', 'road'
+  @override
+  final String type;
+
+  /// 아이콘 이모지
+  @override
+  final String? icon;
+
+  /// 주 표시 텍스트 (단지명 또는 주소)
+  @override
+  final String label;
+
+  /// 보조 표시 텍스트 (유형·주소·세대수)
+  @override
+  final String? sublabel;
+
+  /// complex_master PK (type=complex 일 때)
+  @override
+  @JsonKey(name: 'complex_pk')
+  final String? complexPk;
+
+  /// PNU 코드 (type=jibun 일 때)
+  @override
+  final String? pnu;
+
+  /// 건물관리번호 (type=road 일 때)
+  @override
+  @JsonKey(name: 'bd_mgt_sn')
+  final String? bdMgtSn;
+
+  /// 중심 좌표 [lat, lon]
+  final List<double>? _center;
+
+  /// 중심 좌표 [lat, lon]
+  @override
+  List<double>? get center {
+    final value = _center;
+    if (value == null) return null;
+    if (_center is EqualUnmodifiableListView) return _center;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  /// 좌표 [lat, lon] (jibun/road)
+  final List<double>? _coords;
+
+  /// 좌표 [lat, lon] (jibun/road)
+  @override
+  List<double>? get coords {
+    final value = _coords;
+    if (value == null) return null;
+    if (_coords is EqualUnmodifiableListView) return _coords;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  /// 매칭된 별칭
+  @override
+  @JsonKey(name: 'match_alias')
+  final String? matchAlias;
+
+  /// 세대수
+  @override
+  @JsonKey(name: 'household_count')
+  final int? householdCount;
+
+  /// 검색 점수
+  @override
+  final double? score;
+
+  /// 지번 본번 (jibun 결과)
+  @override
+  @JsonKey(name: 'lnbr_mnnm')
+  final String? lnbrMnnm;
+
+  /// 지번 부번 (jibun 결과)
+  @override
+  @JsonKey(name: 'lnbr_slno')
+  final String? lnbrSlno;
+
+  /// 법정동코드 (jibun 결과)
+  @override
+  @JsonKey(name: 'adm_cd')
+  final String? admCd;
+
+  @override
+  String toString() {
+    return 'UnifiedSearchResultItem(type: $type, icon: $icon, label: $label, sublabel: $sublabel, complexPk: $complexPk, pnu: $pnu, bdMgtSn: $bdMgtSn, center: $center, coords: $coords, matchAlias: $matchAlias, householdCount: $householdCount, score: $score, lnbrMnnm: $lnbrMnnm, lnbrSlno: $lnbrSlno, admCd: $admCd)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$UnifiedSearchResultItemImpl &&
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.icon, icon) || other.icon == icon) &&
+            (identical(other.label, label) || other.label == label) &&
+            (identical(other.sublabel, sublabel) ||
+                other.sublabel == sublabel) &&
+            (identical(other.complexPk, complexPk) ||
+                other.complexPk == complexPk) &&
+            (identical(other.pnu, pnu) || other.pnu == pnu) &&
+            (identical(other.bdMgtSn, bdMgtSn) || other.bdMgtSn == bdMgtSn) &&
+            const DeepCollectionEquality().equals(other._center, _center) &&
+            const DeepCollectionEquality().equals(other._coords, _coords) &&
+            (identical(other.matchAlias, matchAlias) ||
+                other.matchAlias == matchAlias) &&
+            (identical(other.householdCount, householdCount) ||
+                other.householdCount == householdCount) &&
+            (identical(other.score, score) || other.score == score) &&
+            (identical(other.lnbrMnnm, lnbrMnnm) ||
+                other.lnbrMnnm == lnbrMnnm) &&
+            (identical(other.lnbrSlno, lnbrSlno) ||
+                other.lnbrSlno == lnbrSlno) &&
+            (identical(other.admCd, admCd) || other.admCd == admCd));
+  }
+
+  @JsonKey(ignore: true)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      type,
+      icon,
+      label,
+      sublabel,
+      complexPk,
+      pnu,
+      bdMgtSn,
+      const DeepCollectionEquality().hash(_center),
+      const DeepCollectionEquality().hash(_coords),
+      matchAlias,
+      householdCount,
+      score,
+      lnbrMnnm,
+      lnbrSlno,
+      admCd);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$UnifiedSearchResultItemImplCopyWith<_$UnifiedSearchResultItemImpl>
+      get copyWith => __$$UnifiedSearchResultItemImplCopyWithImpl<
+          _$UnifiedSearchResultItemImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$UnifiedSearchResultItemImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _UnifiedSearchResultItem implements UnifiedSearchResultItem {
+  const factory _UnifiedSearchResultItem(
+          {required final String type,
+          final String? icon,
+          required final String label,
+          final String? sublabel,
+          @JsonKey(name: 'complex_pk') final String? complexPk,
+          final String? pnu,
+          @JsonKey(name: 'bd_mgt_sn') final String? bdMgtSn,
+          final List<double>? center,
+          final List<double>? coords,
+          @JsonKey(name: 'match_alias') final String? matchAlias,
+          @JsonKey(name: 'household_count') final int? householdCount,
+          final double? score,
+          @JsonKey(name: 'lnbr_mnnm') final String? lnbrMnnm,
+          @JsonKey(name: 'lnbr_slno') final String? lnbrSlno,
+          @JsonKey(name: 'adm_cd') final String? admCd}) =
+      _$UnifiedSearchResultItemImpl;
+
+  factory _UnifiedSearchResultItem.fromJson(Map<String, dynamic> json) =
+      _$UnifiedSearchResultItemImpl.fromJson;
+
+  @override
+
+  /// 결과 유형: 'complex', 'jibun', 'road'
+  String get type;
+  @override
+
+  /// 아이콘 이모지
+  String? get icon;
+  @override
+
+  /// 주 표시 텍스트 (단지명 또는 주소)
+  String get label;
+  @override
+
+  /// 보조 표시 텍스트 (유형·주소·세대수)
+  String? get sublabel;
+  @override
+
+  /// complex_master PK (type=complex 일 때)
+  @JsonKey(name: 'complex_pk')
+  String? get complexPk;
+  @override
+
+  /// PNU 코드 (type=jibun 일 때)
+  String? get pnu;
+  @override
+
+  /// 건물관리번호 (type=road 일 때)
+  @JsonKey(name: 'bd_mgt_sn')
+  String? get bdMgtSn;
+  @override
+
+  /// 중심 좌표 [lat, lon]
+  List<double>? get center;
+  @override
+
+  /// 좌표 [lat, lon] (jibun/road)
+  List<double>? get coords;
+  @override
+
+  /// 매칭된 별칭
+  @JsonKey(name: 'match_alias')
+  String? get matchAlias;
+  @override
+
+  /// 세대수
+  @JsonKey(name: 'household_count')
+  int? get householdCount;
+  @override
+
+  /// 검색 점수
+  double? get score;
+  @override
+
+  /// 지번 본번 (jibun 결과)
+  @JsonKey(name: 'lnbr_mnnm')
+  String? get lnbrMnnm;
+  @override
+
+  /// 지번 부번 (jibun 결과)
+  @JsonKey(name: 'lnbr_slno')
+  String? get lnbrSlno;
+  @override
+
+  /// 법정동코드 (jibun 결과)
+  @JsonKey(name: 'adm_cd')
+  String? get admCd;
+  @override
+  @JsonKey(ignore: true)
+  _$$UnifiedSearchResultItemImplCopyWith<_$UnifiedSearchResultItemImpl>
+      get copyWith => throw _privateConstructorUsedError;
+}
+
+UnifiedSearchResponse _$UnifiedSearchResponseFromJson(
+    Map<String, dynamic> json) {
+  return _UnifiedSearchResponse.fromJson(json);
+}
+
+/// @nodoc
+mixin _$UnifiedSearchResponse {
+  String get query => throw _privateConstructorUsedError;
+  @JsonKey(name: 'detected_type')
+  String? get detectedType => throw _privateConstructorUsedError;
+  List<UnifiedSearchResultItem> get results =>
+      throw _privateConstructorUsedError;
+  @JsonKey(name: 'elapsed_ms')
+  int? get elapsedMs => throw _privateConstructorUsedError;
+  String? get error => throw _privateConstructorUsedError;
+
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  @JsonKey(ignore: true)
+  $UnifiedSearchResponseCopyWith<UnifiedSearchResponse> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $UnifiedSearchResponseCopyWith<$Res> {
+  factory $UnifiedSearchResponseCopyWith(UnifiedSearchResponse value,
+          $Res Function(UnifiedSearchResponse) then) =
+      _$UnifiedSearchResponseCopyWithImpl<$Res, UnifiedSearchResponse>;
+  @useResult
+  $Res call(
+      {String query,
+      @JsonKey(name: 'detected_type') String? detectedType,
+      List<UnifiedSearchResultItem> results,
+      @JsonKey(name: 'elapsed_ms') int? elapsedMs,
+      String? error});
+}
+
+/// @nodoc
+class _$UnifiedSearchResponseCopyWithImpl<$Res,
+        $Val extends UnifiedSearchResponse>
+    implements $UnifiedSearchResponseCopyWith<$Res> {
+  _$UnifiedSearchResponseCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? query = null,
+    Object? detectedType = freezed,
+    Object? results = null,
+    Object? elapsedMs = freezed,
+    Object? error = freezed,
+  }) {
+    return _then(_value.copyWith(
+      query: null == query
+          ? _value.query
+          : query // ignore: cast_nullable_to_non_nullable
+              as String,
+      detectedType: freezed == detectedType
+          ? _value.detectedType
+          : detectedType // ignore: cast_nullable_to_non_nullable
+              as String?,
+      results: null == results
+          ? _value.results
+          : results // ignore: cast_nullable_to_non_nullable
+              as List<UnifiedSearchResultItem>,
+      elapsedMs: freezed == elapsedMs
+          ? _value.elapsedMs
+          : elapsedMs // ignore: cast_nullable_to_non_nullable
+              as int?,
+      error: freezed == error
+          ? _value.error
+          : error // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$UnifiedSearchResponseImplCopyWith<$Res>
+    implements $UnifiedSearchResponseCopyWith<$Res> {
+  factory _$$UnifiedSearchResponseImplCopyWith(
+          _$UnifiedSearchResponseImpl value,
+          $Res Function(_$UnifiedSearchResponseImpl) then) =
+      __$$UnifiedSearchResponseImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {String query,
+      @JsonKey(name: 'detected_type') String? detectedType,
+      List<UnifiedSearchResultItem> results,
+      @JsonKey(name: 'elapsed_ms') int? elapsedMs,
+      String? error});
+}
+
+/// @nodoc
+class __$$UnifiedSearchResponseImplCopyWithImpl<$Res>
+    extends _$UnifiedSearchResponseCopyWithImpl<$Res,
+        _$UnifiedSearchResponseImpl>
+    implements _$$UnifiedSearchResponseImplCopyWith<$Res> {
+  __$$UnifiedSearchResponseImplCopyWithImpl(_$UnifiedSearchResponseImpl _value,
+      $Res Function(_$UnifiedSearchResponseImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? query = null,
+    Object? detectedType = freezed,
+    Object? results = null,
+    Object? elapsedMs = freezed,
+    Object? error = freezed,
+  }) {
+    return _then(_$UnifiedSearchResponseImpl(
+      query: null == query
+          ? _value.query
+          : query // ignore: cast_nullable_to_non_nullable
+              as String,
+      detectedType: freezed == detectedType
+          ? _value.detectedType
+          : detectedType // ignore: cast_nullable_to_non_nullable
+              as String?,
+      results: null == results
+          ? _value._results
+          : results // ignore: cast_nullable_to_non_nullable
+              as List<UnifiedSearchResultItem>,
+      elapsedMs: freezed == elapsedMs
+          ? _value.elapsedMs
+          : elapsedMs // ignore: cast_nullable_to_non_nullable
+              as int?,
+      error: freezed == error
+          ? _value.error
+          : error // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$UnifiedSearchResponseImpl implements _UnifiedSearchResponse {
+  const _$UnifiedSearchResponseImpl(
+      {required this.query,
+      @JsonKey(name: 'detected_type') this.detectedType,
+      final List<UnifiedSearchResultItem> results = const [],
+      @JsonKey(name: 'elapsed_ms') this.elapsedMs,
+      this.error})
+      : _results = results;
+
+  factory _$UnifiedSearchResponseImpl.fromJson(Map<String, dynamic> json) =>
+      _$$UnifiedSearchResponseImplFromJson(json);
+
+  @override
+  final String query;
+  @override
+  @JsonKey(name: 'detected_type')
+  final String? detectedType;
+  final List<UnifiedSearchResultItem> _results;
+  @override
+  @JsonKey()
+  List<UnifiedSearchResultItem> get results {
+    if (_results is EqualUnmodifiableListView) return _results;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_results);
+  }
+
+  @override
+  @JsonKey(name: 'elapsed_ms')
+  final int? elapsedMs;
+  @override
+  final String? error;
+
+  @override
+  String toString() {
+    return 'UnifiedSearchResponse(query: $query, detectedType: $detectedType, results: $results, elapsedMs: $elapsedMs, error: $error)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$UnifiedSearchResponseImpl &&
+            (identical(other.query, query) || other.query == query) &&
+            (identical(other.detectedType, detectedType) ||
+                other.detectedType == detectedType) &&
+            const DeepCollectionEquality().equals(other._results, _results) &&
+            (identical(other.elapsedMs, elapsedMs) ||
+                other.elapsedMs == elapsedMs) &&
+            (identical(other.error, error) || other.error == error));
+  }
+
+  @JsonKey(ignore: true)
+  @override
+  int get hashCode => Object.hash(runtimeType, query, detectedType,
+      const DeepCollectionEquality().hash(_results), elapsedMs, error);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$UnifiedSearchResponseImplCopyWith<_$UnifiedSearchResponseImpl>
+      get copyWith => __$$UnifiedSearchResponseImplCopyWithImpl<
+          _$UnifiedSearchResponseImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$UnifiedSearchResponseImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _UnifiedSearchResponse implements UnifiedSearchResponse {
+  const factory _UnifiedSearchResponse(
+      {required final String query,
+      @JsonKey(name: 'detected_type') final String? detectedType,
+      final List<UnifiedSearchResultItem> results,
+      @JsonKey(name: 'elapsed_ms') final int? elapsedMs,
+      final String? error}) = _$UnifiedSearchResponseImpl;
+
+  factory _UnifiedSearchResponse.fromJson(Map<String, dynamic> json) =
+      _$UnifiedSearchResponseImpl.fromJson;
+
+  @override
+  String get query;
+  @override
+  @JsonKey(name: 'detected_type')
+  String? get detectedType;
+  @override
+  List<UnifiedSearchResultItem> get results;
+  @override
+  @JsonKey(name: 'elapsed_ms')
+  int? get elapsedMs;
+  @override
+  String? get error;
+  @override
+  @JsonKey(ignore: true)
+  _$$UnifiedSearchResponseImplCopyWith<_$UnifiedSearchResponseImpl>
+      get copyWith => throw _privateConstructorUsedError;
+}

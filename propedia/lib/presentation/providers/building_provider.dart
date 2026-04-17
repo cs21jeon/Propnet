@@ -240,6 +240,76 @@ final buildingSearchProvider =
   return BuildingSearchNotifier(repository);
 });
 
+// 통합 검색 상태
+class UnifiedSearchState {
+  final SearchStatus status;
+  final List<UnifiedSearchResultItem> results;
+  final String? errorMessage;
+  final String query;
+
+  const UnifiedSearchState({
+    this.status = SearchStatus.initial,
+    this.results = const [],
+    this.errorMessage,
+    this.query = '',
+  });
+
+  UnifiedSearchState copyWith({
+    SearchStatus? status,
+    List<UnifiedSearchResultItem>? results,
+    String? errorMessage,
+    String? query,
+  }) {
+    return UnifiedSearchState(
+      status: status ?? this.status,
+      results: results ?? this.results,
+      errorMessage: errorMessage,
+      query: query ?? this.query,
+    );
+  }
+}
+
+// 통합 검색 Notifier
+class UnifiedSearchNotifier extends StateNotifier<UnifiedSearchState> {
+  final BuildingRepository _repository;
+
+  UnifiedSearchNotifier(this._repository) : super(const UnifiedSearchState());
+
+  Future<void> search(String query) async {
+    if (query.trim().length < 2) {
+      state = UnifiedSearchState(query: query);
+      return;
+    }
+
+    state = state.copyWith(status: SearchStatus.loading, query: query);
+
+    try {
+      final response = await _repository.searchUnified(query);
+      state = UnifiedSearchState(
+        status: SearchStatus.success,
+        results: response.results,
+        query: query,
+      );
+    } catch (e) {
+      state = UnifiedSearchState(
+        status: SearchStatus.error,
+        errorMessage: e.toString().replaceFirst('Exception: ', ''),
+        query: query,
+      );
+    }
+  }
+
+  void reset() {
+    state = const UnifiedSearchState();
+  }
+}
+
+final unifiedSearchProvider =
+    StateNotifierProvider<UnifiedSearchNotifier, UnifiedSearchState>((ref) {
+  final repository = ref.watch(buildingRepositoryProvider);
+  return UnifiedSearchNotifier(repository);
+});
+
 // 법정동 검색 Provider (자동완성)
 final bjdongSearchProvider = FutureProvider.family<List<BjdongSearchItem>, String>(
   (ref, query) async {

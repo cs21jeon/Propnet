@@ -168,16 +168,16 @@
         }
         .show-all-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
 
-        /* 패널 토글 버튼 (지도 위) */
+        /* 패널 토글 버튼 (지도 위 — 왼쪽 상단) */
         .panel-toggle {
             position: absolute; top: 12px; left: 12px; z-index: 20;
-            padding: 8px 14px; background: white; border: none;
-            border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            cursor: pointer; display: flex; align-items: center; gap: 6px;
-            font-size: 13px; font-weight: 600; color: #334155;
+            padding: 7px 12px; background: white; border: none;
+            border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            cursor: pointer; display: flex; align-items: center; gap: 5px;
+            font-size: 12px; font-weight: 700; color: #334155;
             font-family: 'Noto Sans KR', sans-serif;
         }
-        .panel-toggle .material-symbols-outlined { font-size: 18px; }
+        .panel-toggle .material-symbols-outlined { font-size: 16px; color: #136dec; }
         .panel-toggle:hover { background: #f8fafc; }
 
         /* ===== 모바일 하단 시트 ===== */
@@ -188,7 +188,7 @@
             .map-area { flex: 1; }
             .side-panel {
                 position: fixed; bottom: 0; left: 0; right: 0; width: 100%;
-                height: auto; max-height: 50vh; border-left: none;
+                height: auto; max-height: 70vh; border-left: none;
                 border-top: 1px solid #e2e8f0; border-radius: 20px 20px 0 0;
                 box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
                 padding-bottom: env(safe-area-inset-bottom);
@@ -343,7 +343,7 @@
     <div class="app">
         <!-- 지도 영역 -->
         <div class="map-area">
-            <iframe id="mapIframe" src="map.html?agent=all"></iframe>
+            <iframe id="mapIframe"></iframe>
             <button class="panel-toggle" id="panelToggle">
                 <span class="material-symbols-outlined">apartment</span>
                 중개사무소
@@ -515,6 +515,16 @@
     </div>
 
     <script>
+    /* ===== iframe src 설정 (autoloc 파라미터 전달) ===== */
+    (function() {
+        var params = new URLSearchParams(window.location.search);
+        var iframeSrc = 'map.html?agent=all';
+        if (params.get('autoloc') === '1') {
+            iframeSrc += '&autoloc=1';
+        }
+        document.getElementById('mapIframe').src = iframeSrc;
+    })();
+
     /* ===== 전역 상태 ===== */
     var agents = [];           // API에서 받은 agent 목록
     var agentCounts = {};      // {slug: markerCount} - 필터 적용된 현재 카운트

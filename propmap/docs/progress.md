@@ -2,6 +2,18 @@
 
 > 최종 업데이트: 2026-04-17
 
+## 2026-04-17: PropMap UI 개선 — 검색창 비활성화 + 내 위치 버튼 + 레이아웃 수정
+
+- 통합 검색창 임시 비활성화 (HTML/JS 주석 처리, 나중에 다시 활성화 가능)
+- 전체보기/돌아가기 버튼 삭제 (중개사무소 버튼으로 대체)
+- 내 위치 버튼 추가 (지도 우하단, Material `my_location` SVG 아이콘)
+  - `watchPosition`으로 백그라운드 위치 캐싱 → 버튼 클릭 시 즉시 이동
+  - 앱에서 `myloc=` URL 파라미터로 GPS 좌표 전달 → 캐시 초기화
+- 중개사무소 버튼 위치: `top:12px; left:12px` (필터 그룹과 겹침 방지)
+- 모바일 바텀시트 `max-height: 50vh → 70vh` (중개사무소 하단 잘림 해결)
+- `autoloc=1` URL 파라미터: 위치 동의 다이얼로그 건너뛰기 (앱 WebView용)
+  - index.html에서 iframe src에 autoloc 파라미터 전달
+
 ## 2026-04-17: Week 5 종결 — 통합 검색 UX (complex_master 연동)
 
 - `propmap/js/unified-search.js` 신규 — 단지명 + 주소 단일 입력 검색
