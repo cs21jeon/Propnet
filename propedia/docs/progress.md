@@ -1,5 +1,34 @@
 업데이트 현황 (2026-04-17)
 
+## 2026-04-17: 부동산 조회 — 버그 수정 12건 + 테스트 가이드 개선
+
+### 백엔드 버그 수정 (서버 app_api.py, vworld_service.py, search_unified.py)
+- 공시지가 0원 표시 수정: VWorld XML `<pblntfPclnd>` 중복 태그 → xmltodict 리스트 파싱 → `_first()` 헬퍼 추가
+- 건축물대장 신규 행정구역 폴백: 구 코드 실패 → 신 코드(동탄구 등) 재시도 (jibun, bdmgtsn, area 3곳)
+- 공동주택가격 빈 동 매칭: VWorld `dongNm=''` 반환 시 호수만으로 매칭
+- 공동주택가격 VWorld PNU: 신규 행정구역은 api_pnu(구 코드) 기반으로 VWorld 조회
+- 단독주택 공시가격 api_pnu 폴백 추가
+- 도로명 검색 대표지번 오류: VWorld getCoord → juso.go.kr bdMgtSn 직접 반환
+- `/search/bdmgtsn` 응답에 `location` 필드 추가 (지도 표시용)
+- 건물 없는 토지에 잘못된 도로명 표시 제거 (jibun, bdmgtsn 2곳)
+- 여울동 old_bjdong_code 매핑 추가 (DB: `4159711500 → 4159012900`)
+
+### 통합검색 개선 (서버 search_unified.py)
+- `RE_DONG_BUN` 패턴 확장: `*동` → `*동|*리|*가` — 리/가 주소 인식
+- DB 기반 복수 결과: "신동 898" → 전국 신동 전부 표시 (VWorld 단일 → bjdong_codes DB)
+- ri_name 검색 지원: "남산리 151" → ri_name 컬럼 검색
+- prefix 필터: "태안읍 남산리 151" → full_address에 "태안읍" 포함 결과만
+
+### 프론트엔드 수정 (서버 index.html, result.html)
+- PNU 파싱 인덱스 수정: `substring(10,14)` → `substring(11,15)` (land_type 1자리 건너뛰기)
+- onSelect 우선순위: bdMgtSn(1순위) → PNU(2순위) → coords(3순위)
+- 대지지분/공동주택가격: null일 때 "-" 표시, 칸 항상 노출 (PDF 포함)
+
+### 테스트 가이드 전면 개선 (docs/test-case-review-guide.md)
+- 핵심 동작 원칙 5가지 추가 (도로명=건축물대장, 임야에도 건물 가능 등)
+- 케이스별 상세 검증 가이드 + 과거 버그 기록
+- Case 12 여울동으로 변경, Case 13 동/호 수정, Case 16 도로명 제거
+
 ## 2026-04-17: Propedia 통합 검색 — 지도 중심 UI + PropMap 개선
 
 ### Propedia 앱
