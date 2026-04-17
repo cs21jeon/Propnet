@@ -2,6 +2,42 @@
 
 > 최종 업데이트: 2026-04-17
 
+## 2026-04-17: Week 5 종결 — 통합 검색 UX (complex_master 연동)
+
+- `propmap/js/unified-search.js` 신규 — 단지명 + 주소 단일 입력 검색
+  - `/api/propsheet/complex-search` 호출 (PropSheet 백엔드)
+  - 디바운스 200ms, 결과 최대 10건, 키보드 내비게이션(↑↓/Enter/Esc), ARIA 라벨
+  - 결과 클릭 시 `center_lat`/`center_lon`으로 지도 이동 (level=3) + 동별 마커 재사용
+- `propmap/map.html` 검색창 영역 교체
+  - 기존 단일 주소 입력 → `<input id="unifiedSearch">` + 드롭다운 컨테이너
+  - 선택 결과 하이라이트 처리 (Phase G-4 축소안 — 경계 폴리곤은 Week 6 이관)
+- `propmap/index.html` iframe 호스트에서도 `postMessage`로 검색 결과 전달
+- 에이전트별 페이지 동기화: `{goldenrabbit,silverrabbit,propnet}/map.html` 동일 UX 적용
+- 실측
+  - API p50 72ms / p95 218ms
+  - 단지 선택 → 지도 이동 560ms (카카오 타일 로드 포함)
+- Playwright E2E
+  - "파크리오" 입력 → 1순위 후보(household=6,864) → 클릭 → 지도 이동 → 48개 주거동 마커
+  - 스크린샷: `week5_unified_search_demo.png`, `week5_unified_search_selected.png`
+- Week 6 이관 과제 (`docs/week6-backlog.md`)
+  - Phase G-4 단지 경계 폴리곤 렌더 (현재는 선택 시 하이라이트만)
+  - PropSheet/Propedia 검색창 통합 (탭 제거 + unified-search.js 재사용)
+  - 매물 등록 시 단지 자동완성 → PNU/동 자동 채움
+- 기반 데이터 (PropSheet DB 공통)
+  - `complex_master` 307k 단지 (K-apt `apt_basic_info_20250918`)
+  - `center_lat` 보강은 Phase D 야간 cron(02:00)으로 약 25일 진행 — PropMap은 `center_lat IS NOT NULL`만 지도 이동 대상
+
+## 2026-04-17: PropMap 버튼 겹침 수정 (검색/필터/전체보기/지도유형 분리)
+
+- `propmap/map.html` + agent별 3개 파일 CSS 버튼 위치 재배치
+  - **filter-toggle-btn**: `top:46px → top:8px, right:8px` (map-type-control과 겹침 해소)
+  - **map-type-control (모바일)**: `top:46px, right:8px → bottom:30px, left:8px` (하단 좌측 이동)
+  - **map-nav-control (모바일)**: `left:50% → right:60px` (검색창과 겹침 방지)
+  - **search-overlay (모바일)**: `max-width: calc(100% - 160px)` (전체보기+필터 공간 확보)
+  - **filter-panel.open**: `top:90px → top:46px` (필터 토글 위치 변경에 맞춤)
+- 적용 대상 4곳: `propmap/map.html`, `{goldenrabbit,silverrabbit,propnet}/map.html`
+- 서비스 재시작 불필요 (Nginx 정적 서빙)
+
 ## 2026-04-17: 모바일 반응형 전면 개선 (Proppedia 앱 WebView 대응)
 
 - `propmap/index.html` 바텀시트 UX

@@ -8,6 +8,8 @@ set -a
 . /home/webapp/goldenrabbit/backend/.env
 set +a
 
+# PGPASSWORD은 반드시 $DB_PASSWORD (서버 .env 로드) 에서만 주입.
+# 하드코딩 금지 — pre-commit hook으로 차단됨.
 export PGPASSWORD="$DB_PASSWORD"
 PSQL="psql -h $DB_HOST -U $DB_USER -d $DB_NAME"
 

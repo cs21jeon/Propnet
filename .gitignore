@@ -57,3 +57,7 @@ propsheet/tmp/
 # Claude 로컬 설정
 .claude/settings.local.json
 docs/conversation-unified-auth.md
+
+# Week 5 complex_master 원본 CSV (대용량 — 재다운로드 가능)
+data/complex_master/raw/*.csv
+data/complex_master_raw/*.csv

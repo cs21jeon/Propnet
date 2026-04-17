@@ -53,7 +53,7 @@
         /* 필터 토글 버튼 (모바일 전용) */
         .filter-toggle-btn {
             display: none;
-            position: absolute; top: 46px; right: 8px; z-index: 1002;
+            position: absolute; top: 8px; right: 8px; z-index: 1002;
             align-items: center; justify-content: center; gap: 3px;
             padding: 7px 10px; border: none; border-radius: 8px;
             background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
@@ -80,9 +80,23 @@
             .filter-panel { display: none; }
             .filter-panel.open {
                 display: flex;
-                top: 90px; /* 토글 버튼 아래로 */
-                max-height: calc(100vh - 110px);
+                top: 46px; /* 필터 토글 버튼 아래로 */
+                max-height: calc(100vh - 60px);
                 overflow-y: auto;
+            }
+            /* 모바일: 지도타입을 하단 좌측으로 이동 (필터토글과 겹침 방지) */
+            .map-type-control {
+                top: auto; right: auto;
+                bottom: 30px; left: 8px;
+            }
+            /* 모바일: 전체보기를 검색창 오른쪽으로 */
+            .map-nav-control {
+                left: auto; right: 60px;
+                transform: none;
+            }
+            /* 모바일: 검색창 폭 제한 — 전체보기+필터 공간 확보 */
+            .search-overlay {
+                max-width: calc(100% - 160px) !important;
             }
         }
         .subtype-float {
@@ -556,10 +570,21 @@
         .location-dialog-btn.secondary {
             background: #f1f5f9; color: #475569;
         }
+        /* Week 5 Phase G: 통합 검색창 overlay */
+        .search-overlay {
+            position: absolute; top: 8px; left: 8px;
+            z-index: 1001; width: calc(100% - 16px); max-width: 380px;
+        }
+        @media (max-width: 480px) {
+            .search-overlay { max-width: calc(100% - 16px); }
+        }
     </style>
 </head>
 <body>
     <div id="map"></div>
+
+    <!-- Week 5 Phase G: 통합 검색 -->
+    <div class="search-overlay" id="unified-search-mount"></div>
 
     <div class="loading-overlay" id="loading">
         <div class="loading-spinner"></div>
@@ -1640,5 +1665,65 @@
     </script>
     <!-- Week 3: 동 단위 클러스터 공통 모듈 -->
     <script src="/propmap/js/dong-cluster-renderer.js?v=20260416d"></script>
+    <!-- Week 5 Phase G: 통합 검색 컴포넌트 -->
+    <script src="/propmap/js/unified-search.js?v=20260417a"></script>
+    <script>
+    (function initUnifiedSearch() {
+        var mountEl = document.getElementById('unified-search-mount');
+        if (!mountEl || typeof window.UnifiedSearch === 'undefined') {
+            console.warn('[UnifiedSearch] init skipped (no mount or class)');
+            return;
+        }
+        function getMap() {
+            // map.html은 kakao 지도 인스턴스를 window._kakaoMap에 노출
+            return window._kakaoMap || null;
+        }
+        var tries = 0;
+        function whenMapReady(cb) {
+            tries += 1;
+            var m = getMap();
+            if (m && typeof m.setCenter === 'function') {
+                cb(m);
+            } else if (tries > 50) {
+                console.warn('[UnifiedSearch] map not ready after 10s, rendering without map hook');
+                cb(null);
+            } else {
+                setTimeout(function() { whenMapReady(cb); }, 200);
+            }
+        }
+        whenMapReady(function(kmap) {
+            new window.UnifiedSearch({
+                mountEl: mountEl,
+                placeholder: '지번 · 도로명 · 건물명 검색',
+                onSelect: function(item) {
+                    try {
+                        var lat, lon;
+                        if (item.type === 'complex' && item.center) {
+                            lat = item.center[0]; lon = item.center[1];
+                        } else if ((item.type === 'jibun' || item.type === 'road' || item.type === 'coord') && item.coords) {
+                            lat = item.coords[0]; lon = item.coords[1];
+                        }
+                        var m = getMap();
+                        if (typeof lat === 'number' && typeof lon === 'number' && m) {
+                            var pos = new kakao.maps.LatLng(lat, lon);
+                            m.setCenter(pos);
+                            if (item.type === 'complex') {
+                                m.setLevel(3);
+                            } else {
+                                m.setLevel(2);
+                            }
+                            if (item.type === 'complex' && item.complex_pk) {
+                                console.log('[UnifiedSearch] complex selected:', item.complex_pk);
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('[UnifiedSearch.onSelect]', e);
+                    }
+                },
+            });
+            console.log('[UnifiedSearch] initialized, map=', !!kmap);
+        });
+    })();
+    </script>
 </body>
 </html>

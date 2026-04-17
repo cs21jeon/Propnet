@@ -3,6 +3,42 @@
 > 최종 업데이트: 2026-04-17
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
 
+## 2026-04-17: Week 5 종결 — complex_master + 통합 검색 UX
+
+- [PropSheet DB] K-apt 단지 마스터 `complex_master` 신규 테이블 307k 단지 적재 (Phase A)
+  - 원본: `data/complex_master_raw/apt_basic_info_20250918.csv` (46MB, `.gitignore` 추가)
+  - PK: `complex_id`, 주요 인덱스: `(pnu)`, `household_count`
+  - Phase B: 스키마 확정, Phase E: 단지 단위 FK 제약
+- [Phase D] `center_lat`/`center_lon` VWorld 보강 — **cron 02:00 야간 배치로 전환**
+  - 스크립트: `backend/scripts/week5_complex_master/phase_d_nightly_center_coords.sh`
+  - `phase_f_fill_center_coords.py --mode vworld --limit 20000 --rate-limit 0.3`
+  - 진행 상태: 4,063건 선행(1.3%), 남은 약 303,000건, **약 25일 완주 예상**
+  - idempotent: `WHERE center_lat IS NULL`만 타겟, 5회 연속 실패 시 자동 exit
+  - 로그: `/var/log/propnet/phase_d_nightly.log` (logrotate 14일)
+  - 첫 배치(nohup PID 3201638) 완료 후 cron이 자연스럽게 이어받음
+  - **전략 변경**: Phase C(PNU 확장)는 오너 결정으로 중단 → `center_lat` 집중
+- [API] `/api/propsheet/complex-search` — `complex_master` + 주소검색 통합 응답 (Phase G-1)
+  - `household_count DESC` 기반 랭킹, p50=72ms / p95=218ms (목표 400ms 달성)
+- [PropMap] `propmap/js/unified-search.js` 통합 검색 UX (Phase G-2/G-3)
+  - 디바운스 200ms, 최대 10건, 키보드 내비게이션, ARIA 라벨
+  - 단지 선택 → `center_lat` 기반 level=3 지도 이동 + 동별 마커 재사용
+  - 3곳 동기(`propmap/map.html` + `propmap/index.html` iframe + agent별 페이지)
+- [검증] 파크리오(송파구 신천동) E2E 통과
+  - 1순위 후보 노출 → 지도 이동(37.5172, 127.1015) → 48개 주거동 마커 + 부속지번 20-6 본번 리다이렉트
+  - Playwright 스크린샷: `week5_unified_search_demo.png`, `week5_unified_search_selected.png`
+- [Week 6 이관] `docs/week6-backlog.md` 신규
+  - PropSheet/Propedia 검색창 통합 (탭 제거 + unified-search.js 재사용)
+  - Phase G-4 단지 경계 폴리곤 렌더 (현재는 선택 시 하이라이트만)
+  - 매물 등록 시 단지 자동완성 → PNU/동 자동 채움
+  - 동정보 CSV Phase A-7 적재 (오너 전달 대기)
+  - 이력 CSV Phase A-8 적재 (선택)
+- [문서] `docs/week5-final-report.md` 종합 보고서 신규 (Phase A~G 전체 + 장기 실행 계획)
+- [보안] `.gitignore`에 `data/complex_master/raw/*.csv` 추가 (대용량 원본 제외)
+- [스크립트] `scripts/_week4_5_template_*.sh` PGPASSWORD는 `$DB_PASSWORD` env 참조 확인 (하드코딩 없음)
+- [PropMap] 버튼 겹침 수정 — 검색/필터 토글/지도유형/전체보기 위치 분리 (map.html × 4)
+  - filter-toggle-btn: map-type-control과 동일 좌표 겹침 해소
+  - 모바일: 지도유형 하단좌, 전체보기 우측, 검색창 폭 제한
+
 ## 2026-04-17: Propedia 앱 → PropMap WebView 통합 + 모바일 UX 전면 개선
 
 - [Propedia] 드로어 메뉴 "금토끼부동산" → "부동산매물지도" 개편
