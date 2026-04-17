@@ -1,6 +1,34 @@
 # Proptalk 개발 진행 기록
 
-> 최종 업데이트: 2026-04-12
+> 최종 업데이트: 2026-04-17
+
+## 2026-04-17: 웹 댓글(Reply) 기능 구현 — 앱과 연동
+
+- **WebSocket new_message 핸들러 수정** (app.js): parent_id가 있는 비텍스트 메시지(transcript, system)를 부모 메시지의 replies 배열에 중첩 추가. 기존에는 독립 메시지로 표시되어 앱과 불일치
+- **답글 전송 기능** (app.js): replyToMsg()에서 parent_id 저장, sendMessage()에서 서버에 parent_id 전달. 웹에서도 특정 메시지에 답글 가능
+- **답글 UI 추가** (app.html + app.css):
+  - 입력창 위 reply-preview-bar: 답글 대상 프리뷰 + 취소 버튼
+  - 텍스트 답글 메시지 내 reply-quote: 원본 메시지 인용 표시, 클릭 시 원본으로 스크롤
+  - 라이트/다크 모드 + own-message(파란 배경) 색상 대응
+- **캐시 버스팅**: app.css, app.js에 ?v=2 쿼리 파라미터 추가
+- **white-space: pre-wrap 여백 수정**: reply-quote와 본문 사이 HTML 공백이 렌더링되는 문제 → 인라인화
+- 수정 파일: app.js, app.css, app.html (서버 동시 배포 완료)
+
+## 2026-04-15: 메시지 삭제 + 이모지 리액션 기능
+
+- **메시지 삭제 기능**: 본인 메시지 + 방장(admin) 삭제 권한
+  - `DELETE /api/messages/<id>`: DB + Google Drive + Google Sheets + 로컬 파일 일괄 정리
+  - 자식 메시지(replies: system/transcript) 함께 삭제
+  - WebSocket `message_deleted` 이벤트로 실시간 반영
+- **이모지 리액션 기능**: 6종 (👍❤️😂😮😢🙏) 토글 방식
+  - `message_reactions` 테이블 신규 (UNIQUE: message_id + user_id + emoji)
+  - `POST /api/messages/<id>/reactions`: 있으면 제거, 없으면 추가
+  - `Message.list_for_room()` 쿼리에 reactions 서브쿼리 포함
+  - WebSocket `reaction_updated` 이벤트로 실시간 반영
+- **Flutter 앱**: 길게 터치 → 이모지 6개 바 + 답글/복사/삭제 바텀시트, 리액션 배지 UI
+- **웹 UI**: 호버 `⋮` 버튼 + 우클릭 컨텍스트 메뉴, 리액션 배지, 삭제 확인 모달
+- **sheets_service.py**: `delete_record()` 추가 — 파일명으로 Sheets 행 검색 후 삭제
+- 수정 파일: models.py, routes_messages.py, sheets_service.py, chat_screen.dart, api_service.dart, socket_service.dart, app.html, app.js, app.css
 
 ## 2026-04-12: Billing 시스템 전면 점검 및 모니터링 구축
 

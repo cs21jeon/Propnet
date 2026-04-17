@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#1A73E8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Proptalk">
-    <link rel="stylesheet" href="/proptalk/web/static/app.css">
+    <link rel="stylesheet" href="/proptalk/web/static/app.css?v=2">
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 </head>
 <body x-data="ProptalkApp()" x-init="init()" @keydown.window="handleGlobalKeydown($event)">
@@ -234,7 +234,7 @@
                                     </div>
 
                                     <!-- Text message -->
-                                    <div class="msg-bubble" x-show="msg.type === 'text'" x-html="renderContent(msg.content)"></div>
+                                    <div class="msg-bubble" x-show="msg.type === 'text'"><div class="reply-quote" x-show="msg.parent_id && msg.parent_content" @click="document.getElementById('msg-' + msg.parent_id)?.scrollIntoView({behavior:'smooth', block:'center'})"><span class="reply-quote-name" x-text="msg.parent_user_name || ''"></span> <span class="reply-quote-text" x-text="(msg.parent_content || '').substring(0, 80)"></span></div><div x-html="renderContent(msg.content)"></div></div>
 
                                     <!-- File message -->
                                     <div class="msg-file-card" x-show="msg.type === 'file'"
@@ -359,6 +359,17 @@
             </div>
 
             <div class="chat-input-area" x-show="!isRecording">
+                <!-- Reply preview bar -->
+                <div class="reply-preview-bar" x-show="replyTo" x-cloak>
+                    <div class="reply-preview-content">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>
+                        <span class="reply-preview-name" x-text="replyTo?.user_name"></span>
+                        <span class="reply-preview-text" x-text="replyTo?.content"></span>
+                    </div>
+                    <button class="reply-preview-close" @click="cancelReply()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
                 <div class="chat-input-row">
                     <div class="chat-input-actions">
                         <button class="btn-icon" @click="$refs.fileInput.click()" title="파일 첨부">
@@ -601,7 +612,7 @@
         const API_BASE = '/voiceroom';
         const GOOGLE_CLIENT_ID = '{{ google_client_id }}';
     </script>
-    <script src="/proptalk/web/static/app.js"></script>
+    <script src="/proptalk/web/static/app.js?v=2"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>

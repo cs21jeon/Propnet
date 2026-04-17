@@ -67,6 +67,9 @@ function ProptalkApp() {
         newRoomName: '',
         joinCode: '',
 
+        // ── Reply ──
+        replyTo: null,   // { id, content, user_name, type }
+
         // ── Drag & Drop ──
         isDragging: false,
 
@@ -507,16 +510,21 @@ function ProptalkApp() {
             const text = this.inputText.trim();
             if (!text || !this.currentRoom) return;
 
+            const parentId = this.replyTo?.id || null;
             this.inputText = '';
+            this.replyTo = null;
             this.$nextTick(() => {
                 if (this.$refs.chatInput) {
                     this.$refs.chatInput.style.height = 'auto';
                 }
             });
 
+            const body = { content: text };
+            if (parentId) body.parent_id = parentId;
+
             const res = await this.api(`/api/rooms/${this.currentRoom.id}/messages`, {
                 method: 'POST',
-                body: JSON.stringify({ content: text }),
+                body: JSON.stringify(body),
             });
             if (!res?.ok) {
                 this.toast('메시지 전송 실패', 'error');
@@ -658,7 +666,25 @@ function ProptalkApp() {
             this.socket.on('new_message', (data) => {
                 const msg = this._enrichMessage(data.message || data);
                 if (msg.room_id === this.currentRoom?.id) {
-                    this.messages.push(msg);
+                    // parent_id가 있고 text가 아닌 메시지(transcript, system)는
+                    // 부모 메시지의 replies 배열에 추가 (앱과 동일한 동작)
+                    if (msg.parent_id && msg.type !== 'text') {
+                        const parentIdx = this.messages.findIndex(m => m.id === msg.parent_id);
+                        if (parentIdx >= 0) {
+                            const parent = this.messages[parentIdx];
+                            if (!parent.replies) parent.replies = [];
+                            parent.replies.push(msg);
+                            // audio 메시지의 transcript 댓글이면 요약 정보도 업데이트
+                            if (msg.type === 'transcript' && parent.audio) {
+                                parent.audio.transcript_summary = msg.content;
+                            }
+                            // Alpine 반응형 트리거
+                            this.messages[parentIdx] = { ...parent };
+                        }
+                        // replies에 추가했으므로 독립 메시지로는 추가하지 않음
+                    } else {
+                        this.messages.push(msg);
+                    }
                     this._markDateSeparators();
                     this.$nextTick(() => this.scrollToBottom());
                     // Mark as read since user is viewing this room
@@ -1306,12 +1332,22 @@ function ProptalkApp() {
         },
 
         replyToMsg(msg) {
-            // 답글 기능 (기존 입력창에 포커스)
             if (msg) {
-                this.inputText = '';
-                this.$refs.inputArea?.focus();
-                this.toast(`"${(msg.content || '').substring(0, 20)}..."에 답글`, 'info');
+                const preview = msg.type === 'audio'
+                    ? (msg.audio?.original_filename || '음성 메시지')
+                    : (msg.content || '').substring(0, 50);
+                this.replyTo = {
+                    id: msg.id,
+                    content: preview,
+                    user_name: msg._userName || msg.user_name || '알 수 없음',
+                    type: msg.type,
+                };
+                this.$nextTick(() => this.$refs.chatInput?.focus());
             }
+        },
+
+        cancelReply() {
+            this.replyTo = null;
         },
 
         copyMsgContent(msg) {

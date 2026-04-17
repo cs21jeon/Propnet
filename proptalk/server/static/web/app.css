@@ -1106,6 +1106,44 @@ body.dark .btn-cancel:hover { background: var(--bg-white); }
 .btn-danger { background: #DC3545; color: #fff; }
 .btn-danger:hover { background: #C82333; }
 
+/* Reply preview bar */
+.reply-preview-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 5px 10px; background: var(--bg-card); border-left: 3px solid var(--primary);
+    border-radius: 4px; margin: 0 0 4px; gap: 6px;
+}
+.reply-preview-content {
+    display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1;
+    font-size: 13px; color: var(--text-secondary);
+}
+.reply-preview-name { font-weight: 600; color: var(--primary); white-space: nowrap; }
+.reply-preview-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reply-preview-close {
+    background: none; border: none; cursor: pointer; padding: 2px;
+    color: var(--text-muted); flex-shrink: 0;
+}
+.reply-preview-close:hover { color: var(--text-primary); }
+
+/* Reply quote inside message bubble */
+.reply-quote {
+    padding: 2px 6px; margin-bottom: 2px; background: rgba(0,0,0,0.05);
+    border-left: 2px solid var(--primary); border-radius: 2px; cursor: pointer;
+    font-size: 11px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.reply-quote:hover { background: rgba(0,0,0,0.1); }
+.reply-quote-name { font-weight: 600; color: var(--primary); margin-right: 4px; }
+.reply-quote-text { color: var(--text); }
+
+/* Own message (blue bg) reply quote */
+.message-row.own .reply-quote { background: rgba(255,255,255,0.18); border-left-color: rgba(255,255,255,0.7); }
+.message-row.own .reply-quote:hover { background: rgba(255,255,255,0.28); }
+.message-row.own .reply-quote-name { color: #fff; }
+.message-row.own .reply-quote-text { color: rgba(255,255,255,0.9); }
+
+body.dark .reply-preview-bar { background: #2A2A3A; }
+body.dark .reply-quote { background: rgba(255,255,255,0.08); }
+body.dark .reply-quote:hover { background: rgba(255,255,255,0.14); }
+
 /* Dark mode overrides */
 body.dark .msg-context-menu { background: #1E1E2E; border-color: #3A3A4A; }
 body.dark .msg-menu-item:hover { background: #2A2A3A; }
