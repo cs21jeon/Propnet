@@ -152,8 +152,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       context.push('/result');
     } else if (item.pnu != null && item.pnu!.length >= 11) {
       final bjdongCode = item.pnu!.substring(0, 10);
-      final bun = item.pnu!.length >= 14 ? item.pnu!.substring(10, 14) : item.pnu!.substring(10);
-      final ji = item.pnu!.length >= 18 ? item.pnu!.substring(14, 18) : '0000';
+      // PNU: [법정동코드10][지목1][본번4][부번4] = 19자리. index 10은 지목이므로 건너뜀
+      final bun = item.pnu!.length >= 15 ? item.pnu!.substring(11, 15) : item.pnu!.substring(11);
+      final ji = item.pnu!.length >= 19 ? item.pnu!.substring(15, 19) : '0000';
       notifier.searchByJibun(bjdongCode: bjdongCode, bun: bun, ji: ji, searchType: 'unified');
       context.push('/result');
     }
@@ -424,7 +425,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
 
-          // Layer 3: 하단 정보 카드
+          // Layer 3: 안내 문구 (아무것도 선택되지 않았을 때)
+          if (_isMapReady && !showLoading && !showInfoCard &&
+              mapState.status != SearchStatus.error && !_showDropdown)
+            Positioned(
+              bottom: 24,
+              left: 0,
+              right: 0,
+              child: IgnorePointer(
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      '지도에서 직접 선택하세요',
+                      style: TextStyle(color: Colors.white, fontSize: 13),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+          // 하단 정보 카드
           if (showLoading)
             Positioned(
               bottom: 16,
