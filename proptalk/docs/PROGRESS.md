@@ -1,6 +1,23 @@
 # Proptalk 개발 진행 기록
 
-> 최종 업데이트: 2026-04-17
+> 최종 업데이트: 2026-04-20
+
+## 2026-04-20: 파일 공유 인텐트 확장 + 이미지 썸네일 + 웹 링크
+
+- **외부 공유(Share Intent) 확장**: 오디오만 → 이미지(image/*), PDF(application/pdf) 추가
+  - AndroidManifest.xml: intent-filter 추가 + READ_MEDIA_IMAGES 권한
+  - main.dart: 오디오/일반 파일 분기 라우팅
+  - ShareRoomPickerScreen: isAudio 파라미터, 일반 파일은 과금 체크 건너뛰기
+- **서버 이미지 썸네일 생성**: 업로드 시 Pillow로 300x300 JPEG 썸네일 자동 생성
+  - DB: file_attachments에 saved_filename, thumbnail_path 컬럼 추가
+  - API: GET /api/files/{id}/thumbnail, GET /api/files/{id}/download 엔드포인트
+  - config.py: THUMBNAIL_FOLDER, THUMBNAIL_MAX_SIZE 설정
+- **앱 채팅 이미지 썸네일**: file_type=image → 200px 둥근 썸네일, 탭 → 풀스크린 뷰어
+  - fullscreen_image_viewer.dart: 검정 배경 + InteractiveViewer 핀치줌
+  - 버블 패딩 조건 분기 (이미지=축소, 텍스트=기본)
+- **웹 채팅 이미지 썸네일**: img 태그 + token 쿼리 인증, 클릭 시 풀스크린 오버레이
+- **웹 URL 링크화**: renderContent()에 URL→<a> 태그 변환 추가
+- 수정 파일: AndroidManifest.xml, MainActivity.kt, main.dart, chat_screen.dart, share_room_picker_screen.dart, api_service.dart, fullscreen_image_viewer.dart(신규), config.py, models.py, routes_messages.py, app.html, app.js, migrate_file_thumbnails.sql(신규)
 
 ## 2026-04-17: 웹 댓글(Reply) 기능 구현 — 앱과 연동
 

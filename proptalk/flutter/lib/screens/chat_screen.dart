@@ -64,13 +64,11 @@ class _ChatScreenState extends State<ChatScreen> {
       thumbnailUrl = api.getFileThumbnailUrl(fileId as int);
     }
 
-    // 풀스크린용 이미지 URL (Drive 우선, 없으면 다운로드 API)
+    // 풀스크린용 이미지 URL (항상 download API + inline 사용)
     String? fullImageUrl;
     Map<String, String> fullImageHeaders = {};
-    if (driveUrl != null && driveUrl.isNotEmpty) {
-      fullImageUrl = driveUrl;
-    } else if (fileId != null) {
-      fullImageUrl = api.getFileDownloadUrl(fileId as int);
+    if (fileId != null) {
+      fullImageUrl = '${api.getFileDownloadUrl(fileId as int)}?inline=1';
       fullImageHeaders = api.authHeaders;
     }
 
