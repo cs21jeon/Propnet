@@ -338,6 +338,19 @@
         /* 로딩 */
         .loading-text { text-align: center; padding: 40px 0; color: #94a3b8; font-size: 13px; }
     </style>
+    <script>
+    // 앱 WebView 감지: 하단 네비바 보정
+    (function() {
+        if (new URLSearchParams(window.location.search).get('inapp') !== '1') return;
+        var s = document.createElement('style');
+        s.textContent = '@media(max-width:768px){' +
+            '.side-panel{padding-bottom:48px!important;transform:translateY(calc(100% - 112px))!important}' +
+            '.side-panel.expanded{transform:translateY(0)!important}' +
+            '.side-panel.collapsed{transform:translateY(calc(100% - 112px))!important}' +
+        '}';
+        document.head.appendChild(s);
+    })();
+    </script>
 </head>
 <body>
     <div class="app">
@@ -519,9 +532,8 @@
     (function() {
         var params = new URLSearchParams(window.location.search);
         var iframeSrc = 'map.html?agent=all';
-        if (params.get('autoloc') === '1') {
-            iframeSrc += '&autoloc=1';
-        }
+        if (params.get('autoloc') === '1') iframeSrc += '&autoloc=1';
+        if (params.get('inapp') === '1') iframeSrc += '&inapp=1';
         document.getElementById('mapIframe').src = iframeSrc;
     })();
 

@@ -29,6 +29,14 @@
 ### goldenrabbit.biz index.html
 - 헤더 회원가입 링크 제거 (레이아웃 균형용 여백으로 대체)
 
+### 앱 WebView 하단 네비바 보정 (inapp 파라미터 방식)
+- 문제: Android WebView에서 `env(safe-area-inset-bottom)`=0, `viewport-fit=cover`로 Flutter SafeArea 무효
+- 해결: Flutter에서 URL에 `&inapp=1` 추가 → index.html `<head>`에서 감지 → CSS 주입
+  - collapsed: `transform: translateY(calc(100% - 112px))` (64px 힌트 + 48px 네비바)
+  - expanded: `transform: translateY(0)` + `padding-bottom: 48px` (콘텐츠 보호)
+- iframe에 `inapp=1` 전달 → map.html에서 내 위치 버튼 bottom: 124px 적용
+- Flutter `propmap_web_screen.dart`: onPageFinished JS 주입 제거, body를 단순 Stack으로 변경
+
 ## 2026-04-20: 모바일 필터 세부항목 패널 동시 닫기
 
 - 앱에서 '필터' 버튼으로 필터 패널을 닫을 때, 열린 세부항목(subtype) 패널도 함께 닫히도록 수정

@@ -54,7 +54,7 @@ class _PropMapWebScreenState extends State<PropMapWebScreen> {
     } catch (_) {}
 
     // URL 구성: autoloc=1 + 내 위치 + 마지막 위치
-    var url = '$_propmapBase?autoloc=1';
+    var url = '$_propmapBase?autoloc=1&inapp=1';
     if (myLoc != null) {
       url += '&myloc=$myLoc';
     }
@@ -194,22 +194,14 @@ class _PropMapWebScreenState extends State<PropMapWebScreen> {
           ],
         ),
         drawer: const AppDrawer(currentApp: AppType.propmap),
-        body: Column(
+        body: Stack(
           children: [
-            Expanded(
-              child: Stack(
-                children: [
-                  WebViewWidget(controller: _controller),
-                  if (_isLoading)
-                    LinearProgressIndicator(
-                      value: _progress / 100.0,
-                      minHeight: 2,
-                    ),
-                ],
+            WebViewWidget(controller: _controller),
+            if (_isLoading)
+              LinearProgressIndicator(
+                value: _progress / 100.0,
+                minHeight: 2,
               ),
-            ),
-            // 시스템 하단 safe area (홈 버튼/제스처 바 영역)
-            SizedBox(height: MediaQuery.of(context).padding.bottom),
           ],
         ),
       ),

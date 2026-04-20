@@ -78,13 +78,13 @@
         }
 
         @media (max-width: 768px) {
-            /* 지도타입은 우상단 유지, 필터토글은 그 아래 */
-            .filter-toggle-btn { display: inline-flex; top: 42px; }
+            /* 지도타입은 우상단 유지, 필터토글은 간격 두고 아래 */
+            .filter-toggle-btn { display: inline-flex; top: 48px; }
             .filter-panel { display: none; }
             .filter-panel.open {
                 display: flex;
-                top: 80px; /* 필터 토글 버튼 아래로 */
-                max-height: calc(100vh - 90px);
+                top: 86px; /* 필터 토글 버튼 아래로 */
+                max-height: calc(100vh - 96px);
                 overflow-y: auto;
             }
         }
@@ -723,7 +723,10 @@
     /* iframe 안에서 부모 하단 패널과 겹침 방지: 내 위치 버튼 올리기 */
     if (window.parent !== window) {
         var locBtn = document.getElementById('myLocBtn');
-        if (locBtn) locBtn.style.bottom = '76px';
+        if (locBtn) {
+            var isInApp = new URLSearchParams(window.location.search).get('inapp') === '1';
+            locBtn.style.bottom = isInApp ? '124px' : '76px';
+        }
     }
 
     /* ===== URL 파라미터 파싱 ===== */
