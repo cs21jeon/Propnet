@@ -1,6 +1,15 @@
 # PropSheet 개발 진행 기록
 
-> 최종 업데이트: 2026-04-15
+> 최종 업데이트: 2026-04-20
+
+## 2026-04-20: 현황→등록 자동 geocoding + 가이드 CTA
+
+- 현황을 '등록'으로 변경 시, 좌표가 없으면 지번 주소로 VWorld 자동 geocoding
+  - `routes/database.py` update_single_field에 auto-geocode 로직 추가
+  - audit_log에 coordinates_lat/lon 변경도 기록
+- 가이드 헤더에 회원가입/PropSheet 시작하기 CTA 버튼 추가
+  - `guide.css`: `.guide-cta-btn`, `.guide-cta-primary`, `.guide-cta-outline` 스타일
+  - `guide/_base.html`: 헤더 우측에 CTA 링크 2개
 
 ## 2026-04-15: 워크스페이스 DB 우클릭 컨텍스트 메뉴
 

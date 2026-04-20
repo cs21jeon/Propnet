@@ -1,7 +1,17 @@
 # PropNet 통합 개발 진행 기록
 
-> 최종 업데이트: 2026-04-17
+> 최종 업데이트: 2026-04-20
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
+
+## 2026-04-20: 다중 서비스 업데이트
+
+- [PropMap] 모바일 필터 닫힘 시 세부항목 패널 동시 닫기 (map.html)
+- [PropSheet] 현황=등록 변경 시 지번 주소 기반 자동 geocoding (database.py)
+- [PropSheet] 가이드 헤더에 회원가입/시작하기 CTA 버튼 추가 (guide.css, _base.html)
+- [Propedia] data-sources.html VWorld URL 제거 및 설명 수정 (Play 심사 대응)
+- [Proptalk] 이미지 풀스크린 뷰어를 download API+inline 방식으로 전환
+- [마케팅] agent 가이드 "내슬러그" → "내부동산 영문이름" 문구 수정
+- [인프라] phase_d 야간배치에 notify 스크립트 호출 추가
 
 ## 2026-04-17: [Propedia] 부동산 조회 버그 수정 12건 + 신규 행정구역 폴백
 
