@@ -36,6 +36,7 @@
   - expanded: `transform: translateY(0)` + `padding-bottom: 48px` (콘텐츠 보호)
 - iframe에 `inapp=1` 전달 → map.html에서 내 위치 버튼 bottom: 124px 적용
 - Flutter `propmap_web_screen.dart`: onPageFinished JS 주입 제거, body를 단순 Stack으로 변경
+- 결과: expanded 정상, 내 위치 버튼 정상. collapsed는 힌트바("중개사무소 보기")까지만 네비바 위 표시 (현상 유지)
 
 ## 2026-04-20: 모바일 필터 세부항목 패널 동시 닫기
 
