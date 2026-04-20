@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../widgets/fullscreen_image_viewer.dart';
 import 'package:flutter/gestures.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../services/api_service.dart';
@@ -47,6 +48,96 @@ class _ChatScreenState extends State<ChatScreen> {
       case 'archive': return Icons.folder_zip;
       default: return Icons.attach_file;
     }
+  }
+
+  /// 이미지 파일 메시지 — 썸네일 + 탭 시 풀스크린 뷰어
+  Widget _buildImageMessage(Map<String, dynamic> msg, bool isMe, ThemeData theme) {
+    final api = context.read<ApiService>();
+    final fileId = msg['file_id'];
+    final thumbnailPath = msg['file_thumbnail_path'];
+    final driveUrl = msg['file_drive_url'] as String?;
+    final fileName = msg['file_name'] as String?;
+
+    // 썸네일 URL 결정
+    String? thumbnailUrl;
+    if (fileId != null && thumbnailPath != null) {
+      thumbnailUrl = api.getFileThumbnailUrl(fileId as int);
+    }
+
+    // 풀스크린용 이미지 URL (Drive 우선, 없으면 다운로드 API)
+    String? fullImageUrl;
+    Map<String, String> fullImageHeaders = {};
+    if (driveUrl != null && driveUrl.isNotEmpty) {
+      fullImageUrl = driveUrl;
+    } else if (fileId != null) {
+      fullImageUrl = api.getFileDownloadUrl(fileId as int);
+      fullImageHeaders = api.authHeaders;
+    }
+
+    return GestureDetector(
+      onTap: () {
+        if (fullImageUrl == null) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => FullscreenImageViewer(
+              imageUrl: fullImageUrl!,
+              headers: fullImageHeaders,
+              fileName: fileName,
+              driveUrl: driveUrl,
+            ),
+          ),
+        );
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: thumbnailUrl != null
+            ? Image.network(
+                thumbnailUrl,
+                headers: api.authHeaders,
+                width: 200,
+                height: 200,
+                fit: BoxFit.cover,
+                loadingBuilder: (ctx, child, progress) {
+                  if (progress == null) return child;
+                  return SizedBox(
+                    width: 200,
+                    height: 150,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: isMe
+                            ? theme.extension<AppColors>()!.onMyBubble
+                            : theme.colorScheme.primary,
+                      ),
+                    ),
+                  );
+                },
+                errorBuilder: (ctx, err, stack) => _buildImageFallback(msg, isMe, theme),
+              )
+            : _buildImageFallback(msg, isMe, theme),
+      ),
+    );
+  }
+
+  /// 이미지 썸네일 로드 실패 시 기본 파일 아이콘 표시
+  Widget _buildImageFallback(Map<String, dynamic> msg, bool isMe, ThemeData theme) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.image, size: 18,
+            color: isMe ? theme.extension<AppColors>()!.onMyBubble.withValues(alpha: 0.7) : theme.colorScheme.primary),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(
+            msg['file_name'] ?? msg['content'] ?? '',
+            style: TextStyle(
+              color: isMe ? theme.extension<AppColors>()!.onMyBubble : null,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   static final _urlRegex = RegExp(
@@ -1526,7 +1617,10 @@ class _ChatScreenState extends State<ChatScreen> {
             constraints: BoxConstraints(
               maxWidth: MediaQuery.of(context).size.width * 0.75,
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: (type == 'file' && msg['file_type'] == 'image')
+                ? const EdgeInsets.all(3)
+                : const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            clipBehavior: Clip.hardEdge,
             decoration: BoxDecoration(
               color: isMe
                   ? theme.extension<AppColors>()!.myBubble
@@ -1708,8 +1802,11 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                       ),
                     ),
+                ] else if (type == 'file' && msg['file_type'] == 'image') ...[
+                  // 이미지 파일 — 썸네일 표시
+                  _buildImageMessage(msg, isMe, theme),
                 ] else if (type == 'file') ...[
-                  // 파일 메시지
+                  // 일반 파일 메시지 (PDF, 문서 등)
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

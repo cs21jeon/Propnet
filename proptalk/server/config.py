@@ -79,6 +79,13 @@ class Config:
     }
     MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB
 
+    # 이미지 썸네일
+    THUMBNAIL_FOLDER = os.environ.get(
+        'THUMBNAIL_FOLDER',
+        '/home/webapp/goldenrabbit/chat_stt/thumbnails'
+    )
+    THUMBNAIL_MAX_SIZE = (300, 300)  # 최대 width x height
+
     # 파일 보관 시간 (시간 단위) - 이후 자동 삭제
     AUDIO_RETENTION_HOURS = int(os.environ.get('AUDIO_RETENTION_HOURS', '24'))
 

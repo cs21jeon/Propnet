@@ -300,6 +300,7 @@ class Message:
                           fa.id as file_id, fa.original_filename as file_name,
                           fa.file_size as file_size, fa.file_type as file_type,
                           fa.drive_url as file_drive_url, fa.status as file_status,
+                          fa.thumbnail_path as file_thumbnail_path,
                           pm.content as parent_content, pu.name as parent_user_name,
                           (SELECT json_agg(json_build_object(
                               'id', r.id, 'type', r.type, 'content', r.content,
@@ -331,6 +332,7 @@ class Message:
                       fa.id as file_id, fa.original_filename as file_name,
                       fa.file_size as file_size, fa.file_type as file_type,
                       fa.drive_url as file_drive_url, fa.status as file_status,
+                      fa.thumbnail_path as file_thumbnail_path,
                       pm.content as parent_content, pu.name as parent_user_name,
                       (SELECT json_agg(json_build_object(
                           'id', r.id, 'type', r.type, 'content', r.content,
@@ -593,12 +595,15 @@ class AudioFile:
 # ============================================================
 class FileAttachment:
     @staticmethod
-    def create(message_id, room_id, user_id, original_filename, file_size, file_type, mime_type=None):
+    def create(message_id, room_id, user_id, original_filename, file_size, file_type, mime_type=None,
+               saved_filename=None, thumbnail_path=None):
         return execute(
             """INSERT INTO file_attachments
-               (message_id, room_id, user_id, original_filename, file_size, file_type, mime_type, status)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, 'uploading') RETURNING *""",
-            (message_id, room_id, user_id, original_filename, file_size, file_type, mime_type)
+               (message_id, room_id, user_id, original_filename, file_size, file_type, mime_type,
+                saved_filename, thumbnail_path, status)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'uploading') RETURNING *""",
+            (message_id, room_id, user_id, original_filename, file_size, file_type, mime_type,
+             saved_filename, thumbnail_path)
         )
 
     @staticmethod

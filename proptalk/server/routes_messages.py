@@ -275,6 +275,27 @@ def register_message_routes(app, socketio):
             os.remove(filepath)
             return jsonify({'error': f'파일 크기 제한 초과 ({_format_file_size(Config.MAX_FILE_SIZE)})'}), 400
 
+        # 1-b) 이미지 썸네일 생성
+        thumbnail_path = None
+        if file_type == 'image':
+            try:
+                from PIL import Image as PILImage
+                thumb_dir = Config.THUMBNAIL_FOLDER
+                os.makedirs(thumb_dir, exist_ok=True)
+                thumb_filename = f"thumb_{file_uuid}.jpg"
+                thumb_full_path = os.path.join(thumb_dir, thumb_filename)
+
+                with PILImage.open(filepath) as img:
+                    img.thumbnail(Config.THUMBNAIL_MAX_SIZE)
+                    if img.mode in ('RGBA', 'P'):
+                        img = img.convert('RGB')
+                    img.save(thumb_full_path, 'JPEG', quality=75)
+
+                thumbnail_path = thumb_filename
+                logger.info(f"[File] 썸네일 생성: {thumb_filename}")
+            except Exception as e:
+                logger.warning(f"[File] 썸네일 생성 실패: {e}")
+
         # 2) 메시지 생성
         size_str = _format_file_size(file_size)
         msg = Message.create(
@@ -289,10 +310,12 @@ def register_message_routes(app, socketio):
         mime_type = file.content_type
         attachment = FileAttachment.create(
             msg['id'], room_id, g.user_id,
-            original_filename, file_size, file_type, mime_type
+            original_filename, file_size, file_type, mime_type,
+            saved_filename=saved_filename, thumbnail_path=thumbnail_path
         )
 
         # 4) WebSocket 전송
+        thumbnail_url = f"/api/files/{attachment['id']}/thumbnail" if thumbnail_path else None
         socketio.emit('new_message', {
             'message': _serialize({
                 **msg,
@@ -304,6 +327,7 @@ def register_message_routes(app, socketio):
                 'file_type': file_type,
                 'file_drive_url': None,
                 'file_status': 'uploading',
+                'file_thumbnail_path': thumbnail_path,
             })
         }, room=f'room_{room_id}')
 
@@ -563,6 +587,92 @@ def register_message_routes(app, socketio):
 
         return jsonify({'error': '파일이 만료되었거나 존재하지 않습니다'}), 404
 
+
+    # ============================================================
+    # 파일 썸네일 서빙
+    # ============================================================
+    @app.route('/api/files/<int:attachment_id>/thumbnail', methods=['GET'])
+    @login_required
+    def get_file_thumbnail(attachment_id):
+        """이미지 파일 썸네일 서빙"""
+        attachment = FileAttachment.find_by_id(attachment_id)
+        if not attachment:
+            return jsonify({'error': '파일을 찾을 수 없습니다'}), 404
+        if not Room.is_member(attachment['room_id'], g.user_id):
+            return jsonify({'error': '접근 권한이 없습니다'}), 403
+
+        thumb = attachment.get('thumbnail_path')
+        if thumb:
+            full_path = os.path.join(Config.THUMBNAIL_FOLDER, thumb)
+            if os.path.exists(full_path):
+                return send_file(full_path, mimetype='image/jpeg')
+
+        return jsonify({'error': '썸네일이 없습니다'}), 404
+
+    # ============================================================
+    # 파일 다운로드 (로컬 → Drive 프록시 fallback)
+    # ============================================================
+    @app.route('/api/files/<int:attachment_id>/download', methods=['GET'])
+    @login_required
+    def download_file(attachment_id):
+        """첨부 파일 다운로드"""
+        attachment = FileAttachment.find_by_id(attachment_id)
+        if not attachment:
+            return jsonify({'error': '파일을 찾을 수 없습니다'}), 404
+        if not Room.is_member(attachment['room_id'], g.user_id):
+            return jsonify({'error': '접근 권한이 없습니다'}), 403
+
+        original_filename = attachment['original_filename']
+        # inline=1 이면 브라우저에서 바로 보기 (이미지 풀스크린용)
+        inline = request.args.get('inline') == '1'
+
+        # 1) 로컬 파일 우선
+        saved = attachment.get('saved_filename')
+        if saved:
+            filepath = os.path.join(Config.UPLOAD_FOLDER, saved)
+            if os.path.exists(filepath):
+                return send_file(filepath, as_attachment=not inline,
+                                 download_name=original_filename)
+
+        # 2) Drive 프록시
+        drive_file_id = attachment.get('drive_file_id')
+        if drive_file_id:
+            try:
+                from models import User
+                room = Room.find_by_id(attachment['room_id'])
+                if not room:
+                    return jsonify({'error': '방 정보를 찾을 수 없습니다'}), 404
+
+                owner = User.find_by_id(room['created_by'])
+                if not owner or not owner.get('google_tokens'):
+                    return jsonify({'error': 'Drive 인증 정보가 없습니다'}), 403
+
+                from drive_service import download_from_drive
+                file_bytes, updated_tokens = download_from_drive(
+                    owner['google_tokens'], drive_file_id
+                )
+
+                if updated_tokens:
+                    User.update_google_tokens(owner['id'], updated_tokens)
+
+                mime_type = attachment.get('mime_type', 'application/octet-stream')
+
+                from flask import Response
+                return Response(
+                    file_bytes,
+                    mimetype=mime_type,
+                    headers={
+                        'Content-Disposition': "{}; filename*=UTF-8''{}".format(
+                            'inline' if inline else 'attachment',
+                            url_quote(original_filename)),
+                        'Content-Length': str(len(file_bytes)),
+                    }
+                )
+            except Exception as e:
+                logger.error(f"[Download] Drive 프록시 실패: attachment_id={attachment_id}, error={e}")
+                return jsonify({'error': '파일 다운로드에 실패했습니다'}), 500
+
+        return jsonify({'error': '파일이 만료되었거나 존재하지 않습니다'}), 404
 
     # ============================================================
     # 메시지 삭제 (본인 or 방장)

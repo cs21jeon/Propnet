@@ -76,6 +76,11 @@ class _VoiceRoomAppState extends State<VoiceRoomApp> {
 
   /// 외부 공유로 받은 파일 (처리 대기 중)
   List<File>? _pendingSharedFiles;
+  List<File>? _pendingSharedGeneralFiles;
+
+  static const _audioExts = {
+    'mp3', 'wav', 'ogg', 'm4a', 'flac', 'webm', 'mp4', 'aac', 'amr', '3gp',
+  };
 
   @override
   void initState() {
@@ -109,32 +114,49 @@ class _VoiceRoomAppState extends State<VoiceRoomApp> {
     }
   }
 
-  /// 공유받은 파일 경로 처리
+  /// 공유받은 파일 경로 처리 — 오디오와 일반 파일을 분기
   void _handleSharedPaths(List<String> paths) {
-    final audioFiles = paths
+    final validFiles = paths
         .map((p) => File(p))
         .where((f) => f.existsSync())
         .toList();
 
-    if (audioFiles.isEmpty) return;
+    if (validFiles.isEmpty) return;
+
+    final audioFiles = <File>[];
+    final generalFiles = <File>[];
+
+    for (final f in validFiles) {
+      final ext = f.path.split('.').last.toLowerCase();
+      if (_audioExts.contains(ext)) {
+        audioFiles.add(f);
+      } else {
+        generalFiles.add(f);
+      }
+    }
 
     final auth = context.read<AuthService>();
     if (auth.isLoggedIn && !auth.consentRequired) {
-      _navigateToRoomPicker(audioFiles);
+      if (audioFiles.isNotEmpty) _navigateToRoomPicker(audioFiles, isAudio: true);
+      if (generalFiles.isNotEmpty) _navigateToRoomPicker(generalFiles, isAudio: false);
     } else {
       setState(() {
-        _pendingSharedFiles = audioFiles;
+        if (audioFiles.isNotEmpty) _pendingSharedFiles = audioFiles;
+        if (generalFiles.isNotEmpty) _pendingSharedGeneralFiles = generalFiles;
       });
     }
   }
 
   /// 방 선택 화면으로 이동
-  void _navigateToRoomPicker(List<File> files) {
+  void _navigateToRoomPicker(List<File> files, {bool isAudio = true}) {
     final navigator = navigatorKey.currentState;
     if (navigator != null) {
       navigator.push(
         MaterialPageRoute(
-          builder: (_) => ShareRoomPickerScreen(sharedFiles: files),
+          builder: (_) => ShareRoomPickerScreen(
+            sharedFiles: files,
+            isAudio: isAudio,
+          ),
         ),
       );
     }
@@ -173,7 +195,14 @@ class _VoiceRoomAppState extends State<VoiceRoomApp> {
             final files = _pendingSharedFiles!;
             _pendingSharedFiles = null;
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              _navigateToRoomPicker(files);
+              _navigateToRoomPicker(files, isAudio: true);
+            });
+          }
+          if (_pendingSharedGeneralFiles != null) {
+            final files = _pendingSharedGeneralFiles!;
+            _pendingSharedGeneralFiles = null;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _navigateToRoomPicker(files, isAudio: false);
             });
           }
           return const MainScreen();

@@ -453,6 +453,7 @@ function ProptalkApp() {
                 file_size: msg.file_size || 0,
                 file_drive_url: msg.file_drive_url || null,
                 file_status: msg.file_status || 'completed',
+                file_thumbnail_path: msg.file_thumbnail_path || null,
             };
             msg = Object.assign(defaults, msg);
 
@@ -1212,6 +1213,51 @@ function ProptalkApp() {
         },
 
         // ============================================================
+        // ============================================================
+        // Image fullscreen viewer
+        // ============================================================
+        openImageFullscreen(msg) {
+            const driveUrl = msg.file_drive_url;
+            const thumbnailUrl = msg.file_thumbnail_path
+                ? (API_BASE + '/api/files/' + msg.file_id + '/thumbnail')
+                : null;
+            const fullUrl = msg.file_id
+                ? (API_BASE + '/api/files/' + msg.file_id + '/download?token=' + this.token + '&inline=1')
+                : driveUrl;
+            if (!fullUrl) return;
+
+            // Create overlay
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:10000;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+            overlay.onclick = () => overlay.remove();
+
+            // Close button
+            const closeBtn = document.createElement('button');
+            closeBtn.innerHTML = '&times;';
+            closeBtn.style.cssText = 'position:absolute;top:16px;right:16px;background:none;border:none;color:white;font-size:32px;cursor:pointer;z-index:10001;';
+            overlay.appendChild(closeBtn);
+
+            // Filename
+            if (msg.file_name) {
+                const nameEl = document.createElement('div');
+                nameEl.textContent = msg.file_name;
+                nameEl.style.cssText = 'position:absolute;top:20px;left:20px;color:white;font-size:14px;z-index:10001;';
+                overlay.appendChild(nameEl);
+            }
+
+            const img = document.createElement('img');
+            img.src = fullUrl;
+            img.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;';
+            img.onclick = (e) => e.stopPropagation();
+            overlay.appendChild(img);
+
+            document.body.appendChild(overlay);
+
+            // ESC to close
+            const escHandler = (e) => { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', escHandler); } };
+            document.addEventListener('keydown', escHandler);
+        },
+
         // Formatting helpers
         // ============================================================
         formatTime(ts) {
@@ -1270,6 +1316,11 @@ function ProptalkApp() {
                 .replace(/`(.+?)`/g, '<code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:0.9em;">$1</code>');
             // Horizontal rule
             html = html.replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #e0e0e0;margin:8px 0;">');
+            // URLs → clickable links
+            html = html.replace(
+                /(https?:\/\/[^\s<>"']+)/g,
+                '<a href="$1" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">$1</a>'
+            );
             // Line breaks
             html = html.replace(/\n/g, '<br>');
             return html;

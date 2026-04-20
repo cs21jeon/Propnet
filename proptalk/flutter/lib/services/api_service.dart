@@ -290,6 +290,15 @@ class ApiService {
     return _handleResponse(response);
   }
 
+  /// 파일 썸네일 URL (이미지 파일용)
+  String getFileThumbnailUrl(int fileId) => '$baseUrl/api/files/$fileId/thumbnail';
+
+  /// 파일 다운로드 URL
+  String getFileDownloadUrl(int fileId) => '$baseUrl/api/files/$fileId/download';
+
+  /// 인증 헤더 (이미지 로딩용)
+  Map<String, String> get authHeaders => {'Authorization': 'Bearer $_token'};
+
   /// 음성 파일 검색
   Future<List<dynamic>> searchAudio(int roomId, {
     String? phone, String? dateFrom, String? dateTo,

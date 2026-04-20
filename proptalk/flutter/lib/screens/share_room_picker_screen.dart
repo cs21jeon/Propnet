@@ -6,11 +6,16 @@ import '../services/billing_service.dart';
 import '../theme/app_colors.dart';
 import 'chat_screen.dart';
 
-/// 외부 앱에서 공유받은 오디오 파일을 업로드할 채팅방을 선택하는 화면
+/// 외부 앱에서 공유받은 파일을 업로드할 채팅방을 선택하는 화면
 class ShareRoomPickerScreen extends StatefulWidget {
   final List<File> sharedFiles;
+  final bool isAudio;
 
-  const ShareRoomPickerScreen({super.key, required this.sharedFiles});
+  const ShareRoomPickerScreen({
+    super.key,
+    required this.sharedFiles,
+    this.isAudio = true,
+  });
 
   @override
   State<ShareRoomPickerScreen> createState() => _ShareRoomPickerScreenState();
@@ -26,6 +31,16 @@ class _ShareRoomPickerScreenState extends State<ShareRoomPickerScreen> {
   void initState() {
     super.initState();
     _loadRooms();
+  }
+
+  static IconData _iconForFile(String name) {
+    final ext = name.split('.').last.toLowerCase();
+    const audioExts = {'mp3', 'wav', 'ogg', 'm4a', 'flac', 'webm', 'mp4', 'aac', 'amr', '3gp'};
+    const imageExts = {'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'};
+    if (audioExts.contains(ext)) return Icons.audio_file;
+    if (imageExts.contains(ext)) return Icons.image;
+    if (ext == 'pdf') return Icons.picture_as_pdf;
+    return Icons.insert_drive_file;
   }
 
   Future<void> _loadRooms() async {
@@ -52,46 +67,48 @@ class _ShareRoomPickerScreenState extends State<ShareRoomPickerScreen> {
     final billing = context.read<BillingService>();
     final api = context.read<ApiService>();
 
-    // 잔여 시간 확인
-    await billing.loadBillingStatus();
-    if (!billing.canTranscribe) {
-      if (!mounted) return;
-      await showDialog<void>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('이용 시간 소진'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('음성 변환 이용 시간이 소진되었습니다.\n아래 주소에서 충전할 수 있습니다.'),
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: SelectableText(
-                  BillingService.billingWebUrl,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(ctx).colorScheme.primary,
+    // 음성 파일인 경우만 잔여 시간 확인
+    if (widget.isAudio) {
+      await billing.loadBillingStatus();
+      if (!billing.canTranscribe) {
+        if (!mounted) return;
+        await showDialog<void>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('이용 시간 소진'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('음성 변환 이용 시간이 소진되었습니다.\n아래 주소에서 충전할 수 있습니다.'),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: SelectableText(
+                    BillingService.billingWebUrl,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(ctx).colorScheme.primary,
+                    ),
                   ),
                 ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('확인'),
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('확인'),
-            ),
-          ],
-        ),
-      );
-      return;
+        );
+        return;
+      }
     }
 
     setState(() => _isUploading = true);
@@ -100,15 +117,22 @@ class _ShareRoomPickerScreenState extends State<ShareRoomPickerScreen> {
       int successCount = 0;
 
       for (final file in widget.sharedFiles) {
-        await api.uploadAudio(roomId, file);
+        if (widget.isAudio) {
+          await api.uploadAudio(roomId, file);
+        } else {
+          await api.uploadFile(roomId, file);
+        }
         successCount++;
       }
 
       if (!mounted) return;
 
       // 업로드 완료 후 해당 채팅방으로 이동
+      final snackText = widget.isAudio
+          ? '$successCount개 파일 업로드 완료! 변환 중...'
+          : '$successCount개 파일 업로드 완료!';
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$successCount개 파일 업로드 완료! 변환 중...')),
+        SnackBar(content: Text(snackText)),
       );
 
       Navigator.of(context).pushReplacement(
@@ -168,7 +192,7 @@ class _ShareRoomPickerScreenState extends State<ShareRoomPickerScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 2),
                   child: Row(
                     children: [
-                      Icon(Icons.audio_file, size: 18,
+                      Icon(_iconForFile(name), size: 18,
                           color: theme.colorScheme.primary),
                       const SizedBox(width: 8),
                       Expanded(

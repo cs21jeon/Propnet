@@ -70,7 +70,7 @@ class MainActivity : FlutterActivity() {
         // content:// URI를 앱 캐시에 복사하여 실제 경로 반환
         return try {
             val inputStream = contentResolver.openInputStream(uri) ?: return null
-            val fileName = getFileName(uri) ?: "shared_audio_${System.currentTimeMillis()}"
+            val fileName = getFileName(uri) ?: "shared_file_${System.currentTimeMillis()}"
             val cacheFile = java.io.File(cacheDir, fileName)
             cacheFile.outputStream().use { output ->
                 inputStream.copyTo(output)
