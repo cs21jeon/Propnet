@@ -711,6 +711,15 @@
         btn.addEventListener('click', function() {
             var isOpen = panel.classList.toggle('open');
             btn.classList.toggle('open', isOpen);
+            // 필터 패널 닫힐 때 세부항목 패널도 같이 닫기
+            if (!isOpen && typeof filterState !== 'undefined') {
+                filterState.expandedType = null;
+                var section = document.getElementById('subtypeSection');
+                if (section) { section.style.display = 'none'; section.innerHTML = ''; }
+                document.querySelectorAll('.type-btn-wrap[data-type]').forEach(function(w) {
+                    w.classList.remove('expanded');
+                });
+            }
         });
     })();
 
