@@ -2,6 +2,33 @@
 
 > 최종 업데이트: 2026-04-20
 
+## 2026-04-20: 현재위치 속도 개선 + 모바일 레이아웃 통합 + goldenrabbit.biz 동기화
+
+### 현재위치 기능 개선
+- localStorage 캐시(`propmap_last_loc`, 24시간 유효): 재방문 시 즉시 위치 표시
+- `navigator.permissions.query`로 권한 상태 확인 → granted일 때만 watchPosition 시작 (이중 다이얼로그 방지)
+- GPS 취득 중 버튼 로딩 애니메이션 (SVG 회전 + 비활성화)
+
+### 페이지별 초기 위치 정책
+- `propmap/` (agent=all): 위치 동의 다이얼로그 표시 → 자동 현재위치
+- `propmap/{slug}`: 다이얼로그 없음 → agent 사무소 좌표 기본, 내 위치 버튼으로 수동
+- `goldenrabbit.biz`: 동일 (agent 좌표 기본 + 내 위치 버튼 수동)
+
+### goldenrabbit.biz map.html 동기화
+- 내 위치 버튼 + 파란 마커 CSS 신규 추가
+- localStorage 캐시 + watchPosition + 로딩 표시 추가
+- 필터 토글 버튼 + 모바일 반응형(@media 768px) 신규 추가
+- 필터 닫기 시 세부항목(subtype) 패널 동시 닫기 JS 추가
+
+### 모바일 레이아웃 개선
+- 지도타입(지도/위성/중첩): 우상단 유지 (하단 이동 제거 → 앱 패널 겹침 해소)
+- 필터 토글: 우상단 지도타입 바로 아래 (top: 42px)
+- 필터 패널: 토글 아래로 열림 (top: 80px)
+- iframe 내 위치 버튼: `window.parent !== window`일 때 bottom: 76px (하단 시트 힌트바 겹침 방지)
+
+### goldenrabbit.biz index.html
+- 헤더 회원가입 링크 제거 (레이아웃 균형용 여백으로 대체)
+
 ## 2026-04-20: 모바일 필터 세부항목 패널 동시 닫기
 
 - 앱에서 '필터' 버튼으로 필터 패널을 닫을 때, 열린 세부항목(subtype) 패널도 함께 닫히도록 수정

@@ -40,6 +40,9 @@
             font-size: 20px; color: #136dec; transition: background 0.15s;
         }
         .my-loc-btn:hover { background: #f0f0f0; }
+        .my-loc-btn.loc-loading svg { animation: loc-spin 0.8s linear infinite; }
+        .my-loc-btn.loc-loading { pointer-events: none; opacity: 0.6; }
+        @keyframes loc-spin { to { transform: rotate(360deg); } }
 
         /* 필터 패널 */
         .filter-panel {
@@ -75,21 +78,15 @@
         }
 
         @media (max-width: 768px) {
-            .filter-toggle-btn { display: inline-flex; }
+            /* 지도타입은 우상단 유지, 필터토글은 그 아래 */
+            .filter-toggle-btn { display: inline-flex; top: 42px; }
             .filter-panel { display: none; }
             .filter-panel.open {
                 display: flex;
-                top: 46px; /* 필터 토글 버튼 아래로 */
-                max-height: calc(100vh - 60px);
+                top: 80px; /* 필터 토글 버튼 아래로 */
+                max-height: calc(100vh - 90px);
                 overflow-y: auto;
             }
-            /* 모바일: 지도타입을 하단 좌측으로 이동 (필터토글과 겹침 방지) */
-            .map-type-control {
-                top: auto; right: auto;
-                bottom: 30px; left: 8px;
-            }
-            /* 전체보기 삭제됨 */
-            .my-loc-btn { bottom: 140px; }
         }
         .subtype-float {
             position: fixed; z-index: 1001; background: white; border-radius: 8px;
@@ -723,6 +720,12 @@
         });
     })();
 
+    /* iframe 안에서 부모 하단 패널과 겹침 방지: 내 위치 버튼 올리기 */
+    if (window.parent !== window) {
+        var locBtn = document.getElementById('myLocBtn');
+        if (locBtn) locBtn.style.bottom = '76px';
+    }
+
     /* ===== URL 파라미터 파싱 ===== */
     var urlParams = new URLSearchParams(window.location.search);
     var paramAgent = urlParams.get('agent') || 'all';        // 기본 all
@@ -1279,17 +1282,56 @@
             _myLocOverlay.setMap(map);
         }
 
-        // 백그라운드 위치 추적 시작
-        if (navigator.geolocation) {
-            navigator.geolocation.watchPosition(
+        // localStorage에서 마지막 위치 복원 (재방문 시 즉시 사용)
+        if (_cachedLat === null) {
+            try {
+                var saved = localStorage.getItem('propmap_last_loc');
+                if (saved) {
+                    var loc = JSON.parse(saved);
+                    if (loc.lat && loc.lng && (Date.now() - (loc.ts || 0)) < 86400000) {
+                        _cachedLat = loc.lat;
+                        _cachedLng = loc.lng;
+                    }
+                }
+            } catch(e) {}
+        }
+
+        // watchPosition은 권한 부여 후에만 시작 (이중 다이얼로그 방지)
+        var _watchId = null;
+        function _startWatching() {
+            if (_watchId || !navigator.geolocation) return;
+            _watchId = navigator.geolocation.watchPosition(
                 function(pos) {
                     _cachedLat = pos.coords.latitude;
                     _cachedLng = pos.coords.longitude;
                     _userLocationResolved = true;
+                    try {
+                        localStorage.setItem('propmap_last_loc', JSON.stringify({
+                            lat: _cachedLat, lng: _cachedLng, ts: Date.now()
+                        }));
+                    } catch(e) {}
                 },
                 function() {},
                 {enableHighAccuracy: false, maximumAge: 30000, timeout: 10000}
             );
+        }
+
+        // 브라우저 권한이 이미 granted면 즉시 watchPosition 시작
+        if (navigator.permissions) {
+            navigator.permissions.query({name: 'geolocation'}).then(function(result) {
+                if (result.state === 'granted') _startWatching();
+            }).catch(function() {});
+        }
+
+        function _setLocBtnLoading(loading) {
+            var btn = document.getElementById('myLocBtn');
+            if (loading) {
+                btn.classList.add('loc-loading');
+                btn.disabled = true;
+            } else {
+                btn.classList.remove('loc-loading');
+                btn.disabled = false;
+            }
         }
 
         function showMyLocation() {
@@ -1299,10 +1341,12 @@
                 map.setLevel(5);
                 _updateMyLocMarker(_cachedLat, _cachedLng);
                 notifyParent();
+                _startWatching(); // 이후 정밀 추적 시작
                 return;
             }
-            // 캐시 없으면 getCurrentPosition (첫 호출)
+            // 캐시 없으면 getCurrentPosition (로딩 표시)
             if (!navigator.geolocation) return;
+            _setLocBtnLoading(true);
             navigator.geolocation.getCurrentPosition(
                 function(pos) {
                     _cachedLat = pos.coords.latitude;
@@ -1312,8 +1356,18 @@
                     map.setLevel(5);
                     _updateMyLocMarker(_cachedLat, _cachedLng);
                     notifyParent();
+                    _setLocBtnLoading(false);
+                    _startWatching(); // 이후 정밀 추적 시작
+                    try {
+                        localStorage.setItem('propmap_last_loc', JSON.stringify({
+                            lat: _cachedLat, lng: _cachedLng, ts: Date.now()
+                        }));
+                    } catch(e) {}
                 },
-                function() { _userLocationResolved = true; },
+                function() {
+                    _userLocationResolved = true;
+                    _setLocBtnLoading(false);
+                },
                 {timeout: 5000, enableHighAccuracy: false}
             );
         }
@@ -1329,8 +1383,8 @@
             // 앱 WebView에서 진입 — 다이얼로그 없이 바로 위치 사용
             dialog.classList.add('hidden');
             showMyLocation();
-        } else if (!paramCenter) {
-            // 커스텀 다이얼로그 표시
+        } else if (!paramCenter && paramAgent === 'all') {
+            // 통합지도(agent=all): 현재위치 다이얼로그 표시
             document.getElementById('locYes').onclick = function() {
                 dialog.classList.add('hidden');
                 showMyLocation();
@@ -1340,7 +1394,7 @@
                 _userLocationResolved = true;
             };
         } else {
-            // URL 파라미터로 center 지정 시 다이얼로그 숨김
+            // 개별 agent 또는 center 지정: 다이얼로그 숨김, agent 좌표 사용
             dialog.classList.add('hidden');
         }
 
