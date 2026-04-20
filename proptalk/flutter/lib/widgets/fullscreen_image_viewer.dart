@@ -69,13 +69,32 @@ class FullscreenImageViewer extends StatelessWidget {
                 ),
               );
             },
-            errorBuilder: (ctx, err, stack) => const Column(
+            errorBuilder: (ctx, err, stack) => Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.broken_image, color: Colors.white54, size: 64),
-                SizedBox(height: 16),
-                Text('이미지를 불러올 수 없습니다',
-                    style: TextStyle(color: Colors.white54)),
+                const Icon(Icons.broken_image, color: Colors.white54, size: 64),
+                const SizedBox(height: 16),
+                Text(
+                  driveUrl != null && driveUrl!.isNotEmpty
+                      ? '보관 기간이 만료되었습니다'
+                      : '이미지를 불러올 수 없습니다',
+                  style: const TextStyle(color: Colors.white54),
+                ),
+                if (driveUrl != null && driveUrl!.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      final uri = Uri.parse(driveUrl!);
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    },
+                    icon: const Icon(Icons.open_in_new),
+                    label: const Text('Google Drive에서 확인'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white24,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

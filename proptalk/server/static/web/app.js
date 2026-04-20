@@ -1249,6 +1249,17 @@ function ProptalkApp() {
             img.src = fullUrl;
             img.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;';
             img.onclick = (e) => e.stopPropagation();
+            img.onerror = () => {
+                img.style.display = 'none';
+                const expiredEl = document.createElement('div');
+                expiredEl.style.cssText = 'text-align:center;color:white;';
+                expiredEl.innerHTML = '<div style="font-size:48px;margin-bottom:16px;">🖼️</div>'
+                    + '<div style="color:#aaa;margin-bottom:16px;">보관 기간이 만료되었습니다</div>'
+                    + (driveUrl ? '<a href="' + driveUrl + '" target="_blank" rel="noopener" '
+                        + 'style="color:#4fc3f7;text-decoration:underline;" '
+                        + 'onclick="event.stopPropagation();">Google Drive에서 확인</a>' : '');
+                overlay.appendChild(expiredEl);
+            };
             overlay.appendChild(img);
 
             document.body.appendChild(overlay);

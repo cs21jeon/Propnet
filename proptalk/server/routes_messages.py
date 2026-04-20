@@ -443,10 +443,19 @@ def register_message_routes(app, socketio):
                     'error': str(e)[:100],
                 }, room=f'room_{room_id}')
             finally:
-                # 임시 파일 삭제
+                # 임시 파일을 보관 폴더로 이동 (7일간 보관)
                 if os.path.exists(filepath):
-                    os.remove(filepath)
-                    logger.info(f"[File] 임시 파일 삭제: {filepath}")
+                    try:
+                        import shutil
+                        file_folder = Config.FILE_FOLDER
+                        os.makedirs(file_folder, exist_ok=True)
+                        dest_path = os.path.join(file_folder, os.path.basename(filepath))
+                        shutil.move(filepath, dest_path)
+                        logger.info(f"[File] 보관 폴더로 이동: {dest_path}")
+                    except Exception as move_err:
+                        logger.warning(f"[File] 보관 이동 실패, 삭제: {move_err}")
+                        os.remove(filepath)
+                        logger.info(f"[File] 임시 파일 삭제: {filepath}")
 
 
     # ============================================================
@@ -626,13 +635,14 @@ def register_message_routes(app, socketio):
         # inline=1 이면 브라우저에서 바로 보기 (이미지 풀스크린용)
         inline = request.args.get('inline') == '1'
 
-        # 1) 로컬 파일 우선
+        # 1) 로컬 파일 우선 (UPLOAD_FOLDER → FILE_FOLDER 순서)
         saved = attachment.get('saved_filename')
         if saved:
-            filepath = os.path.join(Config.UPLOAD_FOLDER, saved)
-            if os.path.exists(filepath):
-                return send_file(filepath, as_attachment=not inline,
-                                 download_name=original_filename)
+            for folder in [Config.UPLOAD_FOLDER, Config.FILE_FOLDER]:
+                filepath = os.path.join(folder, saved)
+                if os.path.exists(filepath):
+                    return send_file(filepath, as_attachment=not inline,
+                                     download_name=original_filename)
 
         # 2) Drive 프록시
         drive_file_id = attachment.get('drive_file_id')

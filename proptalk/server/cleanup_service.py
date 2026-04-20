@@ -86,6 +86,42 @@ def cleanup_temp_uploads():
             logger.error(f"[Cleanup] 임시 파일 삭제 실패: {filename} - {e}")
 
 
+def cleanup_expired_files():
+    """
+    만료된 첨부 파일 삭제
+    FILE_RETENTION_DAYS 일이 지난 파일을 FILE_FOLDER에서 삭제
+    """
+    file_folder = Config.FILE_FOLDER
+    retention_days = Config.FILE_RETENTION_DAYS
+
+    if not os.path.exists(file_folder):
+        return
+
+    now = datetime.now()
+    expiry_time = now - timedelta(days=retention_days)
+    deleted_count = 0
+
+    for filename in os.listdir(file_folder):
+        filepath = os.path.join(file_folder, filename)
+
+        if os.path.isdir(filepath):
+            continue
+
+        try:
+            file_mtime = datetime.fromtimestamp(os.path.getmtime(filepath))
+
+            if file_mtime < expiry_time:
+                os.remove(filepath)
+                deleted_count += 1
+                logger.info(f"[Cleanup] 첨부파일 삭제: {filename} (생성: {file_mtime})")
+
+        except Exception as e:
+            logger.error(f"[Cleanup] 첨부파일 삭제 실패: {filename} - {e}")
+
+    if deleted_count > 0:
+        logger.info(f"[Cleanup] 첨부파일 정리 완료 - {deleted_count}개 삭제 ({retention_days}일 초과)")
+
+
 # ============================================================
 # 구독 자동결제 / 만료 관리
 # ============================================================
@@ -386,6 +422,15 @@ def init_cleanup_scheduler():
         hours=1,
         id='cleanup_audio',
         name='음성 파일 정리'
+    )
+
+    # 매일 05:00 만료 첨부파일 정리 (FILE_RETENTION_DAYS 경과)
+    _scheduler.add_job(
+        cleanup_expired_files,
+        'cron',
+        hour=5, minute=0,
+        id='cleanup_files',
+        name='첨부파일 정리'
     )
 
     # 매 30분마다 임시 파일 정리
