@@ -221,9 +221,18 @@
                                                     <div class="transcript-preview" x-show="msg.audio && msg.audio.transcript_summary">
                                                         <div class="transcript-collapsed"
                                                              x-html="renderContent(msg.audio ? msg.audio.transcript_summary : '')"></div>
-                                                        <button class="btn-expand"
-                                                                x-show="msg.audio && msg.audio.transcript_summary && msg.audio.transcript_summary.length > 100"
-                                                                onclick="var t=this.previousElementSibling;var c=t.classList.contains('transcript-collapsed');t.classList.toggle('transcript-collapsed');this.textContent=c?'접기':'더보기';">더보기</button>
+                                                        <div class="transcript-actions">
+                                                            <button class="btn-expand"
+                                                                    x-show="msg.audio && msg.audio.transcript_summary && msg.audio.transcript_summary.length > 100"
+                                                                    onclick="var t=this.parentElement.previousElementSibling;var c=t.classList.contains('transcript-collapsed');t.classList.toggle('transcript-collapsed');this.textContent=c?'접기':'더보기';">더보기</button>
+                                                            <button class="btn-pdf-download"
+                                                                    x-show="msg.audio && msg.audio.transcript_summary"
+                                                                    @click="downloadSummaryPdf(msg.audio.id, msg.audio.original_filename)"
+                                                                    title="요약 PDF 다운로드">
+                                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                                                PDF
+                                                            </button>
+                                                        </div>
                                                     </div>
                                             </div>
                                             <div class="audio-status-badge" x-show="msg.audio?.status && msg.audio.status !== 'completed'"
@@ -509,6 +518,13 @@
                         <div class="summary-meta">
                             <span x-text="formatDate(s.created_at)"></span>
                             <span x-show="s.duration_seconds" x-text="' | ' + formatDuration(s.duration_seconds)"></span>
+                            <button class="btn-pdf-download" style="margin-left:auto"
+                                    x-show="s.transcript_summary"
+                                    @click="downloadSummaryPdf(s.id, s.original_filename)"
+                                    title="요약 PDF 다운로드">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                PDF
+                            </button>
                         </div>
                     </div>
                 </template>

@@ -338,6 +338,18 @@ class ApiService {
     }
     throw ApiException('다운로드 실패', response.statusCode);
   }
+
+  /// 음성 요약 PDF 다운로드 (바이트로 반환)
+  Future<List<int>> downloadSummaryPdf(int audioId) async {
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/audio/$audioId/summary-pdf'),
+      headers: _headers,
+    );
+    if (response.statusCode == 200) {
+      return response.bodyBytes;
+    }
+    throw ApiException('PDF 다운로드 실패', response.statusCode);
+  }
   
   // ============================================================
   // 멤버 승인/거절

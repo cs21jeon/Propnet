@@ -816,6 +816,38 @@ body {
 }
 .btn-expand:hover { text-decoration: underline; }
 
+.transcript-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.btn-pdf-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    border: 1px solid var(--border-color, #ddd);
+    background: transparent;
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+.btn-pdf-download:hover {
+    background: var(--primary);
+    color: #fff;
+}
+.btn-pdf-download svg { flex-shrink: 0; }
+
+.summary-item .summary-meta {
+    display: flex;
+    align-items: center;
+}
+
 /* ── Audio player row [fix #6] ── */
 .audio-player-row {
     display: flex;
@@ -889,7 +921,7 @@ body {
 .summary-item .summary-filename { font-size: 13px; font-weight: 500; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
 .summary-item .summary-text { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
 .summary-collapsed { max-height: 60px; overflow: hidden; position: relative; }
-.summary-item .summary-meta { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.summary-item .summary-meta { font-size: 11px; color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; }
 
 /* ── Toggle Switch ── */
 .toggle-track {

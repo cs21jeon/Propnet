@@ -1,6 +1,23 @@
 # Proptalk 개발 진행 기록
 
-> 최종 업데이트: 2026-04-21
+> 최종 업데이트: 2026-04-22
+
+## 2026-04-22: 음성 요약 PDF 다운로드 기능 추가
+
+- **PDF 다운로드 API**: `GET /api/audio/{id}/summary-pdf` 엔드포인트
+  - 마크다운 → HTML → PDF 변환 (xhtml2pdf + markdown 라이브러리)
+  - NanumGothic 한글 폰트 등록 (reportlab pdfmetrics + @font-face)
+  - xhtml2pdf `<ul>/<li>` 고정 패딩 우회: `<div class="bullet-item">` + `•` 문자 변환
+  - PDF 헤더: 파일명, 날짜, 음성 길이, 전화번호, 이름 메타 테이블
+  - PDF 푸터: "Proptalk - 음성 요약 서비스" + 생성일
+- **웹 UI**: 요약 댓글 옆 + 요약 탭 리스트에 PDF 다운로드 버튼 추가
+  - downloadSummaryPdf() fetch API 구현 (app.js)
+  - `.btn-pdf-download` 스타일 (app.css)
+- **앱 (로컬)**: 음성 메시지 길게 누르기 → "PDF 다운로드" 메뉴 항목 추가
+  - api_service.dart: downloadSummaryPdf() 메서드
+  - chat_screen.dart: _downloadSummaryPdf() + 파일 저장 + SnackBar 열기
+- 서버 의존성: `xhtml2pdf>=0.2.17`, `markdown>=3.5` 추가 (requirements.txt)
+- 수정 파일: routes_audio.py, requirements.txt, app.js, app.css, app.html, chat_screen.dart, api_service.dart
 
 ## 2026-04-21: 대용량 음성파일 업로드 지원 + 길이별 요약 분량 자동 조절
 

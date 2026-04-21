@@ -1180,6 +1180,29 @@ function ProptalkApp() {
             }
         },
 
+        async downloadSummaryPdf(audioId, filename) {
+            try {
+                const res = await this.api(`/api/audio/${audioId}/summary-pdf`);
+                if (res?.ok) {
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    const base = (filename || 'audio').replace(/\.[^.]+$/, '');
+                    a.download = base + '_요약.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } else {
+                    const err = await res.json().catch(() => null);
+                    this.toast(err?.error || '요약 PDF 다운로드 실패', 'error');
+                }
+            } catch (e) {
+                this.toast('요약 PDF 다운로드 실패: ' + e.message, 'error');
+            }
+        },
+
         // ============================================================
         // Keyboard shortcuts
         // ============================================================

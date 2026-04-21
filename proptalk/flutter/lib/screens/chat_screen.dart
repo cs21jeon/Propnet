@@ -1369,6 +1369,57 @@ class _ChatScreenState extends State<ChatScreen> {
   // ============================================================
   // 메시지 삭제 확인
   // ============================================================
+  Future<void> _downloadSummaryPdf(Map<String, dynamic> msg) async {
+    final audio = msg['audio'] as Map<String, dynamic>?;
+    if (audio == null) return;
+    final audioId = audio['id'] as int?;
+    if (audioId == null) return;
+
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('PDF 생성 중...'), duration: Duration(seconds: 2)),
+      );
+      final api = context.read<ApiService>();
+      final bytes = await api.downloadSummaryPdf(audioId);
+
+      // 파일명 생성
+      final originalFilename = (audio['original_filename'] ?? 'audio') as String;
+      final baseName = originalFilename.contains('.')
+          ? originalFilename.substring(0, originalFilename.lastIndexOf('.'))
+          : originalFilename;
+      final pdfFilename = '${baseName}_요약.pdf';
+
+      // 저장 경로
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File('${dir.path}/$pdfFilename');
+      await file.writeAsBytes(bytes);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('PDF 저장 완료: $pdfFilename'),
+          action: SnackBarAction(
+            label: '열기',
+            onPressed: () async {
+              // Android에서 PDF 열기
+              try {
+                final uri = Uri.file(file.path);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri);
+                }
+              } catch (_) {}
+            },
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('PDF 다운로드 실패: $e')),
+      );
+    }
+  }
+
   void _confirmDeleteMessage(Map<String, dynamic> msg) {
     final msgType = msg['type'] ?? 'text';
     String desc = '이 메시지를 삭제하시겠습니까?';
@@ -1574,6 +1625,15 @@ class _ChatScreenState extends State<ChatScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('메시지가 복사되었습니다'), duration: const Duration(seconds: 1)),
                       );
+                    },
+                  ),
+                if (type == 'audio' && msg['audio'] != null && (msg['audio']['transcript_summary'] ?? '').isNotEmpty)
+                  ListTile(
+                    leading: const Icon(Icons.picture_as_pdf_outlined),
+                    title: const Text('요약 PDF 다운로드'),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _downloadSummaryPdf(msg);
                     },
                   ),
                 if (canDelete)
