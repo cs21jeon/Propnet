@@ -1,6 +1,25 @@
 # Proptalk 개발 진행 기록
 
-> 최종 업데이트: 2026-04-20
+> 최종 업데이트: 2026-04-21
+
+## 2026-04-21: 대용량 음성파일 업로드 지원 + 길이별 요약 분량 자동 조절
+
+- **대용량 업로드 제한 해제**: 1시간+ 음성파일 업로드 시 413 에러 발생 → 제한 확대
+  - Flask MAX_CONTENT_LENGTH: 50MB → 200MB
+  - Nginx client_max_body_size: 100M → 200M (propnet.kr + goldenrabbit.biz)
+  - Gunicorn timeout: 120초 → 300초
+- **음성 길이별 요약 분량 자동 조절** (claude_service.py)
+  - ~5분: 3~5개 bullet, max_tokens=1024 (기존과 동일)
+  - 5~30분: 5~10개 bullet, max_tokens=2048, 논점별 그룹핑
+  - 30분+: 10~15개 bullet, max_tokens=4096, 구간별 소제목 + 전체 핵심 요약
+  - summarize_transcript()에 duration_seconds 파라미터 추가
+- **청크 분할 시 duration 미감지 버그 수정** (routes_messages.py)
+  - 대용량(>24MB) 청크 분할 경로에서 segments 빈 배열 → duration_seconds=0 → short 요약
+  - ffprobe fallback 추가: segments 비면 get_audio_duration()으로 실제 길이 감지
+- **deduct_result 미초기화 버그 수정** (routes_messages.py)
+  - duration_seconds=0일 때 deduct_result 변수 미할당 → 이후 참조 시 에러로 failed
+  - deduct_result = None 초기화 추가
+- 수정 파일: config.py, claude_service.py, routes_messages.py, Nginx(propnet/goldenrabbit), proptalk.service
 
 ## 2026-04-20: 파일 공유 인텐트 확장 + 이미지 썸네일 + 웹 링크
 
@@ -8,7 +27,7 @@
   - AndroidManifest.xml: intent-filter 추가 + READ_MEDIA_IMAGES 권한
   - main.dart: 오디오/일반 파일 분기 라우팅
   - ShareRoomPickerScreen: isAudio 파라미터, 일반 파일은 과금 체크 건너뛰기
-- **서버 이미지 썸네일 생성**: 업로드 시 Pillow로 300x300 JPEG 썸네일 자동 생성
+- **서버 이미지 썸네일 생성**: 업로드 시 Pillow로 600x600 JPEG 썸네일 자동 생성
   - DB: file_attachments에 saved_filename, thumbnail_path 컬럼 추가
   - API: GET /api/files/{id}/thumbnail, GET /api/files/{id}/download 엔드포인트
   - config.py: THUMBNAIL_FOLDER, THUMBNAIL_MAX_SIZE 설정
@@ -17,7 +36,13 @@
   - 버블 패딩 조건 분기 (이미지=축소, 텍스트=기본)
 - **웹 채팅 이미지 썸네일**: img 태그 + token 쿼리 인증, 클릭 시 풀스크린 오버레이
 - **웹 URL 링크화**: renderContent()에 URL→<a> 태그 변환 추가
-- 수정 파일: AndroidManifest.xml, MainActivity.kt, main.dart, chat_screen.dart, share_room_picker_screen.dart, api_service.dart, fullscreen_image_viewer.dart(신규), config.py, models.py, routes_messages.py, app.html, app.js, migrate_file_thumbnails.sql(신규)
+- **첨부파일 7일 보관**: Drive 업로드 후 임시 삭제 → FILE_FOLDER로 이동, 7일 보관 후 자동 삭제
+  - config.py: FILE_FOLDER, FILE_RETENTION_DAYS=7
+  - cleanup_service.py: cleanup_expired_files() 매일 05:00 실행
+  - routes_messages.py: _process_file_upload() 파일 이동, download에서 FILE_FOLDER 검색
+- **만료 이미지 안내**: 보관 기간 만료 시 "Google Drive에서 확인" 버튼 (앱+웹)
+- **READ_MEDIA_IMAGES 권한 제거**: 공유 인텐트는 별도 권한 불필요
+- 수정 파일: AndroidManifest.xml, MainActivity.kt, main.dart, chat_screen.dart, share_room_picker_screen.dart, api_service.dart, fullscreen_image_viewer.dart(신규), config.py, models.py, routes_messages.py, app.html, app.js, cleanup_service.py, migrate_file_thumbnails.sql(신규)
 
 ## 2026-04-17: 웹 댓글(Reply) 기능 구현 — 앱과 연동
 
