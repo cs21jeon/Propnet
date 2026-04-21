@@ -1,7 +1,17 @@
 # PropNet 통합 개발 진행 기록
 
-> 최종 업데이트: 2026-04-20
+> 최종 업데이트: 2026-04-21
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
+
+## 2026-04-21: 전자계약 시스템 구축 (데이터 위탁 계약)
+
+- [PropSheet] 관리자 접근 로그 시스템 (`admin_access_log` 테이블 + 서비스)
+- [PropSheet] Agent 데이터 일괄 삭제 기능 (`contract_service.dispose_agent_data()`)
+- [PropSheet] 약관 DB 관리 (`agreements`, `user_consents`, `data_disposal_log` 테이블)
+- [인프라] `/admin/contract` 계약 관리 대시보드 (접근 로그, 폐기 이력, 약관 관리)
+- [인프라] Agent 온보딩 동의 항목 추가 (`agent_data_processing` - 데이터 위탁 계약)
+- [인프라] 약관 전문 HTML 페이지 (`/legal/service-specific/data-processing-agreement.html`)
+- [문서] 서비스 이용약관, 개인정보 처리방침, 데이터 위탁 계약서 v1.0 초안
 
 ## 2026-04-20: 다중 서비스 업데이트
 
