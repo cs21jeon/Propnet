@@ -1,6 +1,58 @@
 # PropMap 개발 진행 기록
 
-> 최종 업데이트: 2026-04-20
+> 최종 업데이트: 2026-04-22
+
+## 2026-04-22: PropMap AI 매물추천 과금 시스템 구축
+
+### AI 크레딧 DB (goldenrabbit_db)
+- `ai_credit_wallet`: 유저별 크레딧 지갑 (free/bundle/pack 3종 잔고)
+- `ai_credit_ledger`: 크레딧 이동 원장 (모든 충전/차감 불변 기록)
+- `ai_credit_packs`: 향후 단독 팩 판매용 상품 마스터 (현재 비활성)
+- `ai_credit_orders`: 향후 Toss 결제 연동용 주문 (현재 비활성)
+- 기존 81명 유저 무료 1회 일괄 지급 완료
+
+### AI 크레딧 과금 서비스 (`ai_billing_service.py`)
+- `ensure_wallet`, `check_can_search`, `deduct_credit` (free→bundle→pack 차감)
+- `grant_signup_bonus` (가입 보너스 1회, idempotent)
+- `grant_monthly_bundle`, `cancel_bundle` (구독 연동)
+- `admin_adjust` (관리자 수동 조정)
+- 동일 세션 중복 차감 방지 (ledger UNIQUE 인덱스 + 사전 조회)
+
+### AI 검색 크레딧 통합 (`ai_search.py`)
+- `ai_access_required` 확장: 일반 propnet 유저도 AI 사용 가능 (기존 admin only → 전체)
+- pre-check: 잔여 크레딧 0이면 402 반환 (API 호출 전 차단)
+- post-deduct: 추천 성공 시 원자적 1크레딧 차감
+- 세션 턴 상한 `MAX_TURNS_PER_SESSION=8` (API 비용 방지)
+
+### PropMap AI 패널 UI (`ai-panel-ui.js`)
+- 플로팅 버튼 (FAB): 크레딧 뱃지 (잔여 N / 관리자 ∞ / 소진 0)
+- 슬라이드 패널 (데스크톱 420px) / 바텀시트 (모바일 80vh)
+- 대화형 검색 → 추천 카드 → 클릭 시 지도 이동(panTo) + 상세 모달
+- 크레딧 소진 시 결제 안내 모달 (→ /billing/)
+- 턴 상한 도달 시 "새 검색 시작" 버튼
+
+### Billing API 연동
+- `GET /api/ai/billing/status`: 크레딧 잔여 조회
+- `billing_plans.ai_credits_bundle` 컬럼 추가 (voiceroom DB)
+- 일반/중개사 탭 필터 버그 수정 (백엔드 `user_type` 파라미터 지원)
+- 각 플랜 카드에 "PropMap AI 매물추천 N회/월" 뱃지
+- 결제 성공 시 AI 크레딧 자동 지급 (`_grant_ai_credit`)
+- 구독 해지 시 번들 즉시 소멸 (`_cancel_ai_bundle`)
+
+### 회원가입 Hook
+- OAuth 콜백에서 `grant_signup_bonus(uid)` 자동 호출
+
+### 번들 리필 Cron
+- `cron/ai_bundle_refill.py` + `ai-bundle-refill.timer` (매월 1일 00:10 KST)
+- dry-run 검증 완료 (활성 구독자 2명 리필 성공)
+
+### 관리자 대시보드
+- `/admin/users` detail-panel에 AI 크레딧 섹션 추가
+- `GET/POST /admin/api/users/<uid>/ai-credit`: 조회 + 수동 조정
+- 크레딧 이력 테이블 + 종류/수량/메모 입력 + 지급 버튼
+
+### property-detail API 좌표 추가
+- `propsheet.py`: 응답에 `lat/lon` 필드 추가 (AI 추천 카드 → 지도 이동용)
 
 ## 2026-04-20: 현재위치 속도 개선 + 모바일 레이아웃 통합 + goldenrabbit.biz 동기화
 

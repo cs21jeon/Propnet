@@ -46,6 +46,85 @@
             border-radius: 8px; cursor: pointer; font-size: 18px; color: #64748b;
             align-items: center; justify-content: center;
         }
+        .panel-header-actions { display: flex; align-items: center; gap: 6px; }
+
+        /* ===== 로그인 / 프로필 ===== */
+        .auth-mount { position: relative; display: flex; align-items: center; }
+        .auth-login-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 6px 10px; background: #3b82f6; color: #fff;
+            border-radius: 8px; font-size: 12px; font-weight: 600;
+            text-decoration: none; white-space: nowrap;
+        }
+        .auth-login-btn:hover { background: #2563eb; }
+        .auth-login-icon { font-size: 16px !important; line-height: 1; }
+        .auth-profile-btn {
+            width: 32px; height: 32px; border: none; background: transparent;
+            cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center;
+        }
+        .auth-avatar {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: #3b82f6; color: #fff;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700;
+        }
+        .auth-menu {
+            position: absolute; top: calc(100% + 6px); right: 0;
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+            min-width: 160px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            padding: 6px; z-index: 200;
+        }
+        .auth-menu-name {
+            padding: 8px 10px; font-size: 12px; color: #64748b;
+            border-bottom: 1px solid #f1f5f9; margin-bottom: 4px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .auth-menu-item {
+            display: block; width: 100%; padding: 8px 10px;
+            font-size: 13px; color: #0f172a; text-decoration: none;
+            border: none; background: transparent; cursor: pointer;
+            text-align: left; border-radius: 6px; font-family: inherit;
+        }
+        .auth-menu-item:hover { background: #f1f5f9; }
+        .auth-menu-logout { color: #b91c1c; }
+
+        /* ===== 로그인 유도 모달 ===== */
+        .auth-gate-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            display: none; align-items: center; justify-content: center;
+            z-index: 200; padding: 16px;
+        }
+        .auth-gate-overlay.active { display: flex; }
+        .auth-gate-modal {
+            background: #fff; border-radius: 16px; max-width: 360px; width: 100%;
+            padding: 28px 24px 22px; text-align: center; position: relative;
+        }
+        .auth-gate-close {
+            position: absolute; top: 12px; right: 12px; width: 32px; height: 32px;
+            border: none; background: #f1f5f9; border-radius: 8px; cursor: pointer;
+            color: #64748b; font-size: 14px;
+        }
+        .auth-gate-icon { margin-bottom: 12px; }
+        .auth-gate-icon .material-symbols-outlined { font-size: 40px; color: #3b82f6; }
+        .auth-gate-title { font-size: 17px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+        .auth-gate-msg {
+            font-size: 13px; color: #475569; line-height: 1.6;
+            margin-bottom: 20px; white-space: pre-line;
+        }
+        .auth-gate-primary {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            width: 100%; padding: 12px;
+            background: #3b82f6; color: #fff; border: none; border-radius: 10px;
+            font-size: 14px; font-weight: 600; text-decoration: none;
+            margin-bottom: 8px; cursor: pointer;
+        }
+        .auth-gate-primary:hover { background: #2563eb; }
+        .auth-gate-secondary {
+            display: block; width: 100%; padding: 10px;
+            background: transparent; color: #64748b; border: none;
+            font-size: 13px; cursor: pointer; font-family: inherit;
+        }
+
         .guide-btn {
             padding: 3px 10px; background: #f1f5f9; border: 1px solid #e2e8f0;
             border-radius: 6px; font-size: 11px; font-weight: 600; color: #64748b;
@@ -230,6 +309,9 @@
 
             .panel-header { padding: 6px 16px 8px; }
             .panel-close { display: none; }
+            /* 모바일 collapsed 에선 로그인 텍스트 숨기고 아이콘만 */
+            .auth-login-label { display: none; }
+            .auth-login-btn { padding: 6px 8px; }
             .sort-bar { padding: 6px 16px 8px; }
             .sort-bar .total { font-size: 12px; }
             .sort-btn { padding: 3px 8px; font-size: 10px; }
@@ -379,7 +461,10 @@
                     <span class="sheet-hint-label">개 중개사무소 보기</span>
                     <span class="sheet-hint-arrow">▲</span>
                 </div>
-                <button class="panel-close" id="panelClose">&#10005;</button>
+                <div class="panel-header-actions">
+                    <div id="propmapAuthMount" class="auth-mount"></div>
+                    <button class="panel-close" id="panelClose">&#10005;</button>
+                </div>
             </div>
             <div class="sort-bar">
                 <div class="sort-row">
@@ -527,13 +612,55 @@
         </div>
     </div>
 
+    <script src="/propmap/js/auth-ui.js?v=20260421"></script>
+    <script src="/propmap/js/ai-panel-ui.js?v=20260422b"></script>
     <script>
-    /* ===== iframe src 설정 (autoloc 파라미터 전달) ===== */
+    /* ===== 지도 위치 저장/복구 (localStorage, 24h TTL) =====
+       로그인/로그아웃 이후에도 직전에 보던 지도 위치를 유지한다.
+       autoloc=1 (내 위치로 이동)이 켜진 경우에는 적용하지 않는다. */
+    var PROPMAP_VIEW_KEY = 'propmap:last_view';
+    var PROPMAP_VIEW_TTL_MS = 24 * 60 * 60 * 1000;
+
+    function readSavedView() {
+        try {
+            var raw = localStorage.getItem(PROPMAP_VIEW_KEY);
+            if (!raw) return null;
+            var v = JSON.parse(raw);
+            if (!v || typeof v.lat !== 'number' || typeof v.lng !== 'number') return null;
+            if (!v.ts || (Date.now() - v.ts) > PROPMAP_VIEW_TTL_MS) return null;
+            return v;
+        } catch (e) { return null; }
+    }
+
+    function saveView(lat, lng, level) {
+        try {
+            localStorage.setItem(PROPMAP_VIEW_KEY, JSON.stringify({
+                lat: lat, lng: lng, level: level || 5, ts: Date.now()
+            }));
+        } catch (e) { /* quota / private mode 무시 */ }
+    }
+
+    /* ===== iframe src 설정 (autoloc 파라미터 전달 + 이전 위치 복구) ===== */
     (function() {
         var params = new URLSearchParams(window.location.search);
         var iframeSrc = 'map.html?agent=all';
-        if (params.get('autoloc') === '1') iframeSrc += '&autoloc=1';
+        var autoloc = params.get('autoloc') === '1';
+        if (autoloc) iframeSrc += '&autoloc=1';
         if (params.get('inapp') === '1') iframeSrc += '&inapp=1';
+
+        // URL에 명시적 center/level 이 없고 autoloc도 아니면 localStorage 값으로 복구
+        if (!autoloc && !params.get('center') && !params.get('lat')) {
+            var saved = readSavedView();
+            if (saved) {
+                iframeSrc += '&center=' + saved.lat + ',' + saved.lng;
+                iframeSrc += '&level=' + (saved.level || 5);
+            }
+        } else {
+            // URL에 명시된 center/level이 있으면 그대로 전달
+            if (params.get('center')) iframeSrc += '&center=' + encodeURIComponent(params.get('center'));
+            if (params.get('level')) iframeSrc += '&level=' + encodeURIComponent(params.get('level'));
+        }
+
         document.getElementById('mapIframe').src = iframeSrc;
     })();
 
@@ -546,6 +673,7 @@
     var mapCenter = null;      // {lat, lng} - 지도 중심
     var mapBounds = null;      // {sw: {lat,lng}, ne: {lat,lng}} - 지도 범위
     var currentSort = 'count';
+    var saveViewTimer = null;
 
     /* ===== 유틸 ===== */
     function escapeHtml(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
@@ -732,6 +860,13 @@
                 requestMarkerCounts();
             }
             renderAgentList();
+            // 현재 지도 위치를 localStorage에 저장 (throttle: 1초)
+            if (mapCenter && mapCenter.lat && mapCenter.lng) {
+                if (saveViewTimer) clearTimeout(saveViewTimer);
+                saveViewTimer = setTimeout(function() {
+                    saveView(mapCenter.lat, mapCenter.lng, msg.level);
+                }, 1000);
+            }
         }
 
         if (msg.action === 'markerCounts') {
@@ -782,6 +917,10 @@
 
     /* ===== 매물 상세 ===== */
     function fetchPropertyDetail(recordId, dbId, agentSlug) {
+        if (window.PropMapAuth && !window.PropMapAuth.isLoggedIn()) {
+            window.PropMapAuth.showGate('매물 상세 정보는 로그인 후 열람하실 수 있어요.\n로그인하면 AI 매물 추천 1회를 무료로 드립니다.');
+            return;
+        }
         fetch('/propsheet/api/propsheet/property-detail?id=' + recordId + '&db_id=' + dbId)
             .then(function(r) { return r.json(); })
             .then(function(resp) {
@@ -867,6 +1006,10 @@
 
     /* ===== 상담 문의 ===== */
     function openConsult(address, agentSlug) {
+        if (window.PropMapAuth && !window.PropMapAuth.isLoggedIn()) {
+            window.PropMapAuth.showGate('상담 문의는 로그인 후 이용하실 수 있어요.\n로그인하면 AI 매물 추천 1회를 무료로 드립니다.');
+            return;
+        }
         document.getElementById('consultAddress').value = address || '';
         document.getElementById('consultAgentSlug').value = agentSlug || '';
         document.getElementById('consultOverlay').classList.add('active');

@@ -1,0 +1,390 @@
+{% extends "admin/base.html" %}
+{% block title %}유저 관리{% endblock %}
+{% block content %}
+<h2 style="font-size:20px;font-weight:700;margin-bottom:16px;">유저 관리 ({{ users|length }}명)</h2>
+
+<style>
+.sub-active { color:#2e7d32;font-weight:600; }
+.sub-free { color:#888; }
+.sub-expired { color:#d32f2f; }
+.sub-cancelled { color:#f57f17; }
+.detail-panel { background:#f8f9fb;padding:16px;border-top:1px solid #eee; }
+.detail-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px; }
+.detail-item label { font-size:11px;color:#888;display:block;margin-bottom:2px; }
+.detail-item .val { font-size:14px;font-weight:600;color:#333; }
+.action-row { display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:8px;padding-top:8px;border-top:1px solid #e8e8e8; }
+.action-row label { font-size:11px;color:#888;display:block;margin-bottom:2px; }
+.action-row input, .action-row select { padding:4px 8px;font-size:13px;border:1px solid #ddd;border-radius:6px; }
+.action-row button { padding:4px 12px;font-size:12px;border:none;border-radius:6px;cursor:pointer;background:#2962FF;color:white; }
+.plan-badge { display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px; }
+.plan-agent { background:#e3f2fd;color:#1565c0; }
+.plan-user { background:#f3e5f5;color:#7b1fa2; }
+.plan-free { background:#f5f5f5;color:#888; }
+</style>
+
+<form class="search-bar" method="GET" action="/admin/users" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
+    <input type="search" name="q" value="{{ search }}" placeholder="이름/이메일" style="min-width:140px;flex:1;">
+    <input type="search" name="agency" value="{{ agency_search }}" placeholder="사무소명" style="width:120px;">
+    <select name="role" onchange="this.form.submit()">
+        <option value="">역할</option>
+        <option value="user" {% if role_filter == 'user' %}selected{% endif %}>user</option>
+        <option value="agent" {% if role_filter == 'agent' %}selected{% endif %}>agent</option>
+        <option value="subagent" {% if role_filter == 'subagent' %}selected{% endif %}>subagent</option>
+        <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>admin</option>
+    </select>
+    <select name="plan" onchange="this.form.submit()">
+        <option value="">요금제</option>
+        <option value="free" {% if plan_filter == 'free' %}selected{% endif %}>무료</option>
+        <option value="pack_1h" {% if plan_filter == 'pack_1h' %}selected{% endif %}>1시간팩</option>
+        <option value="pack_10h" {% if plan_filter == 'pack_10h' %}selected{% endif %}>10시간팩</option>
+        <option value="basic_30h" {% if plan_filter == 'basic_30h' %}selected{% endif %}>Basic 30h</option>
+        <option value="pro_90h" {% if plan_filter == 'pro_90h' %}selected{% endif %}>Pro 90h</option>
+        <option value="agent_regular" {% if plan_filter == 'agent_regular' %}selected{% endif %}>Agent Regular</option>
+        <option value="agent_basic" {% if plan_filter == 'agent_basic' %}selected{% endif %}>Agent Basic</option>
+        <option value="agent_pro" {% if plan_filter == 'agent_pro' %}selected{% endif %}>Agent Pro</option>
+    </select>
+    <select name="status" onchange="this.form.submit()">
+        <option value="">구독상태</option>
+        <option value="free" {% if status_filter == 'free' %}selected{% endif %}>무료</option>
+        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>활성</option>
+        <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>해지예정</option>
+        <option value="past_due" {% if status_filter == 'past_due' %}selected{% endif %}>결제실패</option>
+        <option value="expired" {% if status_filter == 'expired' %}selected{% endif %}>만료</option>
+    </select>
+    <button type="submit">검색</button>
+    {% if search or role_filter or plan_filter or status_filter or agency_search %}
+        <a href="/admin/users" style="font-size:12px;color:#888;text-decoration:none;">초기화</a>
+    {% endif %}
+</form>
+
+<div class="card">
+    <div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>이름</th>
+                <th>이메일</th>
+                <th>역할</th>
+                <th>사무소</th>
+                <th>요금제</th>
+                <th>잔여시간</th>
+                <th>구독상태</th>
+                <th>가입일</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td>{{ u.id }}</td>
+                <td>{{ u.name or '-' }}</td>
+                <td style="font-size:12px;">{{ u.email }}</td>
+                <td>
+                    <select class="role-select role-{{ u.role }}"
+                            onchange="changeRole({{ u.id }}, this.value, this)"
+                            data-original="{{ u.role }}" style="font-size:12px;padding:2px;">
+                        <option value="user" {% if u.role == 'user' %}selected{% endif %}>user</option>
+                        <option value="subagent" {% if u.role == 'subagent' %}selected{% endif %}>subagent</option>
+                        <option value="agent" {% if u.role == 'agent' %}selected{% endif %}>agent</option>
+                        <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>admin</option>
+                    </select>
+                </td>
+                <td>
+                    {% if u.agent_slug %}
+                        <span style="font-size:12px;font-weight:600;">{{ u.agency_name or '-' }}</span>
+                    {% else %}-{% endif %}
+                </td>
+                <td>
+                    {% if u.plan_name %}
+                        <span class="plan-badge {% if u.plan_code and 'agent' in u.plan_code %}plan-agent{% else %}plan-user{% endif %}">{{ u.plan_name }}</span>
+                    {% else %}
+                        <span class="plan-badge plan-free">무료</span>
+                    {% endif %}
+                </td>
+                <td style="text-align:right;font-size:13px;">
+                    {% if u.remaining_seconds is not none and u.remaining_seconds is not none %}
+                        {% set mins = (u.remaining_seconds or 0) / 60 %}
+                        {% if mins >= 60 %}
+                            {{ "%.1f"|format(mins / 60) }}h
+                        {% else %}
+                            {{ "%.0f"|format(mins) }}m
+                        {% endif %}
+                    {% else %}-{% endif %}
+                </td>
+                <td>
+                    {% if u.subscription_status == 'active' %}
+                        <span class="sub-active">활성</span>
+                    {% elif u.subscription_status == 'cancelled' %}
+                        <span class="sub-cancelled">해지예정</span>
+                    {% elif u.subscription_status == 'past_due' %}
+                        <span class="sub-expired">결제실패</span>
+                    {% elif u.subscription_status == 'expired' %}
+                        <span class="sub-expired">만료</span>
+                    {% elif u.subscription_status == 'free' and u.plan_code and u.plan_code != 'free' %}
+                        <span class="sub-free" style="color:#1565c0;">시간팩</span>
+                    {% elif u.remaining_seconds is not none and u.remaining_seconds > 600 %}
+                        <span class="sub-free" style="color:#2e7d32;">충전됨</span>
+                    {% elif u.subscription_status == 'free' %}
+                        <span class="sub-free">무료</span>
+                    {% else %}
+                        <span class="sub-free">-</span>
+                    {% endif %}
+                </td>
+                <td style="font-size:12px;color:#888;">{{ u.created_at.strftime('%Y-%m-%d') if u.created_at else '-' }}</td>
+                <td>
+                    <button onclick="toggleDetail({{ u.id }})" style="font-size:11px;padding:3px 10px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;cursor:pointer;">상세</button>
+                </td>
+            </tr>
+            <tr id="detail-{{ u.id }}" style="display:none;">
+                <td colspan="10" class="detail-panel">
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>가입일 (PropNet)</label>
+                            <div class="val">{{ u.created_at.strftime('%Y-%m-%d %H:%M') if u.created_at else '-' }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>구독 시작일</label>
+                            <div class="val">{{ u.subscription_started_at.strftime('%Y-%m-%d %H:%M') if u.subscription_started_at else '-' }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>구독 만료일</label>
+                            <div class="val">{{ u.subscription_expires_at.strftime('%Y-%m-%d %H:%M') if u.subscription_expires_at else '-' }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>현재 요금제</label>
+                            <div class="val">{{ u.plan_name or '무료' }}{% if u.plan_price %} ({{ "{:,}".format(u.plan_price) }}원/월){% endif %}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>잔여시간</label>
+                            <div class="val">
+                                {% if u.remaining_seconds is not none %}
+                                    {{ "%.1f"|format((u.remaining_seconds or 0) / 60) }}분 ({{ u.remaining_seconds or 0 }}초)
+                                {% else %}-{% endif %}
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <label>자동갱신</label>
+                            <div class="val">{{ '예' if u.auto_renew else '아니오' }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>연결 서비스</label>
+                            <div class="val">
+                                {% if u.services %}{{ u.services|join(', ') }}{% else %}-{% endif %}
+                            </div>
+                        </div>
+                        {% if u.agent_slug %}
+                        <div class="detail-item">
+                            <label>Agent slug</label>
+                            <div class="val">{{ u.agent_slug }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="action-row">
+                        <div>
+                            <label>요금제 변경</label>
+                            <div style="display:flex;gap:4px;">
+                                <select id="planSelect-{{ u.id }}" style="min-width:140px;">
+                                    <option value="">-- 선택 --</option>
+                                    <option value="free" {% if u.plan_code == 'free' %}selected{% endif %}>무료 (10분)</option>
+                                    <option value="pack_1h">1시간 팩</option>
+                                    <option value="pack_10h">10시간 팩</option>
+                                    <option value="basic_30h">Basic 30시간</option>
+                                    <option value="pro_90h">Pro 90시간</option>
+                                    <option value="agent_regular" {% if u.plan_code == 'agent_regular' %}selected{% endif %}>Agent Regular</option>
+                                    <option value="agent_basic" {% if u.plan_code == 'agent_basic' %}selected{% endif %}>Agent Basic</option>
+                                    <option value="agent_pro" {% if u.plan_code == 'agent_pro' %}selected{% endif %}>Agent Pro</option>
+                                </select>
+                                <button onclick="changePlan({{ u.id }})">변경</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label>시간 추가 (분)</label>
+                            <div style="display:flex;gap:4px;">
+                                <input type="number" id="addMin-{{ u.id }}" placeholder="분" min="1" style="width:80px;">
+                                <button onclick="addMinutes({{ u.id }})">추가</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label>잔여시간 직접 설정 (분)</label>
+                            <div style="display:flex;gap:4px;">
+                                <input type="number" id="setMin-{{ u.id }}" value="{{ ((u.remaining_seconds or 0) / 60)|int }}" min="0" style="width:80px;">
+                                <button onclick="setMinutes({{ u.id }})" style="background:#666;">설정</button>
+                            </div>
+                        </div>
+                        {% if u.subscription_status == 'active' %}
+                        <div>
+                            <label>구독 해지</label>
+                            <div>
+                                <button onclick="cancelSubscription({{ u.id }})" style="background:#d32f2f;">구독 해지</button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <!-- AI 크레딧 섹션 -->
+                    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #e0e0e0;">
+                        <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:8px;">AI 매물 추천 크레딧</div>
+                        <div id="ai-credit-{{ u.id }}" style="font-size:12px;color:#666;">
+                            <span onclick="loadAiCredit({{ u.id }})" style="cursor:pointer;color:#2962FF;">크레딧 정보 불러오기</span>
+                        </div>
+                        <div class="action-row" style="margin-top:6px;">
+                            <div>
+                                <label>크레딧 종류</label>
+                                <select id="aiBucket-{{ u.id }}">
+                                    <option value="free">무료 보너스</option>
+                                    <option value="bundle">월 번들</option>
+                                    <option value="pack">유료 팩</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>수량 (+/-)</label>
+                                <input type="number" id="aiDelta-{{ u.id }}" placeholder="예: 5" style="width:70px;">
+                            </div>
+                            <div>
+                                <label>메모</label>
+                                <input type="text" id="aiNote-{{ u.id }}" placeholder="사유" style="width:120px;">
+                            </div>
+                            <div>
+                                <label>&nbsp;</label>
+                                <button onclick="adjustAiCredit({{ u.id }})" style="background:#2E7D32;">지급</button>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+<script>
+function toggleDetail(userId) {
+    const el = document.getElementById('detail-' + userId);
+    el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
+}
+
+async function changeRole(userId, newRole, selectEl, forceDetach) {
+    const original = selectEl.dataset.original;
+    if (newRole === original) return;
+    if (!forceDetach && !confirm(`역할을 ${original} → ${newRole}(으)로 변경하시겠습니까?`)) {
+        selectEl.value = original; return;
+    }
+    try {
+        const body = {role: newRole};
+        if (forceDetach) body.force_detach = true;
+        const res = await fetch(`/admin/api/users/${userId}/role`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (data.ok) { selectEl.dataset.original = newRole; selectEl.className = 'role-select role-' + newRole; location.reload(); }
+        else if (data.confirm_required === 'detach_agent') {
+            if (confirm(`${data.agent_name} 소속을 해제하고 user로 변경하시겠습니까?`)) {
+                changeRole(userId, newRole, selectEl, true);
+            } else { selectEl.value = original; }
+        }
+        else { alert(data.error || 'Failed'); selectEl.value = original; }
+    } catch (e) { alert('Network error'); selectEl.value = original; }
+}
+
+async function changePlan(userId) {
+    const select = document.getElementById('planSelect-' + userId);
+    const planCode = select.value;
+    if (!planCode) { alert('요금제를 선택하세요'); return; }
+    if (!confirm(`요금제를 ${planCode}(으)로 변경하시겠습니까?`)) return;
+    await billingAction(userId, 'set_plan', {plan_code: planCode});
+}
+
+async function addMinutes(userId) {
+    const mins = parseInt(document.getElementById('addMin-' + userId).value);
+    if (!mins || mins <= 0) { alert('분을 입력하세요'); return; }
+    if (!confirm(`${mins}분을 추가하시겠습니까?`)) return;
+    await billingAction(userId, 'add_seconds', {seconds: mins * 60});
+}
+
+async function setMinutes(userId) {
+    const mins = parseInt(document.getElementById('setMin-' + userId).value);
+    if (isNaN(mins) || mins < 0) { alert('올바른 값을 입력하세요'); return; }
+    if (!confirm(`잔여시간을 ${mins}분으로 설정하시겠습니까?`)) return;
+    await billingAction(userId, 'set_seconds', {seconds: mins * 60});
+}
+
+async function cancelSubscription(userId) {
+    if (!confirm('구독을 해지하시겠습니까? (auto_renew=false, 만료일까지 사용 가능)')) return;
+    await billingAction(userId, 'cancel_subscription', {});
+}
+
+async function billingAction(userId, action, params) {
+    try {
+        const res = await fetch(`/admin/api/billing/users/${userId}/plan`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({action, ...params})
+        });
+        const data = await res.json();
+        if (data.ok) { alert('변경되었습니다'); location.reload(); }
+        else { alert(data.error || '실패'); }
+    } catch (e) { alert('Network error'); }
+}
+
+async function loadAiCredit(userId) {
+    const el = document.getElementById("ai-credit-" + userId);
+    el.innerHTML = "로딩 중...";
+    try {
+        const res = await fetch("/admin/api/users/" + userId + "/ai-credit");
+        const data = await res.json();
+        if (!data.wallet) {
+            el.innerHTML = "<span style=\"color:#999;\">지갑 없음 (AI 미사용)</span>";
+            return;
+        }
+        const w = data.wallet;
+        let html = "<div style=\"display:flex;gap:16px;flex-wrap:wrap;\">";
+        html += "<span>무료: <b>" + w.balance_free + "</b></span>";
+        html += "<span>번들: <b>" + w.balance_bundle + "</b></span>";
+        html += "<span>팩: <b>" + w.balance_pack + "</b></span>";
+        html += "<span style=\"color:#2962FF;font-weight:700;\">합계: " + w.total + "회</span>";
+        if (w.bundle_reset_at) html += "<span style=\"color:#888;\">리필: " + w.bundle_reset_at + "</span>";
+        html += "</div>";
+        if (data.ledger && data.ledger.length > 0) {
+            html += "<div style=\"margin-top:8px;max-height:160px;overflow-y:auto;\"><table style=\"width:100%;font-size:11px;border-collapse:collapse;\">";
+            html += "<tr style=\"background:#f0f0f0;\"><th style=\"padding:2px 6px;\">일시</th><th>변동</th><th>유형</th><th>메모</th></tr>";
+            data.ledger.forEach(function(r) {
+                var color = r.delta > 0 ? "#2E7D32" : "#d32f2f";
+                html += "<tr><td style=\"padding:2px 6px;\">" + (r.created_at_kst || "").substring(0,16) + "</td>";
+                html += "<td style=\"color:" + color + ";font-weight:700;\">" + (r.delta > 0 ? "+" : "") + r.delta + "</td>";
+                html += "<td>" + r.source_type + "</td>";
+                html += "<td>" + (r.note || "") + "</td></tr>";
+            });
+            html += "</table></div>";
+        }
+        el.innerHTML = html;
+    } catch (e) {
+        el.innerHTML = "<span style=\"color:red;\">조회 실패</span>";
+    }
+}
+
+async function adjustAiCredit(userId) {
+    var delta = parseInt(document.getElementById("aiDelta-" + userId).value);
+    var bucket = document.getElementById("aiBucket-" + userId).value;
+    var note = document.getElementById("aiNote-" + userId).value;
+    if (!delta || isNaN(delta)) { alert("수량을 입력하세요"); return; }
+    if (!confirm("AI 크레딧 " + (delta > 0 ? "+" : "") + delta + " (" + bucket + ") 조정하시겠습니까?")) return;
+    try {
+        var res = await fetch("/admin/api/users/" + userId + "/ai-credit", {
+            method: "POST", headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({delta: delta, bucket: bucket, note: note})
+        });
+        var data = await res.json();
+        if (data.ok) {
+            alert("조정 완료");
+            loadAiCredit(userId);
+        } else {
+            alert("실패: " + (data.error || "unknown"));
+        }
+    } catch (e) {
+        alert("오류: " + e.message);
+    }
+}
+
+</script>
+{% endblock %}

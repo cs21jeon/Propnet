@@ -18,7 +18,12 @@ class BillingPlan:
         return query_one("SELECT * FROM billing_plans WHERE id = %s", (plan_id,))
 
     @staticmethod
-    def list_active():
+    def list_active(user_type=None):
+        if user_type in ('user', 'agent'):
+            return query_all(
+                "SELECT * FROM billing_plans WHERE is_active = true AND user_type = %s ORDER BY sort_order",
+                (user_type,)
+            )
         return query_all(
             "SELECT * FROM billing_plans WHERE is_active = true ORDER BY sort_order"
         )

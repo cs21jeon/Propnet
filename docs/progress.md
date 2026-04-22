@@ -1,7 +1,21 @@
 # PropNet 통합 개발 진행 기록
 
-> 최종 업데이트: 2026-04-21
+> 최종 업데이트: 2026-04-22
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
+
+## 2026-04-22: PropMap AI 매물추천 과금 시스템 (크로스 서비스)
+
+- [PropMap] AI 플로팅 버튼 + 슬라이드 패널 + 추천 카드 → 지도 이동 + 상세보기 연동
+- [PropMap] 크레딧 뱃지, 턴 상한(8턴), 결제 안내 모달, 새 검색 시작 버튼
+- [공통] AI 크레딧 DB 4개 테이블 + `ai_billing_service.py` 과금 로직
+- [공통] `ai_search.py` 크레딧 pre-check(402) + post-deduct 통합
+- [공통] OAuth 회원가입 hook → 가입 보너스 1회 자동 지급
+- [공통] `ai_bundle_refill` systemd timer (매월 1일 번들 리필)
+- [공통] 관리자 대시보드 AI 크레딧 조회 + 수동 조정 API/UI
+- [공통] `property-detail` API에 좌표(lat/lon) 필드 추가
+- [Proptalk] billing 탭 `user_type` 필터 버그 수정 (일반/중개사 플랜 분리)
+- [Proptalk] `billing_plans.ai_credits_bundle` 컬럼 + "PropMap AI 매물추천 N회" 뱃지
+- [Proptalk] 결제 성공 시 AI 크레딧 자동 지급 + 구독 해지 시 번들 소멸
 
 ## 2026-04-21: 전자계약 시스템 구축 (데이터 위탁 계약)
 

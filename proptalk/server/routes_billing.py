@@ -16,6 +16,79 @@ logger = logging.getLogger(__name__)
 
 def register_billing_routes(app):
 
+
+    # ============================================================
+    # AI 크레딧 연동 헬퍼 (goldenrabbit_db)
+    # ============================================================
+    def _grant_ai_credit(voiceroom_user_id, plan_code, ai_credits):
+        """결제 성공 시 AI 크레딧 지급. 실패해도 메인 흐름 차단 안 함."""
+        if not ai_credits or ai_credits <= 0:
+            return
+        try:
+            import sys as _sys
+            _sys.path.insert(0, '/home/webapp/goldenrabbit/backend/shared')
+            from propnet_auth.db import get_db as get_main_db, query_one as main_query_one
+            link = main_query_one(
+                "SELECT propnet_user_id FROM service_user_links WHERE service = %s AND local_user_id = %s",
+                ('proptalk', voiceroom_user_id))
+            if not link:
+                logger.warning(f"[AI Credit] propnet_uid not found for voiceroom_user_id={voiceroom_user_id}")
+                return
+            propnet_uid = link['propnet_user_id']
+            from psycopg2.extras import RealDictCursor
+            import json
+            with get_main_db() as conn:
+                conn.cursor_factory = RealDictCursor
+                with conn.cursor() as cur:
+                    cur.execute("SELECT * FROM ai_credit_wallet WHERE propnet_uid = %s FOR UPDATE", (propnet_uid,))
+                    wallet = cur.fetchone()
+                    if not wallet:
+                        cur.execute("INSERT INTO ai_credit_wallet (propnet_uid, balance_free, signup_bonus_given) VALUES (%s, 0, TRUE) ON CONFLICT DO NOTHING", (propnet_uid,))
+                        cur.execute("SELECT * FROM ai_credit_wallet WHERE propnet_uid = %s FOR UPDATE", (propnet_uid,))
+                        wallet = cur.fetchone()
+                    is_sub = plan_code and any(plan_code.startswith(p) for p in ('basic_', 'pro_', 'agent_'))
+                    if is_sub:
+                        cur.execute("UPDATE ai_credit_wallet SET balance_bundle = %s, bundle_reset_at = CURRENT_DATE WHERE propnet_uid = %s RETURNING *", (ai_credits, propnet_uid))
+                    else:
+                        cur.execute("UPDATE ai_credit_wallet SET balance_pack = balance_pack + %s WHERE propnet_uid = %s RETURNING *", (ai_credits, propnet_uid))
+                    updated = cur.fetchone()
+                    snap = json.dumps({"free": updated["balance_free"], "bundle": updated["balance_bundle"], "pack": updated["balance_pack"]})
+                    src = "bundle" if is_sub else "pack"
+                    cur.execute("INSERT INTO ai_credit_ledger (propnet_uid, delta, source_type, source_ref, balance_snapshot, note) VALUES (%s, %s, %s, %s, %s::jsonb, %s)",
+                        (propnet_uid, ai_credits, src, plan_code, snap, f"결제 연동 AI 크레딧 {ai_credits}회 ({plan_code})"))
+            logger.info(f"[AI Credit] granted {ai_credits} to propnet_uid={propnet_uid} (plan={plan_code})")
+        except Exception as e:
+            logger.error(f"[AI Credit] grant failed (non-fatal): {e}", exc_info=True)
+
+    def _cancel_ai_bundle(voiceroom_user_id):
+        """구독 해지 시 AI 번들 소멸."""
+        try:
+            import sys as _sys
+            _sys.path.insert(0, '/home/webapp/goldenrabbit/backend/shared')
+            from propnet_auth.db import get_db as get_main_db, query_one as main_query_one
+            link = main_query_one("SELECT propnet_user_id FROM service_user_links WHERE service = %s AND local_user_id = %s", ('proptalk', voiceroom_user_id))
+            if not link:
+                return
+            propnet_uid = link['propnet_user_id']
+            from psycopg2.extras import RealDictCursor
+            import json
+            with get_main_db() as conn:
+                conn.cursor_factory = RealDictCursor
+                with conn.cursor() as cur:
+                    cur.execute("SELECT balance_bundle FROM ai_credit_wallet WHERE propnet_uid = %s", (propnet_uid,))
+                    w = cur.fetchone()
+                    if not w or w['balance_bundle'] == 0:
+                        return
+                    old = w['balance_bundle']
+                    cur.execute("UPDATE ai_credit_wallet SET balance_bundle = 0 WHERE propnet_uid = %s RETURNING *", (propnet_uid,))
+                    updated = cur.fetchone()
+                    snap = json.dumps({"free": updated["balance_free"], "bundle": updated["balance_bundle"], "pack": updated["balance_pack"]})
+                    cur.execute("INSERT INTO ai_credit_ledger (propnet_uid, delta, source_type, balance_snapshot, note) VALUES (%s, %s, %s, %s::jsonb, %s)",
+                        (propnet_uid, -old, 'cancel_bundle', snap, "구독 해지 — 번들 소멸"))
+            logger.info(f"[AI Credit] bundle cancelled for propnet_uid={propnet_uid} (was {old})")
+        except Exception as e:
+            logger.error(f"[AI Credit] cancel_bundle failed (non-fatal): {e}", exc_info=True)
+
     # ============================================================
     # 과금 상태 조회
     # ============================================================
@@ -31,8 +104,9 @@ def register_billing_routes(app):
     # ============================================================
     @app.route('/api/billing/plans', methods=['GET'])
     def billing_plans():
-        """활성 요금제 목록 (공개)"""
-        plans = BillingPlan.list_active()
+        """활성 요금제 목록 (공개). ?user_type=user|agent 로 필터 가능."""
+        user_type = request.args.get('user_type')  # 'user' or 'agent'
+        plans = BillingPlan.list_active(user_type)
         return jsonify({'plans': plans})
 
     # ============================================================
@@ -147,6 +221,10 @@ def register_billing_routes(app):
         if plan:
             add_time(g.user_id, plan['id'])
 
+        # AI 크레딧 지급
+        if plan and plan.get('ai_credits_bundle', 0) > 0:
+            _grant_ai_credit(g.user_id, plan['code'], plan['ai_credits_bundle'])
+
         status = get_billing_status(g.user_id)
 
         logger.info(f"[Billing] 결제 완료: user={g.user_id}, plan={plan['code'] if plan else '?'}, amount={amount}")
@@ -236,6 +314,10 @@ def register_billing_routes(app):
             billing_key_iv=iv,
         )
 
+        # AI 크레딧 번들 지급
+        if plan.get('ai_credits_bundle', 0) > 0:
+            _grant_ai_credit(g.user_id, plan['code'], plan['ai_credits_bundle'])
+
         status = get_billing_status(g.user_id)
         logger.info(f"[Billing] 구독 활성화: user={g.user_id}, plan={plan['code']}")
 
@@ -257,6 +339,7 @@ def register_billing_routes(app):
             return jsonify({'error': '활성 구독이 없습니다'}), 400
 
         UserBilling.cancel_subscription(g.user_id)
+        _cancel_ai_bundle(g.user_id)
         status = get_billing_status(g.user_id)
 
         logger.info(f"[Billing] 구독 해지: user={g.user_id}")
