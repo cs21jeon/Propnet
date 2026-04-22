@@ -70,7 +70,7 @@
     const style = document.createElement("style");
     style.textContent = `
       .ai-fab {
-        position:fixed; bottom:${isInApp ? '80px' : '24px'}; right:24px; z-index:900;
+        position:fixed; bottom:${isInApp ? '160px' : '100px'}; right:24px; z-index:900;
         width:56px; height:56px; border-radius:50%; border:none;
         background:linear-gradient(135deg,#3b82f6,#8b5cf6); color:white;
         box-shadow:0 4px 16px rgba(59,130,246,.4); cursor:pointer;
@@ -487,7 +487,7 @@
       // 로그인 체크 (auth-ui.js의 전역 함수 활용)
       if (window.PropMapAuth && !window.PropMapAuth.isLoggedIn()) {
         if (window.PropMapAuth.showGate) {
-          window.PropMapAuth.showGate("AI 매물 추천은 로그인 후 ���용할 수 있어요.\n로그인하면 AI 추천 1회를 무료로 드립니다.");
+          window.PropMapAuth.showGate("AI 매물 추천은 로그인 후 이용할 수 있어요.\n로그인하면 AI 추천 1회를 무료로 드립니다.");
         }
         return;
       }

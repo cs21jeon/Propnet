@@ -292,9 +292,6 @@
                 display: flex; align-items: center; justify-content: center;
                 gap: 8px; flex: 1; padding: 0;
             }
-            .sheet-hint-icon {
-                font-size: 18px; color: #136dec;
-            }
             .sheet-hint-count {
                 font-size: 14px; font-weight: 700; color: #0f172a;
             }
@@ -439,6 +436,7 @@
         <!-- 지도 영역 -->
         <div class="map-area">
             <iframe id="mapIframe"></iframe>
+            <script>window._isInApp=(new URLSearchParams(location.search).get('inapp')==='1');</script>
             <button class="panel-toggle" id="panelToggle">
                 <span class="material-symbols-outlined">apartment</span>
                 중개사무소
@@ -453,18 +451,18 @@
             <div class="panel-header">
                 <div class="panel-logo" id="panelLogo">
                     <img src="/propmap/assets/logo/Propmap_transparent_full%20size.png" alt="PropMap" id="panelLogoImg">
-                    <span id="panelLogoText">PropMap</span>
+                    <span id="panelLogoText">PropMap 매물지도</span>
                 </div>
                 <div class="sheet-hint" id="sheetHint">
-                    <span class="material-symbols-outlined sheet-hint-icon">apartment</span>
                     <span class="sheet-hint-count" id="sheetHintCount">0</span>
-                    <span class="sheet-hint-label">개 중개사무소 보기</span>
+                    <span class="sheet-hint-label">개 사무소</span>
                     <span class="sheet-hint-arrow">▲</span>
                 </div>
                 <div class="panel-header-actions">
                     <div id="propmapAuthMount" class="auth-mount"></div>
                     <button class="panel-close" id="panelClose">&#10005;</button>
                 </div>
+                <script>if(window._isInApp){var _m=document.getElementById('propmapAuthMount');if(_m)_m.style.display='none';}</script>
             </div>
             <div class="sort-bar">
                 <div class="sort-row">
@@ -613,7 +611,7 @@
     </div>
 
     <script src="/propmap/js/auth-ui.js?v=20260421"></script>
-    <script src="/propmap/js/ai-panel-ui.js?v=20260422b"></script>
+    <script src="/propmap/js/ai-panel-ui.js?v=20260422c"></script>
     <script>
     /* ===== 지도 위치 저장/복구 (localStorage, 24h TTL) =====
        로그인/로그아웃 이후에도 직전에 보던 지도 위치를 유지한다.
@@ -806,9 +804,7 @@
             html += '    </div>';
             html += '  </div>';
             html += '  <div class="agent-stats">';
-            html += '    <div class="agent-count">' + count + '</div>';
-            html += '    <div class="agent-count-label">매물</div>';
-            if (dist) html += '    <div class="agent-distance">' + dist + '</div>';
+            html += '    <div style="display:flex;align-items:baseline;gap:2px;"><span class="agent-count">' + count + '</span><span class="agent-count-label">매물</span></div>';
             html += '    <a class="agent-page-link" href="/propmap/' + encodeURIComponent(a.slug) + '/" onclick="event.stopPropagation()"><span class="material-symbols-outlined">open_in_new</span>매물만 보기</a>';
             html += '  </div>';
             html += '</div>';

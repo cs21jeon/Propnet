@@ -2,7 +2,25 @@
 
 > 최종 업데이트: 2026-04-22
 
-## 2026-04-22: PropMap AI 매물추천 과금 시스템 구축
+## 2026-04-22: PropMap AI 매물추천 과금 시스템 구축 + UI 개선
+
+### UI 개선 (2차)
+- 패널 헤더 제목: "PropMap" → "PropMap 매물지도"
+- 프로필 아이콘: 패널 헤더 우측(제목 옆)으로 이동, `inapp=1`에서 숨김 (Flutter AppBar에서 표시)
+- AI FAB 버튼 위치: `bottom:100px`(일반) / `160px`(inapp)으로 내 위치 버튼과 겹침 방지
+- 중개사무소 힌트: 아이콘 제거 + "개 사무소"로 축소
+- 사무소 카드: 매물수+"매물" 한 줄 가로 배치, 거리 제거 → 카드 높이 축소
+- 한글 깨짐(UTF-8 replacement character) 수정
+- JS 캐시 버스팅 `?v=20260422c`
+
+### Proppedia 앱 WebView 연동
+- `propmap_web_screen.dart`: WebView 로드 전 `WebViewCookieManager`로 propnet_token/propnet_uid 쿠키 주입
+- AppBar 제목: "매물지도 PropMap"
+- AppBar 프로필: 비로그인→"로그인" 버튼(→Proppedia 로그인→PropMap 복귀), 로그인→이니셜 아이콘+메뉴(내 서비스/요금제/로그아웃)
+- 로그아웃 시 쿠키 삭제 + WebView 새로고침 + PropMap 화면 유지
+
+### Billing 쿠키 인식
+- `billing/base.html`: propnet_token 쿠키에서도 토큰 읽기 (앱 WebView에서 자동 로그인)
 
 ### AI 크레딧 DB (goldenrabbit_db)
 - `ai_credit_wallet`: 유저별 크레딧 지갑 (free/bundle/pack 3종 잔고)
