@@ -1,6 +1,26 @@
 # PropMap 개발 진행 기록
 
-> 최종 업데이트: 2026-04-23
+> 최종 업데이트: 2026-04-24
+
+## 2026-04-24: 매물 데이터 Enrichment Phase 1 + AI 검색 UI 개선
+
+- 매물별 주변 정보 자동 계산 시스템 구축 (enrichment_service.py)
+  - 최근접 지하철역 3개 + 도보 거리/시간 (TMAP 보행자 API)
+  - 반경 1km 이내 학교(초/중/고) 목록 + 거리
+  - 매물 '등록' 시 자동 트리거, 전체 agent 동적 지원
+- DB 스키마: subway_stations(404역), schools(3,223교), property_enrichment 테이블 생성
+- AI 검색 파이프라인 연동
+  - search_properties 결과에 nearest_subway, nearby_school_count 자동 병합
+  - get_property_detail에 enrichment 데이터 포함
+  - 에이전트 시스템 프롬프트에 enrichment 활용 가이드 추가
+- AI 검색 버그 수정
+  - `ai_tools.py`: "건물연면적(㎡)" → "연면적(㎡)" 컬럼명 수정
+  - `ai_tools.py`: enrichment 코드 dead code 수정 (return 뒤 → return 앞)
+  - `ai_tools.py`: present_recommendations selections JSON 문자열 방어
+- AI 패널 UI 개선 (ai-panel-ui.js)
+  - assistant 응답 마크다운 렌더링 (제목/굵게/리스트/구분선/줄바꿈)
+  - 질문 후 "검색중" 안내까지 자동 스크롤
+- AI 검색 동작 흐름 문서 작성 (propmap/docs/ai-search-flow.md)
 
 ## 2026-04-23: 매물 없는 동 라벨 숨김 처리
 

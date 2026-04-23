@@ -1,7 +1,17 @@
 # PropNet 통합 개발 진행 기록
 
-> 최종 업데이트: 2026-04-23
+> 최종 업데이트: 2026-04-24
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
+
+## 2026-04-24: 매물 데이터 Enrichment 시스템 구축 (크로스 서비스)
+
+- [공통] enrichment_service.py: 매물 좌표 기반 주변 정보 자동 계산 (TMAP 도보 + 학교)
+- [공통] DB: subway_stations(404역), schools(3,223교), property_enrichment 테이블
+- [공통] propsheet_save_service.py: 매물 '등록' 시 enrichment 자동 트리거
+- [공통] enrich_all(): 전체 agent 동적 조회 (databases+workspaces+agents JOIN)
+- [공통] ai_tools.py: 검색 결과에 역/학교 정보 자동 병합 + 컬럼명 버그 수정 3건
+- [공통] ai_agent_prompts.py: enrichment 데이터 활용 가이드 추가
+- [PropMap] ai-panel-ui.js: 마크다운 렌더링 + 자동 스크롤 개선
 
 ## 2026-04-23: 일간보고 보안 위협 분류 + PropMap 앱 인증 + 아이콘 ���합
 
