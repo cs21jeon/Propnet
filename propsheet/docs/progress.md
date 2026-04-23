@@ -1,6 +1,12 @@
 # PropSheet 개발 진행 기록
 
-> 최종 업데이트: 2026-04-20
+> 최종 업데이트: 2026-04-23
+
+## 2026-04-23: 대표사진 필드 이미지 전용 업로드 제한
+
+- 대표사진 필드에 PDF 등 비이미지 파일 업로드 시 차단 (jpg/jpeg/png/gif/webp만 허용)
+  - `routes/database.py`: `IMAGE_ONLY_FIELDS`, `IMAGE_EXTENSIONS` 추가 + 업로드 시 검증
+- 상도1동 324-3 매물(db_id=38, id=181) 파일 필드 교정: PDF→건축물대장, JPG→대표사진
 
 ## 2026-04-20: 현황→등록 자동 geocoding + 가이드 CTA
 
