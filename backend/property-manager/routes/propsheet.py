@@ -1263,7 +1263,7 @@ def get_map_data():
     def extract_photo(raw):
         if not raw:
             return ''
-        m = _re.search(r'\((/uploads/[^)]+)\)', raw)
+        m = _re.search(r'\((/uploads/[^)]+\.(?:jpg|jpeg|png|gif|webp))\)', raw, _re.IGNORECASE)
         return m.group(1) if m else ''
 
     def format_price_label(transaction_type, price, deposit, monthly):
@@ -1650,7 +1650,7 @@ def category_properties():
         photo_url = ""
         photo_raw = str(row.get("대표사진", "") or "")
         if photo_raw:
-            m = _re.search(r'\(/uploads/[^)\s]+\)', photo_raw)
+            m = _re.search(r'\(/uploads/[^)\s]+\.(?:jpg|jpeg|png|gif|webp)\)', photo_raw, _re.IGNORECASE)
             if m:
                 photo_url = m.group(0)[1:-1]  # Remove surrounding parentheses
 
@@ -2218,7 +2218,7 @@ def get_property_detail():
                 photo_url = ''
                 photo_raw = row.get('대표사진', '') or ''
                 if photo_raw:
-                    m = _re.search(r'\((/uploads/[^)]+)\)', photo_raw)
+                    m = _re.search(r'\((/uploads/[^)]+\.(?:jpg|jpeg|png|gif|webp))\)', photo_raw, _re.IGNORECASE)
                     if m:
                         photo_url = m.group(1)
 

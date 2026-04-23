@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -6,19 +7,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:propedia/presentation/widgets/common/app_drawer.dart';
+import 'package:propedia/core/storage/token_storage.dart';
+import 'package:propedia/presentation/providers/auth_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// 부동산매물지도 (propnet.kr/propmap/ 통합 매물지도 WebView)
 ///
 /// 드로어 메뉴 "부동산매물지도" 선택 시 진입한다. PropMap은 이미 모바일
 /// 반응형(지도 + 하단 바텀시트)으로 구현되어 있어 그대로 WebView로 임베드한다.
-class PropMapWebScreen extends StatefulWidget {
+class PropMapWebScreen extends ConsumerStatefulWidget {
   const PropMapWebScreen({super.key});
 
   @override
-  State<PropMapWebScreen> createState() => _PropMapWebScreenState();
+  ConsumerState<PropMapWebScreen> createState() => _PropMapWebScreenState();
 }
 
-class _PropMapWebScreenState extends State<PropMapWebScreen> {
+class _PropMapWebScreenState extends ConsumerState<PropMapWebScreen> {
   static const String _propmapBase = 'https://propnet.kr/propmap/';
   static const String _prefKeyCenter = 'propmap_last_center';
   static const String _prefKeyLevel = 'propmap_last_level';
@@ -32,11 +36,42 @@ class _PropMapWebScreenState extends State<PropMapWebScreen> {
   late final WebViewController _controller;
   int _progress = 0;
   bool _isLoading = true;
+  String? _userName;
+  String? _userEmail;
 
   @override
   void initState() {
     super.initState();
+    _loadUserInfo();
     _initWebView();
+  }
+
+  Future<void> _loadUserInfo() async {
+    try {
+      final tokenStorage = TokenStorage();
+      final token = await tokenStorage.getAccessToken();
+      if (token != null && token.isNotEmpty) {
+        final payload = _extractPayloadFromJwt(token);
+        if (payload != null && mounted) {
+          setState(() {
+            _userName = payload['name'] as String?;
+            _userEmail = payload['email'] as String?;
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
+  static Map<String, dynamic>? _extractPayloadFromJwt(String jwt) {
+    try {
+      final parts = jwt.split('.');
+      if (parts.length != 3) return null;
+      final normalized = base64Url.normalize(parts[1]);
+      final payloadStr = utf8.decode(base64Url.decode(normalized));
+      return jsonDecode(payloadStr) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _initWebView() async {
@@ -52,6 +87,41 @@ class _PropMapWebScreenState extends State<PropMapWebScreen> {
         myLoc = '${pos.latitude},${pos.longitude}';
       }
     } catch (_) {}
+
+    // propnet_token + propnet_uid 쿠키 주입 (앱 JWT → WebView 쿠키)
+    // PropMap auth-ui.js가 propnet_uid로 로그인 상태 감지,
+    // AI 패널/상세보기 API가 propnet_token으로 인증
+    try {
+      final tokenStorage = TokenStorage();
+      final accessToken = await tokenStorage.getAccessToken();
+      if (accessToken != null && accessToken.isNotEmpty) {
+        final cookieManager = WebViewCookieManager();
+        // HttpOnly 쿠키 (서버 API 인증용)
+        await cookieManager.setCookie(
+          WebViewCookie(
+            name: 'propnet_token',
+            value: accessToken,
+            domain: 'propnet.kr',
+            path: '/',
+          ),
+        );
+        // JS 읽기용 쿠키 (auth-ui.js 로그인 상태 감지)
+        // JWT payload에서 sub(=propnet_user_id) 추출
+        final uid = _extractUidFromJwt(accessToken);
+        if (uid != null) {
+          await cookieManager.setCookie(
+            WebViewCookie(
+              name: 'propnet_uid',
+              value: uid,
+              domain: 'propnet.kr',
+              path: '/',
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('[PropMap] Cookie injection failed: $e');
+    }
 
     // URL 구성: autoloc=1 + 내 위치 + 마지막 위치
     var url = '$_propmapBase?autoloc=1&inapp=1';
@@ -107,6 +177,21 @@ class _PropMapWebScreenState extends State<PropMapWebScreen> {
     if (mounted) setState(() {});
   }
 
+  /// JWT payload에서 sub(propnet_user_id) 추출
+  static String? _extractUidFromJwt(String jwt) {
+    try {
+      final parts = jwt.split('.');
+      if (parts.length != 3) return null;
+      final normalized = base64Url.normalize(parts[1]);
+      final payloadStr = utf8.decode(base64Url.decode(normalized));
+      final payload = jsonDecode(payloadStr) as Map<String, dynamic>;
+      final sub = payload['sub'];
+      return sub?.toString();
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// 현재 지도 위치를 JS로 가져와 SharedPreferences에 저장
   Future<void> _saveLastPosition() async {
     try {
@@ -145,6 +230,51 @@ class _PropMapWebScreenState extends State<PropMapWebScreen> {
     await _controller.reload();
   }
 
+  bool get _isLoggedIn => _userName != null || _userEmail != null;
+
+  Future<void> _goLogin() async {
+    await _saveLastPosition();
+    if (!mounted) return;
+    // Proppedia 로그인 화면으로 이동, 완료 후 PropMap으로 복귀
+    context.push('/login').then((_) {
+      // 로그인 완료 후 유저 정보 재로드 + 쿠키 재주입 + WebView 새로고침
+      _loadUserInfo().then((_) => _reinjectCookiesAndReload());
+    });
+  }
+
+  Future<void> _doLogout() async {
+    await ref.read(authProvider.notifier).logout();
+    // 쿠키 삭제
+    try {
+      final cookieManager = WebViewCookieManager();
+      await cookieManager.setCookie(WebViewCookie(name: 'propnet_token', value: '', domain: 'propnet.kr', path: '/'));
+      await cookieManager.setCookie(WebViewCookie(name: 'propnet_uid', value: '', domain: 'propnet.kr', path: '/'));
+    } catch (_) {}
+    if (mounted) {
+      setState(() {
+        _userName = null;
+        _userEmail = null;
+      });
+      _controller.reload();
+    }
+  }
+
+  Future<void> _reinjectCookiesAndReload() async {
+    try {
+      final tokenStorage = TokenStorage();
+      final accessToken = await tokenStorage.getAccessToken();
+      if (accessToken != null && accessToken.isNotEmpty) {
+        final cookieManager = WebViewCookieManager();
+        await cookieManager.setCookie(WebViewCookie(name: 'propnet_token', value: accessToken, domain: 'propnet.kr', path: '/'));
+        final uid = _extractUidFromJwt(accessToken);
+        if (uid != null) {
+          await cookieManager.setCookie(WebViewCookie(name: 'propnet_uid', value: uid, domain: 'propnet.kr', path: '/'));
+        }
+      }
+    } catch (_) {}
+    _controller.reload();
+  }
+
 
   Future<bool> _handleBack() async {
     await _saveLastPosition();
@@ -172,7 +302,7 @@ class _PropMapWebScreenState extends State<PropMapWebScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('부동산매물지도 PropMap'),
+          title: const Text('매물지도 PropMap'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
@@ -191,6 +321,49 @@ class _PropMapWebScreenState extends State<PropMapWebScreen> {
               icon: const Icon(Icons.refresh),
               onPressed: _reload,
             ),
+            if (_isLoggedIn)
+              PopupMenuButton<String>(
+                offset: const Offset(0, 48),
+                onSelected: (value) {
+                  if (value == 'service') {
+                    _controller.loadRequest(Uri.parse('https://propnet.kr/propsheet/'));
+                  } else if (value == 'billing') {
+                    _controller.loadRequest(Uri.parse('https://propnet.kr/billing/'));
+                  } else if (value == 'logout') {
+                    _doLogout();
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    enabled: false,
+                    child: Text(
+                      _userName ?? _userEmail ?? '',
+                      style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black87),
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  const PopupMenuItem(value: 'service', child: Text('내 서비스')),
+                  const PopupMenuItem(value: 'billing', child: Text('요금제')),
+                  const PopupMenuItem(
+                    value: 'logout',
+                    child: Text('로그아웃', style: TextStyle(color: Colors.red)),
+                  ),
+                ],
+                child: CircleAvatar(
+                  radius: 16,
+                  backgroundColor: const Color(0xFF3B82F6),
+                  child: Text(
+                    (_userName ?? _userEmail ?? 'U').characters.first.toUpperCase(),
+                    style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              )
+            else
+              TextButton.icon(
+                onPressed: _goLogin,
+                icon: const Icon(Icons.login, size: 18),
+                label: const Text('로그인'),
+              ),
           ],
         ),
         drawer: const AppDrawer(currentApp: AppType.propmap),

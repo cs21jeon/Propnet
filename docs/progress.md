@@ -1,7 +1,20 @@
 # PropNet 통합 개발 진행 기록
 
-> 최종 업데이트: 2026-04-22
+> 최종 업데이트: 2026-04-23
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
+
+## 2026-04-23: 일간보고 보안 위협 분류 + PropMap 앱 인증 + 아이콘 ���합
+
+- [통합] 일간보고 dev_collector에 보안 위협 분류 기능 추가 (악의적 공격 vs 일상적 스캔 자동 분류)
+  - MALICIOUS_PATTERNS 13개 (SQL Injection, Path Traversal, .env 탈취, XSS 등)
+  - NOISE_PATTERNS 5개 (Port Scan, Bad request version 등)
+  - 종합 판정(verdict) 자동 생성 → 개발부장 프롬프트에서 과대 보고 방지
+- [공통] 대표사진 정규식에 이미지 확장자 필터 추가 (jpg/png/gif/webp만 매칭)
+- [공통] session-sync API에 사용자 name 필드 보강 (아��타/이니셜 표시용)
+- [공통] register ?next= open-redirect 방지 + 이미 로그인 시 자동 리다이렉트
+- [Proptalk] billing 페이지 favicon → propnet-icon.png 통합
+- [Propedia] PropMap WebView에 SSO 토큰/사용자 정보 전달 (앱↔웹 인증 연동)
+- [PropMap] silverrabbit 에이전트 페이지 삭제
 
 ## 2026-04-22: PropMap AI 매물추천 과금 시스템 + UI/앱 연동 (크로스 서비스)
 
