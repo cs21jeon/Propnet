@@ -239,6 +239,7 @@
       var dongNm = (d.dong_nm || d.bld_nm || '').trim();
       if (!dongNm || !d.lat || !d.lon) return;
       var count = countByDong[dongNm] || 0;
+      if (count === 0) return; // 매물 없는 동은 라벨 표시 안 함
 
       var el = self._createDongMarkerEl(dongNm, count);
       var pos = new kakao.maps.LatLng(d.lat, d.lon);
