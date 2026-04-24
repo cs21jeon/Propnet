@@ -1,6 +1,12 @@
 # PropSheet 개발 진행 기록
 
-> 최종 업데이트: 2026-04-23
+> 최종 업데이트: 2026-04-24
+
+## 2026-04-24: 상세보기 파일 삭제 시 파일명 잔존 버그 수정
+
+- 레코드 상세보기에서 첨부파일 X 버튼 클릭 후 파일명이 UI에 남아있는 버그 수정
+  - `database_list.html`: 삭제 핸들러의 `fetchItems()` → `loadData()` + `detailPanel.item` 갱신
+  - 원인: 미정의 함수 `fetchItems()` 호출 → ReferenceError → `detailPanel.item[col.key]` 미갱신 → fallback 템플릿이 삭제 전 파일명 재표시
 
 ## 2026-04-23: 대표사진 필드 이미지 전용 업로드 제한
 
