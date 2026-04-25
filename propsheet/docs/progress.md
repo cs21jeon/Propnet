@@ -1,6 +1,17 @@
 # PropSheet 개발 진행 기록
 
-> 최종 업데이트: 2026-04-24
+> 최종 업데이트: 2026-04-25
+
+## 2026-04-25: PropSheet 모바일 PWA 앱 버전 구현
+
+- PWA 기반 구축: manifest.json, Service Worker, 새 앱 아이콘(P 로고)
+- 모바일 카드뷰: 스프레드시트 → 카드형 매물 목록 (사진/주소/가격/광고) + FAB + ⋮ 메뉴
+- 상세보기 전체화면: 100vw, 필드 세로 배치, 빈 공간 제거, 이미지 모달 뷰어
+- 워크스페이스 모바일: 중개사 카드 세로 배치, DB 액션 버튼 숨김, 헤더 버튼 통일
+- 캘린더 모바일 터치 최적화 (44px 터치타겟)
+- 글자 크기 조절: "글자 크게/보통" 토글, +4~5px, localStorage 유지
+- 가로 스크롤 방지, 뷰탭 겹침 수정
+- 수정: database_list.css/js/html, workspaces.css/html, calendar.css/html, landing.html, manifest.json, sw.js
 
 ## 2026-04-24: 상세보기 파일 삭제 시 파일명 잔존 버그 수정
 
