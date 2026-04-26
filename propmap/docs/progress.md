@@ -1,6 +1,20 @@
 # PropMap 개발 진행 기록
 
-> 최종 업데이트: 2026-04-24
+> 최종 업데이트: 2026-04-26
+
+## 2026-04-26: PropMap 가이드 페이지 구축
+
+- 가이드 페이지 신규 생성 (`propmap/guide/index.html`)
+  - 5개 섹션: 시작하기, 지도 사용법, 매물 분류방법, AI 매물 검색, PropNet 서비스 연결
+  - 24장 캡쳐 이미지 포함 (`propmap/assets/images/가이드용/`)
+  - 매물 분류체계(단일/집합/부분 + 매매/전세/월세) 상세 설명
+  - 기존 Proppedia/Proptalk 가이드 디자인 패턴 통일
+- PropMap 메인 페이지(`index.html`) 가이드 연결
+  - 패널 헤더에 `?` 가이드 버튼, 푸터에 가이드 링크 추가
+  - 분류 모달 하단 링크를 PropMap 가이드로 변경
+- `map.html` 분류 모달 링크도 PropMap 가이드로 변경
+- Nginx 설정: `/propmap/guide/` 전용 location 블록 추가 (agent slug 충돌 방지)
+- 서버 배포 완료 (정적 파일 + Nginx 리로드)
 
 ## 2026-04-24: 매물 데이터 Enrichment Phase 1 + AI 검색 UI 개선
 

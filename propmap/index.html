@@ -131,6 +131,14 @@
             cursor: pointer; font-family: inherit; white-space: nowrap;
         }
         .guide-btn:hover { background: #e2e8f0; }
+        .guide-link-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px; border-radius: 50%;
+            background: #f1f5f9; border: 1px solid #e2e8f0;
+            color: #64748b; font-size: 14px; font-weight: 700;
+            text-decoration: none; cursor: pointer;
+        }
+        .guide-link-btn:hover { background: #e2e8f0; color: #3b82f6; }
 
         /* 부동산분류 팝업 */
         .guide-overlay {
@@ -459,6 +467,7 @@
                     <span class="sheet-hint-arrow">▲</span>
                 </div>
                 <div class="panel-header-actions">
+                    <a href="/propmap/guide/" target="_blank" class="guide-link-btn" title="사용 가이드">?</a>
                     <div id="propmapAuthMount" class="auth-mount"></div>
                     <button class="panel-close" id="panelClose">&#10005;</button>
                 </div>
@@ -494,6 +503,8 @@
                     <a href="https://propnet.kr/proptalk/" target="_blank">Proptalk</a>
                     <span class="footer-sep">·</span>
                     <a href="https://propnet.kr/proppedia/landing/" target="_blank">Propedia</a>
+                    <span class="footer-sep">·</span>
+                    <a href="/propmap/guide/" target="_blank">가이드</a>
                 </div>
                 <div class="footer-copy">&copy; 2026 PropNet. All rights reserved.</div>
             </div>
@@ -605,7 +616,7 @@
             </div>
 
             <div class="guide-footer">
-                <a href="https://propnet.kr/propsheet/guide/property-types" target="_blank">자세한 분류 가이드 보기</a>
+                <a href="/propmap/guide/#property-types" target="_blank">자세한 분류 가이드 보기 →</a>
             </div>
         </div>
     </div>

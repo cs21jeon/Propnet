@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- SEO Meta Tags -->
+    <title>사용 가이드 - PropMap 매물지도</title>
+    <meta name="description" content="PropMap 매물지도 사용 가이드. 지도 사용법, 매물 분류방법, AI 매물 검색 등 모든 기능을 안내합니다.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://propnet.kr/propmap/guide/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://propnet.kr/propmap/guide/">
+    <meta property="og:title" content="사용 가이드 - PropMap 매물지도">
+    <meta property="og:description" content="PropMap 매물지도의 모든 기능을 쉽게 알려드립니다.">
+    <meta property="og:image" content="https://propnet.kr/propmap/assets/logo/Propmap_transparent_full%20size.png">
+    <meta property="og:locale" content="ko_KR">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/propmap/assets/logo/Propmap_transparent_full%20size.png">
+
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --primary-dark: #1976D2;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --background: #FFFFFF;
+            --surface: #F5F5F5;
+            --border: #E0E0E0;
+            --max-width: 800px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background: var(--background);
+        }
+
+        /* Header */
+        header {
+            background: var(--background);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        .logo img { height: 36px; }
+        .logo-text { display: flex; flex-direction: column; line-height: 1.2; }
+        .logo-text .title { font-size: 1rem; font-weight: 700; }
+        .logo-text .subtitle { font-size: 0.75rem; color: var(--text-secondary); }
+        .header-nav { display: flex; gap: 10px; align-items: center; }
+        .header-nav a {
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+            white-space: nowrap;
+        }
+        .nav-back { color: var(--primary-color); border: 1.5px solid var(--primary-color); }
+        .nav-back:hover { background: #E3F2FD; }
+        .nav-secondary { color: #757575; border: 1.5px solid #BDBDBD; }
+        .nav-secondary:hover { background: #F5F5F5; }
+
+        /* Main */
+        main {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 90px 20px 60px;
+        }
+
+        /* Page title */
+        .page-title {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 40px;
+        }
+        .page-title h1 { font-size: 2rem; font-weight: 800; margin-bottom: 10px; }
+        .page-title p { color: var(--text-secondary); font-size: 1.05rem; }
+
+        /* TOC */
+        .toc {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 24px 30px;
+            margin-bottom: 50px;
+        }
+        .toc h2 { font-size: 1.1rem; margin-bottom: 12px; color: var(--text-primary); }
+        .toc ol { padding-left: 20px; }
+        .toc li { margin-bottom: 6px; }
+        .toc a { color: var(--primary-color); text-decoration: none; font-size: 0.95rem; }
+        .toc a:hover { text-decoration: underline; }
+
+        /* Section */
+        .guide-section {
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+        }
+        .guide-section:last-child { border-bottom: none; }
+        .guide-section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-left: 12px;
+            border-left: 4px solid var(--primary-color);
+        }
+        .guide-section h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin: 25px 0 12px;
+            color: var(--text-primary);
+        }
+        .guide-section p { margin-bottom: 12px; color: #424242; }
+        .guide-section ul, .guide-section ol { padding-left: 24px; margin-bottom: 16px; }
+        .guide-section li { margin-bottom: 6px; color: #424242; }
+
+        /* Screenshot */
+        .screenshot { margin: 20px 0; text-align: center; }
+        .screenshot img {
+            max-width: 600px;
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+        .screenshot.narrow img { max-width: 320px; }
+        .screenshot-row {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .screenshot-row .screenshot { margin: 0; }
+        .screenshot-row .screenshot img { max-width: 280px; }
+        .screenshot-row .screenshot.narrow img { max-width: 220px; }
+        .type-screenshots .screenshot.narrow img { max-width: 160px; }
+
+        /* AI result stack (vertical, fixed width) */
+        .ai-result-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .ai-result-stack .screenshot.narrow img { max-width: 320px; }
+
+        .screenshot-caption {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Tip */
+        .tip {
+            background: #E3F2FD;
+            border-left: 4px solid var(--primary-color);
+            padding: 14px 18px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+            font-size: 0.95rem;
+        }
+        .tip strong { color: var(--primary-dark); }
+
+        /* Steps */
+        .steps { counter-reset: step; list-style: none; padding-left: 0; }
+        .steps li {
+            counter-increment: step;
+            padding: 10px 0 10px 40px;
+            position: relative;
+        }
+        .steps li::before {
+            content: counter(step);
+            position: absolute;
+            left: 0; top: 10px;
+            width: 28px; height: 28px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        /* Property type cards */
+        .type-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin: 16px 0;
+        }
+        .type-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .type-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: white;
+        }
+        .type-badge.danil { background: #2196F3; }
+        .type-badge.jibhap { background: #FF9800; }
+        .type-badge.bubun { background: #E91E63; }
+        .type-card p { font-size: 0.95rem; margin-bottom: 8px; }
+        .subtype-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .subtype-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            font-size: 0.85rem;
+            color: #424242;
+        }
+
+        /* Transaction type */
+        .txn-row { display: flex; gap: 10px; margin: 12px 0; flex-wrap: wrap; }
+        .txn-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: white;
+        }
+        .txn-badge.sale { background: #424242; }
+        .txn-badge.jeonse { background: #757575; }
+        .txn-badge.monthly { background: #9E9E9E; }
+
+        /* CTA Banner */
+        .cta-banner {
+            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .cta-banner h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            border-left: none;
+            padding-left: 0;
+        }
+        .cta-banner p { color: var(--text-secondary); margin-bottom: 24px; }
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            background: var(--primary-color);
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Footer */
+        footer {
+            background: #212121;
+            color: #B0B0B0;
+            padding: 30px 20px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        footer a { color: #B0B0B0; text-decoration: none; }
+        footer a:hover { color: white; }
+
+        /* Back to top */
+        .back-to-top {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 8px 20px;
+            background: #333;
+            color: #B0B0B0;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.8rem;
+        }
+        .back-to-top:hover { color: white; background: #444; }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .page-title h1 { font-size: 1.5rem; }
+            .guide-section h2 { font-size: 1.25rem; }
+            .screenshot img { max-width: 100%; }
+            .screenshot.narrow img { max-width: 280px; }
+            .screenshot-row .screenshot img { max-width: 100%; }
+            .screenshot-row .screenshot.narrow img { max-width: 160px; }
+            .type-screenshots .screenshot.narrow img { max-width: 120px; }
+            .header-nav a span { display: none; }
+            .header-nav a.icon-only { padding: 8px 12px; }
+            .cta-btn { padding: 12px 20px; font-size: 0.9rem; }
+            .cta-banner { padding: 30px 20px; }
+            .type-card { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="/propmap/" class="logo">
+                <img src="/propmap/assets/logo/Propmap_transparent_full%20size.png" alt="PropMap 로고">
+                <div class="logo-text">
+                    <span class="title">PropMap</span>
+                    <span class="subtitle">매물지도</span>
+                </div>
+            </a>
+            <div class="header-nav">
+                <a href="/propmap/" class="nav-back"><span>PropMap 홈</span></a>
+                <a href="/" class="nav-secondary"><span>PropNet 홈</span></a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Page Title -->
+        <div class="page-title">
+            <h1>사용 가이드</h1>
+            <p>PropMap 매물지도의 모든 기능을 쉽게 알려드립니다</p>
+        </div>
+
+        <!-- Table of Contents -->
+        <nav class="toc">
+            <h2>목차</h2>
+            <ol>
+                <li><a href="#start">시작하기</a></li>
+                <li><a href="#map-controls">지도 사용법</a></li>
+                <li><a href="#property-types">매물 분류방법</a></li>
+                <li><a href="#ai-search">AI 매물 검색</a></li>
+                <li><a href="#services">PropNet 서비스 연결</a></li>
+            </ol>
+        </nav>
+
+        <!-- 1. 시작하기 -->
+        <section class="guide-section" id="start">
+            <h2>1. 시작하기</h2>
+
+            <p><a href="https://propnet.kr/propmap/" target="_blank" style="color:var(--primary-color);font-weight:600">propnet.kr/propmap</a>에 접속하여 PropMap을 시작합니다.</p>
+
+            <h3>위치정보 이용 동의</h3>
+            <p>PropMap에 처음 접속하면 위치정보 이용 동의를 요청합니다.</p>
+            <ul class="steps">
+                <li><strong>"사용할게요"</strong>를 선택하면 현재 위치 주변의 매물을 바로 확인할 수 있습니다.</li>
+                <li><strong>"괜찮아요"</strong>를 선택해도 지도를 직접 이동하며 매물을 탐색할 수 있습니다.</li>
+            </ul>
+            <div class="tip"><strong>TIP:</strong> 위치 정보는 저장되지 않으며, 내 주변 매물을 먼저 보여주기 위한 용도로만 사용됩니다.</div>
+            <div class="screenshot">
+                <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/01.%20%EC%9C%84%EC%B9%98%EC%A0%95%EB%B3%B4%EC%9D%B4%EC%9A%A9%EB%8F%99%EC%9D%98.jpg" alt="위치정보 이용 동의 화면">
+                <div class="screenshot-caption">위치정보 이용 동의 화면</div>
+            </div>
+
+            <h3>로그인</h3>
+            <p>우측 상단의 <strong>"로그인"</strong> 버튼을 클릭하여 Google 계정으로 로그인할 수 있습니다.</p>
+            <div class="tip"><strong>TIP:</strong> 로그인하지 않아도 지도와 매물 정보를 확인할 수 있습니다. AI 매물 검색 등 일부 기능은 로그인이 필요합니다.</div>
+            <div class="screenshot">
+                <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/02.%20%EB%A1%9C%EA%B7%B8%EC%9D%B8.jpg" alt="로그인 화면">
+                <div class="screenshot-caption">로그인 버튼 위치</div>
+            </div>
+        </section>
+
+        <!-- 2. 지도 사용법 -->
+        <section class="guide-section" id="map-controls">
+            <h2>2. 지도 사용법</h2>
+
+            <h3>중개사무소 정보</h3>
+            <p>우측 패널에 현재 지도 범위 내의 <strong>중개사무소</strong> 목록이 표시됩니다. 각 중개사무소의 이름, 주소, 전화번호, 매물 수를 확인할 수 있습니다.</p>
+            <ul>
+                <li>지도에서 중개사무소 아이콘을 클릭하면 해당 사무소가 선택됩니다.</li>
+                <li><strong>"매물만 보기"</strong>를 클릭하면 해당 사무소의 전용 매물지도 페이지로 이동합니다.</li>
+            </ul>
+            <div class="screenshot">
+                <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/11.%20%EC%A4%91%EA%B0%9C%EC%82%AC%EB%AC%B4%EC%86%8C%20%EC%A0%95%EB%B3%B4.jpg" alt="중개사무소 정보">
+                <div class="screenshot-caption">중개사무소 정보 패널</div>
+            </div>
+
+            <h3>지도유형 선택</h3>
+            <p>지도 우측 상단에서 <strong>지도, 위성, 중첩</strong> 3가지 지도유형을 선택할 수 있습니다.</p>
+            <ul>
+                <li><strong>지도</strong>: 기본 지도 보기</li>
+                <li><strong>위성</strong>: 위성 사진 보기</li>
+                <li><strong>중첩</strong>: 위성 사진 위에 지도 정보 겹쳐 보기</li>
+            </ul>
+            <div class="screenshot">
+                <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/12.%20%EC%A7%80%EB%8F%84%EC%9C%A0%ED%98%95%20%EC%84%A0%ED%83%9D.jpg" alt="지도유형 선택">
+                <div class="screenshot-caption">지도유형 선택 (지도 / 위성 / 중첩)</div>
+            </div>
+
+            <h3>매물유형 선택</h3>
+            <p>지도 우측의 <strong>부동산유형</strong> 필터를 사용하여 원하는 유형의 매물만 볼 수 있습니다.</p>
+            <ul>
+                <li><span style="color:#2196F3;font-weight:700">단일</span>: 주택, 건물, 토지 등 단일 소유권 부동산</li>
+                <li><span style="color:#FF9800;font-weight:700">집합</span>: 아파트, 빌라, 오피스텔 등 구분 소유 부동산</li>
+                <li><span style="color:#E91E63;font-weight:700">부분</span>: 원룸, 투룸 등 건물 일부 임대차</li>
+            </ul>
+            <p>유형 옆의 <strong>X</strong> 버튼을 눌러 해당 유형을 숨기거나, 다시 클릭하여 표시할 수 있습니다.</p>
+            <div class="screenshot">
+                <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/13.%20%EB%A7%A4%EB%AC%BC%EC%9C%A0%ED%98%95%20%EC%84%A0%ED%83%9D.jpg" alt="매물유형 선택">
+                <div class="screenshot-caption">부동산유형 필터 (단일 / 집합 / 부분)</div>
+            </div>
+
+            <h3>부동산 선택</h3>
+            <p>지도 위의 <strong>중개사무소 아이콘</strong>을 클릭하면 해당 사무소가 선택되며, 지도에 해당 사무소의 매물만 강조 표시됩니다.</p>
+            <div class="screenshot">
+                <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/14.%20%EB%B6%80%EB%8F%99%EC%82%B0%20%EC%84%A0%ED%83%9D.jpg" alt="부동산 선택">
+                <div class="screenshot-caption">지도에서 중개사무소 선택</div>
+            </div>
+
+            <h3>해당 부동산 매물만 보기</h3>
+            <p>우측 패널에서 특정 중개사무소를 선택하면, 해당 사무소의 <strong>전용 매물지도</strong> 페이지로 이동할 수 있습니다. 전용 페이지에서는 해당 사무소의 매물만 집중적으로 탐색할 수 있습니다.</p>
+            <div class="screenshot">
+                <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/15.%20%ED%95%B4%EB%8B%B9%EB%B6%80%EB%8F%99%EC%82%B0%20%EB%A7%A4%EB%AC%BC%EB%A7%8C%20%EB%B3%B4%EA%B8%B0.jpg" alt="해당 부동산 매물만 보기">
+                <div class="screenshot-caption">특정 중개사무소의 매물만 보기</div>
+            </div>
+        </section>
+
+        <!-- 3. 매물 분류방법 -->
+        <section class="guide-section" id="property-types">
+            <h2>3. 매물 분류방법</h2>
+
+            <p>PropMap은 부동산을 <strong>3가지 유형</strong>과 <strong>3가지 거래유형</strong>으로 분류합니다. 이 분류 체계를 이해하면 원하는 매물을 더 쉽게 찾을 수 있습니다.</p>
+
+            <div class="screenshot">
+                <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/21.%20%EB%A7%A4%EB%AC%BC%20%EC%A2%85%EB%A5%98%20001.jpg" alt="매물 분류 개요">
+                <div class="screenshot-caption">부동산유형 + 거래유형 필터 전체 화면</div>
+            </div>
+
+            <h3>부동산유형</h3>
+
+            <!-- 단일부동산 -->
+            <div class="type-card">
+                <div class="type-card-header">
+                    <span class="type-badge danil">단일</span>
+                    <strong>단일부동산</strong>
+                </div>
+                <p>토지와 건물을 함께 거래하는 부동산입니다. 하나의 소유권으로 등기됩니다.</p>
+                <p><strong>주요 거래:</strong> 매매 중심</p>
+                <div class="subtype-tags">
+                    <span class="subtype-tag">주택</span>
+                    <span class="subtype-tag">건물</span>
+                    <span class="subtype-tag">토지</span>
+                </div>
+            </div>
+
+            <!-- 집합부동산 -->
+            <div class="type-card">
+                <div class="type-card-header">
+                    <span class="type-badge jibhap">집합</span>
+                    <strong>집합부동산</strong>
+                </div>
+                <p>구분 소유가 가능한 부동산입니다. 각 호수(세대)별로 독립된 소유권이 있어 개별 거래가 가능합니다.</p>
+                <p><strong>주요 거래:</strong> 매매 / 전세 / 월세</p>
+                <div class="subtype-tags">
+                    <span class="subtype-tag">아파트</span>
+                    <span class="subtype-tag">빌라</span>
+                    <span class="subtype-tag">오피스텔</span>
+                    <span class="subtype-tag">상가</span>
+                    <span class="subtype-tag">지산</span>
+                    <span class="subtype-tag">기타</span>
+                </div>
+            </div>
+
+            <!-- 부분부동산 -->
+            <div class="type-card">
+                <div class="type-card-header">
+                    <span class="type-badge bubun">부분</span>
+                    <strong>부분부동산</strong>
+                </div>
+                <p>건물의 일부를 임대차하는 형태입니다. 임차인의 사용권이 거래 대상이며, 보증금과 월세가 핵심 요소입니다.</p>
+                <p><strong>주요 거래:</strong> 전세 / 월세 중심</p>
+                <div class="subtype-tags">
+                    <span class="subtype-tag">원룸</span>
+                    <span class="subtype-tag">1.5룸</span>
+                    <span class="subtype-tag">투룸</span>
+                    <span class="subtype-tag">3룸</span>
+                    <span class="subtype-tag">4룸이상</span>
+                    <span class="subtype-tag">상가</span>
+                    <span class="subtype-tag">사무실</span>
+                </div>
+            </div>
+
+            <div class="screenshot-row type-screenshots">
+                <div class="screenshot narrow">
+                    <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/22.%20%EB%A7%A4%EB%AC%BC%20%EC%A2%85%EB%A5%98%20%EB%8B%A8%EC%9D%BC%EB%B6%80%EB%8F%99%EC%82%B0.jpg" alt="단일부동산">
+                    <div class="screenshot-caption">단일부동산</div>
+                </div>
+                <div class="screenshot narrow">
+                    <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/23.%20%EB%A7%A4%EB%AC%BC%20%EC%A2%85%EB%A5%98%20%EC%A7%91%ED%95%A9%EB%B6%80%EB%8F%99%EC%82%B0.jpg" alt="집합부동산">
+                    <div class="screenshot-caption">집합부동산</div>
+                </div>
+                <div class="screenshot narrow">
+                    <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/24.%20%EB%A7%A4%EB%AC%BC%20%EC%A2%85%EB%A5%98%20%EB%B6%80%EB%B6%84%EB%B6%80%EB%8F%99%EC%82%B0.jpg" alt="부분부동산">
+                    <div class="screenshot-caption">부분부동산</div>
+                </div>
+            </div>
+
+            <h3>거래유형</h3>
+            <p>각 부동산은 다음 3가지 거래유형 중 하나로 분류됩니다.</p>
+            <div class="txn-row">
+                <span class="txn-badge sale">매매</span>
+                <span class="txn-badge jeonse">전세</span>
+                <span class="txn-badge monthly">월세</span>
+            </div>
+            <ul>
+                <li><strong>매매</strong>: 소유권을 이전하는 거래</li>
+                <li><strong>전세</strong>: 보증금을 맡기고 일정 기간 사용하는 거래</li>
+                <li><strong>월세</strong>: 보증금 + 매월 임대료를 지불하는 거래</li>
+            </ul>
+
+            <h3>필터 사용법</h3>
+            <p>부동산유형 버튼을 클릭하면 하위 유형이 펼쳐지며, 원하는 유형만 선택하여 지도에 표시할 수 있습니다.</p>
+            <div class="screenshot narrow">
+                <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/25.%20%EB%B6%80%EB%8F%99%EC%82%B0%20%EC%A2%85%EB%A5%98%20%EC%84%A0%ED%83%9D.jpg" alt="부동산 종류 선택">
+                <div class="screenshot-caption">하위 유형 선택</div>
+            </div>
+            <div class="screenshot narrow">
+                <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/26.%20%EB%B6%80%EB%8F%99%EC%82%B0%20%EC%A2%85%EB%A5%98%20%EC%84%A0%ED%83%9D%20%ED%95%B4%EC%A0%9C.jpg" alt="부동산 종류 선택 해제">
+                <div class="screenshot-caption">선택 해제</div>
+            </div>
+            <div class="tip"><strong>TIP:</strong> 거래유형(매매/전세/월세) 필터도 함께 사용하면 원하는 조건의 매물을 더 빠르게 찾을 수 있습니다.</div>
+        </section>
+
+        <!-- 4. AI 매물 검색 -->
+        <section class="guide-section" id="ai-search">
+            <h2>4. AI 매물 검색</h2>
+
+            <p>PropMap의 <strong>AI 매물 검색</strong>은 대화형 인터페이스로 원하는 매물을 찾아주는 기능입니다. 지역, 가격, 용도 등을 자연어로 입력하면 AI가 조건에 맞는 매물을 추천합니다.</p>
+
+            <ul class="steps">
+                <li>
+                    <strong>AI 버튼 클릭</strong> — 화면 우측 하단의 <strong>AI 검색 버튼</strong>(보라색 반짝이 아이콘)을 클릭하면 AI 매물 추천 패널이 열립니다.
+                    <div class="screenshot narrow">
+                        <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/31.%20AI%20%EB%A7%A4%EB%AC%BC%EA%B2%80%EC%83%89.jpg" alt="AI 매물 검색 시작">
+                    </div>
+                </li>
+                <li>
+                    <strong>조건 입력</strong> — 원하는 매물 조건을 자연어로 입력합니다.
+                    <br><em>예: "사당역 역세권의 수익률 높은 다가구 건물 추천해줘."</em>
+                    <div class="screenshot narrow">
+                        <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/33.%20AI%20%EB%A7%A4%EB%AC%BC%EA%B2%80%EC%83%89%20002.jpg" alt="AI 검색 - 조건 입력">
+                    </div>
+                </li>
+                <li>
+                    <strong>추가 질문</strong> — AI가 예산 범위 등 추가 정보를 물어봅니다.
+                    <div class="screenshot narrow">
+                        <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/34.%20AI%20%EB%A7%A4%EB%AC%BC%EA%B2%80%EC%83%89%20003.jpg" alt="AI 검색 - 추가 질문">
+                    </div>
+                </li>
+                <li>
+                    <strong>추가 질문 답변</strong> — 예산 범위 등 AI의 질문에 답변합니다.
+                    <div class="screenshot narrow">
+                        <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/35.%20AI%20%EB%A7%A4%EB%AC%BC%EA%B2%80%EC%83%89%20004.jpg" alt="AI 검색 - 추가 질문 답변">
+                    </div>
+                </li>
+                <li>
+                    <strong>매물 분석 및 추천 결과</strong> — AI가 데이터베이스에서 조건에 맞는 매물을 분석하고, 순위와 함께 추천합니다. 각 매물의 수익률, 위치, 가격 등 핵심 정보가 요약됩니다.
+                    <div class="ai-result-stack">
+                        <div class="screenshot narrow">
+                            <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/36.%20AI%20%EB%A7%A4%EB%AC%BC%EA%B2%80%EC%83%89%20005.jpg" alt="AI 검색 - 추천 결과 1">
+                        </div>
+                        <div class="screenshot narrow">
+                            <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/37.%20AI%20%EB%A7%A4%EB%AC%BC%EA%B2%80%EC%83%89%20006.jpg" alt="AI 검색 - 추천 결과 2">
+                        </div>
+                        <div class="screenshot narrow">
+                            <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/38.%20AI%20%EB%A7%A4%EB%AC%BC%EA%B2%80%EC%83%89%20007.jpg" alt="AI 검색 - 추천 결과 3">
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <strong>매물 상세 보기</strong> — 추천된 매물을 클릭하면 지도에서 위치를 확인하고, 상세 정보(사진, 면적, 용도 등)를 볼 수 있습니다.
+                    <div class="screenshot">
+                        <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/39.%20AI%20%EB%A7%A4%EB%AC%BC%EA%B2%80%EC%83%89%20008.jpg" alt="AI 검색 - 매물 상세 보기">
+                    </div>
+                </li>
+            </ul>
+
+            <div class="tip"><strong>TIP:</strong> AI 매물 검색은 로그인 후 사용할 수 있습니다. AI 추천 결과는 참고 정보이며, 최종 결정 전 중개사와 직접 상담하세요.</div>
+        </section>
+
+        <!-- 5. PropNet 서비스 연결 -->
+        <section class="guide-section" id="services">
+            <h2>5. PropNet 서비스 연결</h2>
+
+            <p>PropMap 하단에서 PropNet의 다른 서비스로 바로 이동할 수 있습니다.</p>
+            <ul>
+                <li><strong>PropNet</strong> — PropNet 메인 홈페이지</li>
+                <li><strong>PropSheet</strong> — 매물 관리 스프레드시트 (중개사 전용)</li>
+                <li><strong>Proptalk</strong> — 부동산 음성 채팅 서비스</li>
+                <li><strong>Propedia</strong> — 부동산백과 (건축물대장 열람)</li>
+            </ul>
+            <div class="screenshot">
+                <img src="../assets/images/%EA%B0%80%EC%9D%B4%EB%93%9C%EC%9A%A9/04.%20Propnet%20%EC%84%9C%EB%B9%84%EC%8A%A4%EB%A7%81%ED%81%AC.jpg" alt="PropNet 서비스 링크">
+                <div class="screenshot-caption">하단 서비스 링크</div>
+            </div>
+        </section>
+
+        <!-- CTA Banner -->
+        <div class="cta-banner">
+            <h2>지금 PropMap을 사용해보세요</h2>
+            <p>전국 중개사무소의 매물을 한눈에 확인하세요</p>
+            <a href="/propmap/" class="cta-btn">매물지도 바로가기</a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>
+            <a href="/propmap/">PropMap</a> &middot;
+            <a href="/">PropNet</a> &middot;
+            <a href="/propsheet/">PropSheet</a> &middot;
+            <a href="/proptalk/">Proptalk</a> &middot;
+            <a href="/proppedia/landing/">Propedia</a>
+        </p>
+        <p style="margin-top: 8px;">&copy; 2026 PropNet. All rights reserved.</p>
+        <a href="#" class="back-to-top">맨 위로 올라가기</a>
+    </footer>
+</body>
+</html>
