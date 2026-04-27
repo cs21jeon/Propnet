@@ -1,7 +1,16 @@
 # PropNet 통합 개발 진행 기록
 
-> 최종 업데이트: 2026-04-24
+> 최종 업데이트: 2026-04-27
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
+
+## 2026-04-27: Enrichment 고도화 — TMAP 도보 + 역/KTX 분리 + 인접역 자동입력
+
+- [공통] TMAP 보행자 API 연동 (실제 도보 경로 거리, 카카오 자동차 경로 대체)
+- [공통] 전국 역 685개: 도시철도 635역(서울/부산/대구/대전/광주/인천) + KTX/SRT 50역
+- [공통] subway/train 카테고리 분리 (nearest_subway + nearest_train)
+- [공통] 매물 저장 시 인접역/거리(m) PropSheet 필드에 TMAP 정밀 도보 거리 자동 입력
+- [공통] 현황='등록' 변경 시 인접역/거리 자동 입력 + 프론트 즉시 반영 (extra_updated)
+- [PropSheet] database_list.js: 필드 저장 응답의 extra_updated 즉시 반영
 
 ## 2026-04-24: 매물 데이터 Enrichment + 일일 백업 시스템 복구
 
