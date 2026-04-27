@@ -120,10 +120,15 @@
     {% block head %}{% endblock %}
 </head>
 <body>
+    {% block pre_auth %}{% endblock %}
     <div class="container">
         <div class="header">
             <h1>🎙️ Proptalk</h1>
             <p>세상 쉬운 업무 공유</p>
+            <div class="auth-buttons" id="auth-buttons" style="display:none;justify-content:center;gap:8px;margin-top:12px;">
+                <a href="/proptalk/billing/login?next=/proptalk/billing/" style="display:inline-block;padding:8px 20px;background:#1A73E8;color:white;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">로그인</a>
+                <a href="/proptalk/billing/login?next=/proptalk/billing/" style="display:inline-block;padding:8px 20px;background:white;color:#1A73E8;border:1.5px solid #1A73E8;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">회원가입</a>
+            </div>
             <div class="user-info" id="user-info" style="display:none;">
                 <span class="user-email" id="user-email"></span>
                 <button class="logout-btn" onclick="billingLogout()">로그아웃</button>
@@ -131,6 +136,12 @@
             </div>
         </div>
         {% block content %}{% endblock %}
+        <div style="margin-top:24px;padding:16px 12px;border-top:1px solid #eee;font-size:11px;color:#999;line-height:1.8;text-align:center;">
+            상호: 프롭넷 | 대표자: 전창성 | 사업자등록번호: 308-33-01901<br>
+            주소: 경기도 화성시 동탄구 동탄순환대로29길 62, 3층 302-26호(영천동, 디스퀘어리버)<br>
+            대표전화: 050-6801-6509 | 이메일: cs21.jeon@gmail.com | 통신판매업 신고번호: 제 2026-화성동탄-2075 호<br>
+            &copy; 2026 프롭넷 (PropNet)
+        </div>
     </div>
     <script>
         // JWT 토큰 관리
@@ -145,15 +156,15 @@
                 const newUrl = window.location.pathname + (clean ? '?' + clean : '');
                 history.replaceState(null, '', newUrl);
             }
-        } else {
-            // 토큰 없으면 로그인 페이지로 이동
+        } else if (!window.BILLING_PUBLIC_PAGE) {
+            // 토큰 없고 공개 페이지가 아니면 로그인 페이지로 이동
             const currentPath = window.location.pathname + window.location.search;
             window.location.href = '/proptalk/billing/login?next=' + encodeURIComponent(currentPath);
         }
 
         function billingLogout() {
             sessionStorage.removeItem('billing_token');
-            window.location.href = '/proptalk/billing/login';
+            window.location.href = '/proptalk/billing/';
         }
 
         function deleteAccount() {
@@ -185,16 +196,17 @@
                 },
             }).then(r => {
                 if (r.status === 401) {
-                    // 토큰 만료 시 로그인 페이지로
                     sessionStorage.removeItem('billing_token');
-                    window.location.href = '/proptalk/billing/login?next=' + encodeURIComponent(window.location.pathname);
+                    if (!window.BILLING_PUBLIC_PAGE) {
+                        window.location.href = '/proptalk/billing/login?next=' + encodeURIComponent(window.location.pathname);
+                    }
                     return;
                 }
                 return r.json();
             });
         }
 
-        // 로그인된 사용자 정보 표시
+        // 로그인 상태에 따라 UI 전환
         if (token) {
             apiCall('/api/auth/me').then(data => {
                 const email = data && data.user && data.user.email;
@@ -203,6 +215,8 @@
                     document.getElementById('user-info').style.display = 'flex';
                 }
             }).catch(() => {});
+        } else if (window.BILLING_PUBLIC_PAGE) {
+            document.getElementById('auth-buttons').style.display = 'flex';
         }
     </script>
     {% block scripts %}{% endblock %}

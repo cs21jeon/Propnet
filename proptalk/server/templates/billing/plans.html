@@ -76,12 +76,18 @@ function switchTab(type) {
 
 async function loadPlans() {
     try {
-        const [statusData, plansData] = await Promise.all([
-            apiCall('/api/billing/status'),
-            apiCall(`/api/billing/plans?user_type=${currentUserType}`),
-        ]);
+        const t = sessionStorage.getItem('billing_token');
 
-        // 잔여 시간 표시
+        // 로그인 상��면 잔여시간 조회, 아니면 건너뜀
+        let statusData = {};
+        const plansData = await fetch(`/voiceroom/api/billing/plans?user_type=${currentUserType}`)
+            .then(r => r.json());
+
+        if (t) {
+            statusData = await apiCall('/api/billing/status') || {};
+        }
+
+        // 잔여 시간 표시 (로그인 시만)
         const statusEl = document.getElementById('user-status');
         const remainEl = document.getElementById('remaining-time');
         const badgeEl = document.getElementById('plan-badge');

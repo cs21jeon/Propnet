@@ -3,6 +3,12 @@
 > 최종 업데이트: 2026-04-27
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
 
+## 2026-04-27: 토스페이먼츠 PG 심사 대응 — 사업자정보 + Nginx + 결제페이지 공개화
+
+- [Proptalk] 결제페이지/랜딩/결제약관에 사업자정보 푸터 추가 + 비로그인 공개화
+- [통합] propnet.kr 루트 랜딩페이지(propnet-landing.html) 하단 사업자정보 추가
+- [인프라] Nginx: propnet.kr/payment-terms → proptalk/payment-terms 프록시 추가
+
 ## 2026-04-27: Enrichment 고도화 — TMAP 도보 + 역/KTX 분리 + 인접역 자동입력
 
 - [공통] TMAP 보행자 API 연동 (실제 도보 경로 거리, 카카오 자동차 경로 대체)
