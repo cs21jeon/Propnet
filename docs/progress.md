@@ -3,6 +3,14 @@
 > 최종 업데이트: 2026-04-27
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
 
+## 2026-04-27: PropSheet 로딩 성능 최적화 (인프라+백엔드+프론트 6단계)
+
+- [인프라] Nginx: PropSheet 정적 파일 캐시 활성화 + 리다이렉트 캐시 추가
+- [PropSheet] SW 캐시 버전 범프, JS defer + Alpine CDN 변경
+- [공통] TEMPLATES_AUTO_RELOAD 비활성화 (3개 서비스)
+- [공통] DB 연결 풀 (ThreadedConnectionPool) + 메타데이터 캐싱 도입
+- [PropSheet] map-data API: SELECT * → 명시적 컬럼 (SAVEPOINT 폴백)
+
 ## 2026-04-27: 토스페이먼츠 PG 심사 대응 — 사업자정보 + Nginx + 결제페이지 공개화
 
 - [Proptalk] 결제페이지/랜딩/결제약관에 사업자정보 푸터 추가 + 비로그인 공개화

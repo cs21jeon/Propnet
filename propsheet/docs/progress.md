@@ -1,6 +1,18 @@
 # PropSheet 개발 진행 기록
 
-> 최종 업데이트: 2026-04-25
+> 최종 업데이트: 2026-04-27
+
+## 2026-04-27: PropSheet 로딩 성능 최적화 (6단계)
+
+- Nginx 정적 파일 캐시: `no-cache` → `public, max-age=7d` (propnet.conf)
+- goldenrabbit.biz → propnet.kr 리다이렉트 캐시 (1일) 추가
+- Service Worker 캐시 버전 범프 (v2 → v3)
+- TEMPLATES_AUTO_RELOAD 비활성화 (propsheet/property-manager/proppedia 3개)
+- JS defer 추가 + Alpine.js CDN unpkg → jsdelivr (workspaces/database_list/calendar)
+- DB 연결 풀 도입 (ThreadedConnectionPool, conn.reset() 트랜잭션 안전 패턴)
+- list_properties 메타데이터 캐싱 (TTL 5분, information_schema 4개 쿼리 제거)
+- map-data SELECT * → 명시적 컬럼 (92→25개, ~73% 데이터 감소, SAVEPOINT 폴백)
+- 수정: propnet.conf, goldenrabbit.conf, sw.js, app.py x3, database_service.py, propsheet.py, 템플릿 x3
 
 ## 2026-04-25: PropSheet 모바일 PWA 앱 버전 구현
 

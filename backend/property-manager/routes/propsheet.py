@@ -1339,6 +1339,51 @@ def get_map_data():
     except Exception as e:
         logger.warning(f"Failed to resolve tables: {e}")
 
+    # Explicit column lists (SELECT * → needed columns only, ~73% data reduction)
+    _DANIL_COLS = ('coordinates_lat, coordinates_lon, "지번 주소", "도로명주소", "건물명", '
+                   '"매가(만원)", "토지면적(㎡)", "연면적(㎡)", "건폐율(%%)", "용적률(%%)", '
+                   '"층수", "주용도", "용도지역", "현황", "사용승인일", '
+                   '"보증금(만원)", "월세(만원)", "융자(만원)", "실투자금", '
+                   '"융자제외수익률(%%)", "광고(자동완성)", "대표사진", "인접역", '
+                   '"거리(m)", record_id, "매물종류"')
+    _JIBHAP_COLS = ('coordinates_lat, coordinates_lon, "지번 주소", "도로명주소", "건물명", '
+                    '"매가(만원)", "토지면적(㎡)", "대지면적(㎡)", "연면적(㎡)", '
+                    '"전용면적(㎡)", "공급면적(㎡)", "건폐율(%%)", "용적률(%%)", '
+                    '"총층수", "주용도", "용도지역", "현황", "사용승인일", '
+                    '"보증금(만원)", "월세(만원)", "융자(만원)", '
+                    '"방", "화", "호수", "물건종류", "관리비(만원)", "입주가능일", '
+                    '"종류", "광고(자동완성)", "대표사진", "인접역", '
+                    '"거리(m)", record_id')
+    _BUBUN_COLS = ('coordinates_lat, coordinates_lon, "지번 주소", "도로명주소", "건물명", '
+                   '"토지면적(㎡)", "연면적(㎡)", "전용면적", "공급면적(㎡)", '
+                   '"건폐율(%%)", "용적률(%%)", '
+                   '"층수", "주용도", "용도지역", "현황", "사용승인일", '
+                   '"보증금(만원)", "월세(만원)", "융자(만원)", '
+                   '"방", "화", "호수", "룸형태", "관리비", "입주가능일", '
+                   '"종류", "광고(자동완성)", "대표사진", "인접역", '
+                   '"거리(m)", record_id')
+
+    def _safe_query(cur, cols, table, extra_where='', params=None):
+        """Execute SELECT with explicit cols, fallback to SELECT * on column error."""
+        base = 'SELECT ' + cols + ' FROM ' + table + ' WHERE coordinates_lat IS NOT NULL AND coordinates_lon IS NOT NULL'
+        if extra_where:
+            base += ' AND ' + extra_where
+        try:
+            cur.execute('SAVEPOINT sp_map')
+            if params:
+                cur.execute(base, params)
+            else:
+                cur.execute(base.replace('%%', '%'))
+        except Exception:
+            cur.execute('ROLLBACK TO SAVEPOINT sp_map')
+            base_fallback = 'SELECT * FROM ' + table + ' WHERE coordinates_lat IS NOT NULL AND coordinates_lon IS NOT NULL'
+            if extra_where:
+                base_fallback += ' AND ' + extra_where
+            if params:
+                cur.execute(base_fallback, params)
+            else:
+                cur.execute(base_fallback.replace('%%', '%'))
+
     markers = []
     try:
         with get_db_connection() as conn:
@@ -1348,18 +1393,9 @@ def get_map_data():
                 if 'danil' in requested_types and 'danil' in table_map:
                     danil_table, danil_db_id = table_map['danil']
                     if not requested_txns or '매매' in requested_txns:
-                        base_query = (
-                            'SELECT * FROM ' + danil_table +
-                            ' WHERE coordinates_lat IS NOT NULL AND coordinates_lon IS NOT NULL'
-                        )
-                        params = []
-                        if status_filter:
-                            base_query += ' AND "현황" = %s'
-                            params.append(status_filter)
-                        if params:
-                            cur.execute(base_query, params)
-                        else:
-                            cur.execute(base_query.replace('%%', '%'))
+                        extra = '"현황" = %s' if status_filter else ''
+                        p = [status_filter] if status_filter else None
+                        _safe_query(cur, _DANIL_COLS, danil_table, extra, p)
 
                         for row in cur.fetchall():
                             price = to_float(row.get('매가(만원)'))
@@ -1400,18 +1436,9 @@ def get_map_data():
                 # === 집합부동산 ===
                 if 'jibhap' in requested_types and 'jibhap' in table_map:
                     jibhap_table, jibhap_db_id = table_map['jibhap']
-                    base_query = (
-                        'SELECT * FROM ' + jibhap_table +
-                        ' WHERE coordinates_lat IS NOT NULL AND coordinates_lon IS NOT NULL'
-                    )
-                    params = []
-                    if status_filter:
-                        base_query += ' AND "현황" = %s'
-                        params.append(status_filter)
-                    if params:
-                        cur.execute(base_query, params)
-                    else:
-                        cur.execute(base_query.replace('%%', '%'))
+                    extra = '"현황" = %s' if status_filter else ''
+                    p = [status_filter] if status_filter else None
+                    _safe_query(cur, _JIBHAP_COLS, jibhap_table, extra, p)
 
                     for row in cur.fetchall():
                         kind = (row.get('종류', '') or '').strip()
@@ -1434,7 +1461,7 @@ def get_map_data():
                             'supply_area': to_float(row.get('공급면적(㎡)')),
                             'bcr': to_float(row.get('건폐율(%)')),
                             'far': to_float(row.get('용적률(%)')),
-                            'floors': row.get('층수', '') or '',
+                            'floors': row.get('층수', '') or row.get('총층수', '') or '',
                             'usage': row.get('주용도', '') or '',
                             'zoning': row.get('용도지역', '') or '',
                             'status': row.get('현황', '') or '',
@@ -1463,18 +1490,9 @@ def get_map_data():
                 # === 부분부동산 ===
                 if 'bubun' in requested_types and 'bubun' in table_map:
                     bubun_table, bubun_db_id = table_map['bubun']
-                    base_query = (
-                        'SELECT * FROM ' + bubun_table +
-                        ' WHERE coordinates_lat IS NOT NULL AND coordinates_lon IS NOT NULL'
-                    )
-                    params = []
-                    if status_filter:
-                        base_query += ' AND "현황" = %s'
-                        params.append(status_filter)
-                    if params:
-                        cur.execute(base_query, params)
-                    else:
-                        cur.execute(base_query.replace('%%', '%'))
+                    extra = '"현황" = %s' if status_filter else ''
+                    p = [status_filter] if status_filter else None
+                    _safe_query(cur, _BUBUN_COLS, bubun_table, extra, p)
 
                     for row in cur.fetchall():
                         kind = (row.get('종류', '') or '').strip()
