@@ -23,6 +23,7 @@ final mapRepositoryProvider = Provider<MapRepository>((ref) {
 class MapSearchState {
   final SearchStatus status;
   final JibunInfo? jibunInfo;
+  final ComplexInfo? complexInfo;
   final double? selectedLat;
   final double? selectedLng;
   final ParcelGeometry? parcelGeometry;
@@ -32,6 +33,7 @@ class MapSearchState {
   const MapSearchState({
     this.status = SearchStatus.initial,
     this.jibunInfo,
+    this.complexInfo,
     this.selectedLat,
     this.selectedLng,
     this.parcelGeometry,
@@ -42,6 +44,7 @@ class MapSearchState {
   MapSearchState copyWith({
     SearchStatus? status,
     JibunInfo? jibunInfo,
+    ComplexInfo? complexInfo,
     double? selectedLat,
     double? selectedLng,
     ParcelGeometry? parcelGeometry,
@@ -51,6 +54,7 @@ class MapSearchState {
     return MapSearchState(
       status: status ?? this.status,
       jibunInfo: jibunInfo ?? this.jibunInfo,
+      complexInfo: complexInfo ?? this.complexInfo,
       selectedLat: selectedLat ?? this.selectedLat,
       selectedLng: selectedLng ?? this.selectedLng,
       parcelGeometry: parcelGeometry ?? this.parcelGeometry,
@@ -106,6 +110,7 @@ class MapSearchNotifier extends StateNotifier<MapSearchState> {
       state = MapSearchState(
         status: SearchStatus.success,
         jibunInfo: jibunInfo,
+        complexInfo: jibunResponse.complexInfo,
         selectedLat: lat,
         selectedLng: lng,
         parcelGeometry: boundaryResponse.success ? boundaryResponse.geometry : null,

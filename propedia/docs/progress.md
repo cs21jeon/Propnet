@@ -1,4 +1,16 @@
-업데이트 현황 (2026-04-29)
+업데이트 현황 (2026-04-30)
+
+## 2026-04-30: 부속지번 DB 대체 + 단지명 표시 + 지번→단지 매칭
+
+- **부속지번 조회 DB 대체** (서버 app_api.py `search_by_jibun`, `search_by_bdmgtsn`):
+  - 건축물대장 API 호출 대신 complex_parcels DB 우선 조회 (~300ms 절감)
+  - DB에 없으면 기존 API fallback 유지
+- **지도 클릭 시 단지명 표시** (앱 + 웹):
+  - 앱: ComplexInfo DTO 추가, 배지 "단지" + 단지명(세대수) 표시 (map_dto.dart, map_provider.dart, search_map_screen.dart)
+  - 웹: search-map.html에서 complex_info 표시
+- **통합검색 지번→단지 매칭** (서버 search_unified.py):
+  - "신천동 20" 검색 시 complex_parcels에서 파크리오 매칭 → 결과 최상위에 노출 (score=2.0)
+- 50세대+ 부속지번 배치 완료: 6,572건 등록, 오류 0
 
 ## 2026-04-29: 집합건축물 대표지번 자동 전환 + 지도 뒤로가기 위치 유지
 

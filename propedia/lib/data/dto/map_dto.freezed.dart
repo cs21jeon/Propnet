@@ -492,6 +492,215 @@ abstract class _JibunInfo implements JibunInfo {
       throw _privateConstructorUsedError;
 }
 
+ComplexInfo _$ComplexInfoFromJson(Map<String, dynamic> json) {
+  return _ComplexInfo.fromJson(json);
+}
+
+/// @nodoc
+mixin _$ComplexInfo {
+  String get name => throw _privateConstructorUsedError;
+  @JsonKey(name: 'household_count')
+  int? get householdCount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'dong_count')
+  int? get dongCount => throw _privateConstructorUsedError;
+  String? get address => throw _privateConstructorUsedError;
+
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  @JsonKey(ignore: true)
+  $ComplexInfoCopyWith<ComplexInfo> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ComplexInfoCopyWith<$Res> {
+  factory $ComplexInfoCopyWith(
+          ComplexInfo value, $Res Function(ComplexInfo) then) =
+      _$ComplexInfoCopyWithImpl<$Res, ComplexInfo>;
+  @useResult
+  $Res call(
+      {String name,
+      @JsonKey(name: 'household_count') int? householdCount,
+      @JsonKey(name: 'dong_count') int? dongCount,
+      String? address});
+}
+
+/// @nodoc
+class _$ComplexInfoCopyWithImpl<$Res, $Val extends ComplexInfo>
+    implements $ComplexInfoCopyWith<$Res> {
+  _$ComplexInfoCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? name = null,
+    Object? householdCount = freezed,
+    Object? dongCount = freezed,
+    Object? address = freezed,
+  }) {
+    return _then(_value.copyWith(
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      householdCount: freezed == householdCount
+          ? _value.householdCount
+          : householdCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      dongCount: freezed == dongCount
+          ? _value.dongCount
+          : dongCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      address: freezed == address
+          ? _value.address
+          : address // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$ComplexInfoImplCopyWith<$Res>
+    implements $ComplexInfoCopyWith<$Res> {
+  factory _$$ComplexInfoImplCopyWith(
+          _$ComplexInfoImpl value, $Res Function(_$ComplexInfoImpl) then) =
+      __$$ComplexInfoImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {String name,
+      @JsonKey(name: 'household_count') int? householdCount,
+      @JsonKey(name: 'dong_count') int? dongCount,
+      String? address});
+}
+
+/// @nodoc
+class __$$ComplexInfoImplCopyWithImpl<$Res>
+    extends _$ComplexInfoCopyWithImpl<$Res, _$ComplexInfoImpl>
+    implements _$$ComplexInfoImplCopyWith<$Res> {
+  __$$ComplexInfoImplCopyWithImpl(
+      _$ComplexInfoImpl _value, $Res Function(_$ComplexInfoImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? name = null,
+    Object? householdCount = freezed,
+    Object? dongCount = freezed,
+    Object? address = freezed,
+  }) {
+    return _then(_$ComplexInfoImpl(
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      householdCount: freezed == householdCount
+          ? _value.householdCount
+          : householdCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      dongCount: freezed == dongCount
+          ? _value.dongCount
+          : dongCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      address: freezed == address
+          ? _value.address
+          : address // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$ComplexInfoImpl implements _ComplexInfo {
+  const _$ComplexInfoImpl(
+      {required this.name,
+      @JsonKey(name: 'household_count') this.householdCount,
+      @JsonKey(name: 'dong_count') this.dongCount,
+      this.address});
+
+  factory _$ComplexInfoImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ComplexInfoImplFromJson(json);
+
+  @override
+  final String name;
+  @override
+  @JsonKey(name: 'household_count')
+  final int? householdCount;
+  @override
+  @JsonKey(name: 'dong_count')
+  final int? dongCount;
+  @override
+  final String? address;
+
+  @override
+  String toString() {
+    return 'ComplexInfo(name: $name, householdCount: $householdCount, dongCount: $dongCount, address: $address)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ComplexInfoImpl &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.householdCount, householdCount) ||
+                other.householdCount == householdCount) &&
+            (identical(other.dongCount, dongCount) ||
+                other.dongCount == dongCount) &&
+            (identical(other.address, address) || other.address == address));
+  }
+
+  @JsonKey(ignore: true)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, name, householdCount, dongCount, address);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ComplexInfoImplCopyWith<_$ComplexInfoImpl> get copyWith =>
+      __$$ComplexInfoImplCopyWithImpl<_$ComplexInfoImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$ComplexInfoImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _ComplexInfo implements ComplexInfo {
+  const factory _ComplexInfo(
+      {required final String name,
+      @JsonKey(name: 'household_count') final int? householdCount,
+      @JsonKey(name: 'dong_count') final int? dongCount,
+      final String? address}) = _$ComplexInfoImpl;
+
+  factory _ComplexInfo.fromJson(Map<String, dynamic> json) =
+      _$ComplexInfoImpl.fromJson;
+
+  @override
+  String get name;
+  @override
+  @JsonKey(name: 'household_count')
+  int? get householdCount;
+  @override
+  @JsonKey(name: 'dong_count')
+  int? get dongCount;
+  @override
+  String? get address;
+  @override
+  @JsonKey(ignore: true)
+  _$$ComplexInfoImplCopyWith<_$ComplexInfoImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
 MapClickJibunResponse _$MapClickJibunResponseFromJson(
     Map<String, dynamic> json) {
   return _MapClickJibunResponse.fromJson(json);
@@ -502,6 +711,8 @@ mixin _$MapClickJibunResponse {
   bool get success => throw _privateConstructorUsedError;
   @JsonKey(name: 'jibun_info')
   JibunInfo? get jibunInfo => throw _privateConstructorUsedError;
+  @JsonKey(name: 'complex_info')
+  ComplexInfo? get complexInfo => throw _privateConstructorUsedError;
   String? get error => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -519,9 +730,11 @@ abstract class $MapClickJibunResponseCopyWith<$Res> {
   $Res call(
       {bool success,
       @JsonKey(name: 'jibun_info') JibunInfo? jibunInfo,
+      @JsonKey(name: 'complex_info') ComplexInfo? complexInfo,
       String? error});
 
   $JibunInfoCopyWith<$Res>? get jibunInfo;
+  $ComplexInfoCopyWith<$Res>? get complexInfo;
 }
 
 /// @nodoc
@@ -540,6 +753,7 @@ class _$MapClickJibunResponseCopyWithImpl<$Res,
   $Res call({
     Object? success = null,
     Object? jibunInfo = freezed,
+    Object? complexInfo = freezed,
     Object? error = freezed,
   }) {
     return _then(_value.copyWith(
@@ -551,6 +765,10 @@ class _$MapClickJibunResponseCopyWithImpl<$Res,
           ? _value.jibunInfo
           : jibunInfo // ignore: cast_nullable_to_non_nullable
               as JibunInfo?,
+      complexInfo: freezed == complexInfo
+          ? _value.complexInfo
+          : complexInfo // ignore: cast_nullable_to_non_nullable
+              as ComplexInfo?,
       error: freezed == error
           ? _value.error
           : error // ignore: cast_nullable_to_non_nullable
@@ -569,6 +787,18 @@ class _$MapClickJibunResponseCopyWithImpl<$Res,
       return _then(_value.copyWith(jibunInfo: value) as $Val);
     });
   }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $ComplexInfoCopyWith<$Res>? get complexInfo {
+    if (_value.complexInfo == null) {
+      return null;
+    }
+
+    return $ComplexInfoCopyWith<$Res>(_value.complexInfo!, (value) {
+      return _then(_value.copyWith(complexInfo: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -583,10 +813,13 @@ abstract class _$$MapClickJibunResponseImplCopyWith<$Res>
   $Res call(
       {bool success,
       @JsonKey(name: 'jibun_info') JibunInfo? jibunInfo,
+      @JsonKey(name: 'complex_info') ComplexInfo? complexInfo,
       String? error});
 
   @override
   $JibunInfoCopyWith<$Res>? get jibunInfo;
+  @override
+  $ComplexInfoCopyWith<$Res>? get complexInfo;
 }
 
 /// @nodoc
@@ -603,6 +836,7 @@ class __$$MapClickJibunResponseImplCopyWithImpl<$Res>
   $Res call({
     Object? success = null,
     Object? jibunInfo = freezed,
+    Object? complexInfo = freezed,
     Object? error = freezed,
   }) {
     return _then(_$MapClickJibunResponseImpl(
@@ -614,6 +848,10 @@ class __$$MapClickJibunResponseImplCopyWithImpl<$Res>
           ? _value.jibunInfo
           : jibunInfo // ignore: cast_nullable_to_non_nullable
               as JibunInfo?,
+      complexInfo: freezed == complexInfo
+          ? _value.complexInfo
+          : complexInfo // ignore: cast_nullable_to_non_nullable
+              as ComplexInfo?,
       error: freezed == error
           ? _value.error
           : error // ignore: cast_nullable_to_non_nullable
@@ -628,6 +866,7 @@ class _$MapClickJibunResponseImpl implements _MapClickJibunResponse {
   const _$MapClickJibunResponseImpl(
       {required this.success,
       @JsonKey(name: 'jibun_info') this.jibunInfo,
+      @JsonKey(name: 'complex_info') this.complexInfo,
       this.error});
 
   factory _$MapClickJibunResponseImpl.fromJson(Map<String, dynamic> json) =>
@@ -639,11 +878,14 @@ class _$MapClickJibunResponseImpl implements _MapClickJibunResponse {
   @JsonKey(name: 'jibun_info')
   final JibunInfo? jibunInfo;
   @override
+  @JsonKey(name: 'complex_info')
+  final ComplexInfo? complexInfo;
+  @override
   final String? error;
 
   @override
   String toString() {
-    return 'MapClickJibunResponse(success: $success, jibunInfo: $jibunInfo, error: $error)';
+    return 'MapClickJibunResponse(success: $success, jibunInfo: $jibunInfo, complexInfo: $complexInfo, error: $error)';
   }
 
   @override
@@ -654,12 +896,15 @@ class _$MapClickJibunResponseImpl implements _MapClickJibunResponse {
             (identical(other.success, success) || other.success == success) &&
             (identical(other.jibunInfo, jibunInfo) ||
                 other.jibunInfo == jibunInfo) &&
+            (identical(other.complexInfo, complexInfo) ||
+                other.complexInfo == complexInfo) &&
             (identical(other.error, error) || other.error == error));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, success, jibunInfo, error);
+  int get hashCode =>
+      Object.hash(runtimeType, success, jibunInfo, complexInfo, error);
 
   @JsonKey(ignore: true)
   @override
@@ -680,6 +925,7 @@ abstract class _MapClickJibunResponse implements MapClickJibunResponse {
   const factory _MapClickJibunResponse(
       {required final bool success,
       @JsonKey(name: 'jibun_info') final JibunInfo? jibunInfo,
+      @JsonKey(name: 'complex_info') final ComplexInfo? complexInfo,
       final String? error}) = _$MapClickJibunResponseImpl;
 
   factory _MapClickJibunResponse.fromJson(Map<String, dynamic> json) =
@@ -690,6 +936,9 @@ abstract class _MapClickJibunResponse implements MapClickJibunResponse {
   @override
   @JsonKey(name: 'jibun_info')
   JibunInfo? get jibunInfo;
+  @override
+  @JsonKey(name: 'complex_info')
+  ComplexInfo? get complexInfo;
   @override
   String? get error;
   @override

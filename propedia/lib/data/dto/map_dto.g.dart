@@ -46,6 +46,22 @@ Map<String, dynamic> _$$JibunInfoImplToJson(_$JibunInfoImpl instance) =>
       'main_purpose': instance.mainPurpose,
     };
 
+_$ComplexInfoImpl _$$ComplexInfoImplFromJson(Map<String, dynamic> json) =>
+    _$ComplexInfoImpl(
+      name: json['name'] as String,
+      householdCount: (json['household_count'] as num?)?.toInt(),
+      dongCount: (json['dong_count'] as num?)?.toInt(),
+      address: json['address'] as String?,
+    );
+
+Map<String, dynamic> _$$ComplexInfoImplToJson(_$ComplexInfoImpl instance) =>
+    <String, dynamic>{
+      'name': instance.name,
+      'household_count': instance.householdCount,
+      'dong_count': instance.dongCount,
+      'address': instance.address,
+    };
+
 _$MapClickJibunResponseImpl _$$MapClickJibunResponseImplFromJson(
         Map<String, dynamic> json) =>
     _$MapClickJibunResponseImpl(
@@ -53,6 +69,9 @@ _$MapClickJibunResponseImpl _$$MapClickJibunResponseImplFromJson(
       jibunInfo: json['jibun_info'] == null
           ? null
           : JibunInfo.fromJson(json['jibun_info'] as Map<String, dynamic>),
+      complexInfo: json['complex_info'] == null
+          ? null
+          : ComplexInfo.fromJson(json['complex_info'] as Map<String, dynamic>),
       error: json['error'] as String?,
     );
 
@@ -61,6 +80,7 @@ Map<String, dynamic> _$$MapClickJibunResponseImplToJson(
     <String, dynamic>{
       'success': instance.success,
       'jibun_info': instance.jibunInfo,
+      'complex_info': instance.complexInfo,
       'error': instance.error,
     };
 

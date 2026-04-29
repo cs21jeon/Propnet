@@ -34,12 +34,27 @@ class JibunInfo with _$JibunInfo {
       _$JibunInfoFromJson(json);
 }
 
+/// 단지 정보
+@freezed
+class ComplexInfo with _$ComplexInfo {
+  const factory ComplexInfo({
+    required String name,
+    @JsonKey(name: 'household_count') int? householdCount,
+    @JsonKey(name: 'dong_count') int? dongCount,
+    String? address,
+  }) = _ComplexInfo;
+
+  factory ComplexInfo.fromJson(Map<String, dynamic> json) =>
+      _$ComplexInfoFromJson(json);
+}
+
 /// 지도 클릭 → 지번 변환 응답
 @freezed
 class MapClickJibunResponse with _$MapClickJibunResponse {
   const factory MapClickJibunResponse({
     required bool success,
     @JsonKey(name: 'jibun_info') JibunInfo? jibunInfo,
+    @JsonKey(name: 'complex_info') ComplexInfo? complexInfo,
     String? error,
   }) = _MapClickJibunResponse;
 

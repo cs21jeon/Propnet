@@ -335,6 +335,7 @@ class _SearchMapScreenState extends ConsumerState<SearchMapScreen> {
 
   Widget _buildInfoCard(BuildContext context, MapSearchState mapState) {
     final jibunInfo = mapState.jibunInfo!;
+    final complexInfo = mapState.complexInfo;
 
     return Card(
       child: Padding(
@@ -343,7 +344,7 @@ class _SearchMapScreenState extends ConsumerState<SearchMapScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 주소 + 지목
+            // 단지명 또는 주소 + 지목
             Row(
               children: [
                 Container(
@@ -353,7 +354,7 @@ class _SearchMapScreenState extends ConsumerState<SearchMapScreen> {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
-                    jibunInfo.landTypeName ?? (jibunInfo.landType == '1' ? '대' : '임'),
+                    complexInfo != null ? '단지' : (jibunInfo.landTypeName ?? (jibunInfo.landType == '1' ? '대' : '임')),
                     style: const TextStyle(
                       color: AppColors.primary,
                       fontSize: 11,
@@ -364,7 +365,9 @@ class _SearchMapScreenState extends ConsumerState<SearchMapScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    jibunInfo.address,
+                    complexInfo != null
+                        ? '${complexInfo.name}${complexInfo.householdCount != null ? ' (${complexInfo.householdCount!.toString()}세대)' : ''}'
+                        : jibunInfo.address,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -376,8 +379,18 @@ class _SearchMapScreenState extends ConsumerState<SearchMapScreen> {
             ),
             const SizedBox(height: 4),
 
-            // 도로명 + 주용도 (한 줄로)
-            if (jibunInfo.roadAddress != null && jibunInfo.roadAddress!.isNotEmpty)
+            // 단지인 경우 지번주소 표시, 아닌 경우 도로명 표시
+            if (complexInfo != null)
+              Text(
+                jibunInfo.address,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[600],
+                      fontSize: 11,
+                    ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              )
+            else if (jibunInfo.roadAddress != null && jibunInfo.roadAddress!.isNotEmpty)
               Text(
                 '도로명: ${jibunInfo.roadAddress!}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
