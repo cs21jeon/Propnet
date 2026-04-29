@@ -27,10 +27,10 @@ DB_CONFIG = {
     'port': 5432,
     'dbname': 'goldenrabbit_db',
     'user': 'goldenrabbit_user',
-    'password': os.environ.get('DB_PASSWORD', '***REMOVED***'),
+    'password': os.environ.get('DB_PASSWORD', ''),
 }
 
-VWORLD_APIKEY = os.environ.get('VWORLD_APIKEY', '***REMOVED***')
+VWORLD_APIKEY = os.environ.get('VWORLD_APIKEY', '')
 WFS_URL = 'https://api.vworld.kr/req/wfs'
 TIMEOUT = 15
 BBOX_RADIUS_M = 400.0
