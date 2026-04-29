@@ -1,7 +1,18 @@
 # PropNet 통합 개발 진행 기록
 
-> 최종 업데이트: 2026-04-27
+> 최종 업데이트: 2026-04-29
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
+
+## 2026-04-29: 동별 좌표 클러스터링 — 데이터 로드 + 백엔드 API 구현
+
+- [데이터] complex_master 주소 정규화 53,900건 (시군구 약식표기→정식)
+- [데이터] GIS건물통합정보 SHP 전국 로드 → building_dong_geometry 571,815건
+- [공통] 캐시 우선 조회: dong-coords API에서 VWorld WFS 대신 DB 캐시 조회 (응답 2~3초→<100ms)
+- [공통] 단지 마커 API: /map/complex-markers (bbox 내 단지 목록+좌표 반환)
+- [Propedia] click-jibun 부속지번→본번 역매핑 (complex_parcels 활용)
+- [PropSheet] complex_pk 컬럼 추가 (4개 테이블) + UI 기본 숨김
+- [인프라] snap→pip certbot 전환 (6.3GB 확보), 백업 스크립트 GDrive 전송 후 로컬 삭제
+- [인프라] 디스크 정리 94%→61%, center_lat cron 제거, torch/nvidia 삭제
 
 ## 2026-04-27: PropSheet 로딩 성능 최적화 (인프라+백엔드+프론트 6단계)
 
