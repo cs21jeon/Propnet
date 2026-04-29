@@ -25,21 +25,31 @@ PropMap은 공인중개사(agent)별 매물지도 서비스입니다. 현재는 
 
 ## 핵심 파일 (서버 경로)
 
-### Frontend — 현재 홈페이지 (이관 대상)
-- `/home/webapp/goldenrabbit/frontend/public/index.html` — 메인 홈페이지 (지도, 카테고리, 검색, 상세 모달)
-- `/home/webapp/goldenrabbit/frontend/public/map.html` — 매물 지도 (iframe, 카카오맵)
-- `/home/webapp/goldenrabbit/frontend/public/about.html` — 회사소개
-- `/home/webapp/goldenrabbit/frontend/public/inquiry.html` — 상담문의
+### Frontend — 동일 UI를 서빙하는 복수 경로 (CRITICAL)
 
-### Frontend — PropMap 랜딩
-- `/home/webapp/goldenrabbit/frontend/public/propnet/index.html` — 메인 랜딩페이지
-- `/home/webapp/goldenrabbit/frontend/public/js/ai-property-search.js` — AI 매물 검색
-- `/home/webapp/goldenrabbit/frontend/public/js/navigation.js` — 네비게이션
-- `/home/webapp/goldenrabbit/frontend/public/manifest.json` — PWA 매니페스트
+> **매물 상세보기, 마커 렌더링, 검색 UI 등을 수정할 때 아래 모든 파일에 동일하게 반영해야 함.**
+> 하나만 수정하면 다른 경로에서 이전 버전이 노출됨.
+
+| 서빙 URL | index.html (상세모달) | map.html (지도+마커+상세) |
+|----------|----------------------|--------------------------|
+| `propnet.kr/propmap/` (통합지도) | `/frontend/public/propmap/index.html` | `/frontend/public/propmap/map.html` |
+| `propnet.kr/propmap/goldenrabbit/` | `/frontend/public/propmap/goldenrabbit/index.html` | `/frontend/public/propmap/goldenrabbit/map.html` |
+| `propnet.kr/propmap/propnet/` | (propmap/index.html 공유) | `/frontend/public/propmap/propnet/map.html` |
+| `goldenrabbit.biz/` (레거시 홈) | `/frontend/public/index.html` | `/frontend/public/map.html` |
+| 신규 agent 템플릿 | (propmap/index.html 공유) | `/frontend/public/propmap/_template/map.html` |
+
+**총 8개 파일** (index.html 4개 + map.html 4개 + 템플릿 map.html 1개). 상세보기 관련 수정 시 **반드시 전수 확인**.
+
+### Frontend — 기타
+- `/frontend/public/propnet/index.html` — PropNet 랜딩페이지
+- `/frontend/public/about.html` — 회사소개
+- `/frontend/public/inquiry.html` — 상담문의
+- `/frontend/public/js/ai-property-search.js` — AI 매물 검색
+- `/frontend/public/js/navigation.js` — 네비게이션
 
 ### Backend API
-- `/home/webapp/goldenrabbit/backend/property-manager/routes/propsheet.py` — 매물 API (지도, 카테고리, 검색, 상세)
-- `/home/webapp/goldenrabbit/backend/property-manager/routes/propnet_api.py` — SNS 공유 OG 메타태그
+- `/backend/property-manager/routes/propsheet.py` — 매물 API (지도, 카테고리, 검색, 상세)
+- `/backend/property-manager/routes/propnet_api.py` — SNS 공유 OG 메타태그
 
 ## 데이터 흐름 (현재 홈페이지)
 

@@ -968,15 +968,11 @@
         html += '<div style="margin-top:16px">';
         function row(l, v) { if (v) html += '<div class="detail-info-row"><span class="detail-info-label">' + l + '</span><span class="detail-info-value">' + v + '</span></div>'; }
 
-        var landArea = parseFloat(data.land_area || 0);
-        var totalArea = parseFloat(data.total_area || 0);
-        if (landArea > 0) row('토지면적', toPyeong(landArea) + ' (' + landArea + '㎡)');
-        if (totalArea > 0) row('연면적', toPyeong(totalArea) + ' (' + totalArea + '㎡)');
-        if (data.floors) row('층수', escapeHtml(data.floors));
-        if (data.usage) row('주용도', escapeHtml(data.usage));
-        if (data.zoning) row('용도지역', escapeHtml(data.zoning));
-        if (data.approval_date && data.approval_date !== '0') row('사용승인일', data.approval_date);
-        if (data.station) row('인접역', escapeHtml(data.station));
+        var propType = data.property_type || 'danil';
+        if (propType === 'danil') {
+            if (parseFloat(data.investment || 0) > 0) row('실투자금', formatPrice(parseFloat(data.investment)));
+            if (parseFloat(data.yield_rate || 0) > 0) row('융자제외수익률', parseFloat(data.yield_rate).toFixed(1) + '%');
+        }
         html += '</div>';
 
         var desc = data.description || '';

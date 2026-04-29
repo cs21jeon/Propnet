@@ -105,7 +105,7 @@ source /home/webapp/goldenrabbit/backend/venv/bin/activate
 
 ## 홈페이지 매물 API (PropSheet DB 직접 조회)
 
-홈페이지(goldenrabbit.biz)의 모든 매물 기능이 PropSheet DB를 직접 조회:
+홈페이지(goldenrabbit.biz) + PropMap의 모든 매물 기능이 PropSheet DB를 직접 조회:
 
 ```
 GET  /api/propsheet/map-data              → 지도 마커 데이터
@@ -113,6 +113,9 @@ GET  /api/propsheet/category-properties   → 카테고리별 매물 (재건축7
 GET  /api/propsheet/property-detail?id=   → 매물 상세
 POST /api/propsheet/search-map            → 조건 검색
 ```
+
+> **property-detail API 응답 필드를 변경하면 PropMap의 모든 프론트엔드에 영향.**
+> PropMap의 상세보기 UI는 8개 서버 파일에 복사되어 있음 — `propmap/CLAUDE.md`의 "동일 UI를 서빙하는 복수 경로" 표 참조.
 
 ### 이미지 서빙
 ```

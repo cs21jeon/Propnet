@@ -3,6 +3,14 @@
 > 최종 업데이트: 2026-04-29
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
 
+## 2026-04-29: 집합부동산 층 필드 + 상세보기 간소화 + AI billing 버그 수정
+
+- [PropMap] 매물 상세보기 info rows 간소화 — 서버 8개 파일 전수 반영
+- [PropSheet] 집합부동산 DB에 '층'(text) + '층표시'(single-select) 필드 추가, 광고(자동완성) 수식에 층 로직 반영
+- [PropSheet] propsheet_save_service에 전유부 API floor_no → 층 필드 자동 매핑 추가
+- [PropSheet] 기존 81건 중 71건 건축물대장 API로 층 데이터 backfill 완료
+- [공통] ai_billing.py RealDictCursor 누락 버그 수정 (500 에러)
+
 ## 2026-04-29: GitGuardian 시크릿 노출 대응 — gitleaks pre-commit hook 도입
 
 - [보안] GitGuardian 알림: batch_dong_local.py에 DB 비밀번호 + VWorld API 키 하드코딩 노출

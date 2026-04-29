@@ -1084,24 +1084,9 @@
         }
 
         if (data.property_type === 'danil') {
-            if (data.investment > 0) addRow('융자제외 실투자금', formatPrice(data.investment));
-            if (data.yield_rate > 0) addRow('수익률', data.yield_rate.toFixed(1) + '%');
-            if (data.price > 0 && data.land_area > 0) {
-                addRow('평단가', Math.round(data.price / (data.land_area / 3.3058)).toLocaleString() + '만원/평');
-            }
-            if (data.land_area > 0) addRow('토지면적', toPyeong(data.land_area) + ' (' + data.land_area + '㎡)');
-            if (data.total_area > 0) addRow('연면적', toPyeong(data.total_area) + ' (' + data.total_area + '㎡)');
+            if (data.investment > 0) addRow('실투자금', formatPrice(data.investment));
+            if (data.yield_rate > 0) addRow('융자제외수익률', data.yield_rate.toFixed(1) + '%');
         }
-        if (data.floors) addRow('층수', escapeHtml(data.floors));
-        if (data.usage) addRow('주용도', escapeHtml(data.usage));
-        if (data.zoning) addRow('용도지역', escapeHtml(data.zoning));
-        if (data.approval_date && data.approval_date !== '0') addRow('사용승인일', data.approval_date);
-        if (data.transaction_type === '매매') {
-            if (data.deposit > 0) addRow('보증금', formatPrice(data.deposit));
-            if (data.rent > 0) addRow('월세', formatPrice(data.rent));
-        }
-        if (data.loan > 0) addRow('융자', formatPrice(data.loan));
-        if (data.station) addRow('인접역', escapeHtml(data.station) + (data.distance > 0 ? ' ' + Math.round(data.distance) + 'm' : ''));
         html += '</div>';
 
         if (data.description) {

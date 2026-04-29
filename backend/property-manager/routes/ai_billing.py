@@ -18,6 +18,7 @@ from flask import Blueprint, g, jsonify, request
 sys.path.insert(0, '/home/webapp/goldenrabbit/backend/shared')
 from propnet_auth.jwt_utils import verify_token  # noqa: E402
 
+from psycopg2.extras import RealDictCursor  # noqa: E402
 from services.database_service import get_db_connection  # noqa: E402
 from services import ai_billing_service as billing  # noqa: E402
 
@@ -67,6 +68,6 @@ def credit_status():
     role = g.propnet_role
 
     with get_db_connection() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             status = billing.get_credit_status(cur, uid, role=role)
     return jsonify(status)
