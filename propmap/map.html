@@ -227,6 +227,7 @@
             position: relative; background: #fff; border-radius: 10px;
             box-shadow: 0 3px 12px rgba(0,0,0,0.2); padding: 10px 12px;
             min-width: 200px; max-width: 260px; font-family: -apple-system, sans-serif;
+            max-height: 360px; overflow-y: auto;
         }
         .cluster-popup .close-btn {
             position: absolute; top: 6px; right: 8px; font-size: 15px;
@@ -1483,7 +1484,7 @@
 
             var popup = new kakao.maps.CustomOverlay({
                 position: position, content: popupEl,
-                yAnchor: 1.4, xAnchor: 0.5, zIndex: 10, clickable: true
+                yAnchor: 1.1, xAnchor: 0.5, zIndex: 10, clickable: true
             });
             popup.setMap(map);
             currentPopup = popup;
@@ -1576,7 +1577,7 @@
 
             var popup = new kakao.maps.CustomOverlay({
                 position: position, content: popupEl,
-                yAnchor: 1.4, xAnchor: 0.5, zIndex: 10, clickable: true
+                yAnchor: 1.1, xAnchor: 0.5, zIndex: 10, clickable: true
             });
             popup.setMap(map);
             currentPopup = popup;
@@ -1742,7 +1743,7 @@
                                 return Object.values(window._markerData || {});
                             },
                             apiUrl: '/propsheet/api/propsheet/map/dong-coords',
-                            zoomThreshold: 3,
+                            zoomThreshold: 2,
                             createClusterPopup: typeof createClusterPopup === 'function' ? createClusterPopup : null,
                         });
                     }
@@ -1753,7 +1754,7 @@
     });
     </script>
     <!-- Week 3: 동 단위 클러스터 공통 모듈 -->
-    <script src="/propmap/js/dong-cluster-renderer.js?v=20260416d"></script>
+    <script src="/propmap/js/dong-cluster-renderer.js?v=20260429f"></script>
     <!-- Week 5 Phase G: 통합 검색 컴포넌트 (임시 비활성화) -->
 </body>
 </html>

@@ -25,7 +25,7 @@
     // 서버 확인 우선순위:
     //  1) /api/auth/session-sync (propnet_token 쿠키 기반, name 포함)
     //  2) /api/auth/me / /app/api/auth/me (Bearer 토큰 필요 — 폴백)
-    var ME_ENDPOINTS = ['/api/auth/session-sync', '/api/auth/me', '/app/api/auth/me'];
+    var ME_ENDPOINTS = ['/app/api/auth/session-sync', '/app/api/auth/me'];
 
     var isInApp = (function () {
         try { return new URLSearchParams(location.search).get('inapp') === '1'; }

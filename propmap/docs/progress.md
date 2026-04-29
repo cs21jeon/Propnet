@@ -1,6 +1,30 @@
 # PropMap 개발 진행 기록
 
-> 최종 업데이트: 2026-04-28
+> 최종 업데이트: 2026-04-29
+
+## 2026-04-29: 동별 매물 클러스터링 완성 + 버그 수정
+
+### map-data API dong 필드 추가
+- `propsheet.py`: `_JIBHAP_COLS`, `_BUBUN_COLS`에 `"동"` 컬럼 추가
+- 집합/부분부동산 응답에 `'dong'` 필드 포함 → dong-cluster-renderer 자동 작동
+
+### dong-cluster-renderer 개선 (`dong-cluster-renderer.js`)
+- **마커 스타일 통일**: 인라인 스타일 제거 → `price-marker jibhap-매매` 클래스 (집합부동산 녹색 #15803D, 기존 마커와 동일 형태)
+- **동 이름 제거**: 숫자만 표시, tooltip에 동 이름 유지
+- **줌 기준 변경**: 카카오 레벨 3→2 (한 단계 더 확대 시 표시)
+- **동 필터 강화**: `/동$/` 정규식으로 "X동" 패턴만 유효 ("1", "비동" 등 잘못된 값 제외)
+- **address 우선 매칭**: 그룹 key에 `p.address` 추가 (좌표 기반 역조회 오매칭 방지)
+- **postMessage 버그 수정**: 축약 매핑 객체 대신 원본 매물 배열 전달 (record_id, db_id undefined 해결)
+
+### 팝업 UI 개선 (`map.html`)
+- 클러스터 팝업 `yAnchor: 1.4→1.1` + `max-height: 360px; overflow-y: auto`
+
+### Propedia 부번→본번 폴백 (`app_api.py`)
+- `search_by_jibun()`: 부번(ji≠0000) 검색 실패 시 본번(ji=0000)으로 재시도
+- `fetch_building()`, `fetch_attached_jibuns()` 모두 3순위 폴백 추가
+
+### auth-ui.js 경로 수정
+- `ME_ENDPOINTS`: 404 발생하던 `/api/auth/*` → 올바른 `/app/api/auth/*` 경로로 변경
 
 ## 2026-04-28: AI 검색 데이터 보안 — 차단 컬럼 규정
 

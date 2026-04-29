@@ -29,7 +29,7 @@
   'use strict';
 
   var DEFAULT_API = '/propsheet/api/propsheet/map/dong-coords';
-  var DEFAULT_ZOOM_THRESHOLD = 3; // 카카오 level 기준
+  var DEFAULT_ZOOM_THRESHOLD = 2; // 카카오 level 기준
 
   function DongClusterRenderer(opts) {
     this.map = opts.map;
@@ -93,12 +93,22 @@
              lo >= sw.getLng() && lo <= ne.getLng();
     });
 
-    // 유니크 key 우선순위: pnu → 지번주소 → (lat,lon) 격자(약 100m 단위).
-    // map-data API 응답에 pnu/주소가 없는 레거시 매물도 lat/lon 기반으로 동 클러스터링 가능하도록.
+    // "X동" 패턴의 동 값이 있는 매물만 동별 클러스터링 대상
+    // 유효: "101동", "A동", "제1동" / 무효: "1", "비동", "동 없음", "없음"
+    var dongProps = inBounds.filter(function (p) {
+      var d = (p.dong || p['동'] || '').trim();
+      if (!d) return false;
+      return /동$/.test(d);
+    });
+    if (!dongProps.length) {
+      this._clearDongMarkers();
+      return;
+    }
+
     var groups = {}; // key → {key, pnu, address, items: [], lat, lon}
-    inBounds.forEach(function (p) {
+    dongProps.forEach(function (p) {
       var la = +p.lat, lo = +(p.lon || p.lng);
-      var key = p.pnu || p['지번주소'] || p.jibun_address || p.jibun;
+      var key = p.pnu || p.address || p['지번주소'] || p.jibun_address || p.jibun;
       if (!key) {
         if (!isFinite(la) || !isFinite(lo)) return;
         // 소수점 3자리 ≈ 111m / (경도 100m 내외) 격자
@@ -110,7 +120,7 @@
         groups[key] = {
           key: key,
           pnu: isRealPnu ? key : (p.pnu || null),
-          address: p['지번주소'] || p.jibun_address || p.jibun || null,
+          address: p.address || p['지번주소'] || p.jibun_address || p.jibun || null,
           items: [],
           lat: la,
           lon: lo,
@@ -262,17 +272,8 @@
           if (self.onDongClick) {
             self.onDongClick(dongObj, matched, pos);
           } else if (cnt > 0 && typeof self.clusterPopupFn === 'function') {
-            // 기존 createClusterPopup 재사용
-            var groupForPopup = matched.map(function (p) {
-              return {
-                lat: +p.lat, lon: +(p.lon || p.lng),
-                agent: p.agent_slug || p.agent || '',
-                price: p.price || p.display_price || '',
-                id: p.id || p.record_id,
-                raw: p,
-              };
-            });
-            self.clusterPopupFn(groupForPopup, pos);
+            // 원본 매물 객체 그대로 전달 (record_id, db_id 등 필요)
+            self.clusterPopupFn(matched, pos);
           } else if (cnt === 0) {
             // 매물 없는 동 — 간단 알림
             console.log('[dong-cluster] 매물 없는 동: ' + dongNm);
@@ -286,30 +287,11 @@
 
   DongClusterRenderer.prototype._createDongMarkerEl = function (dongNm, count) {
     var el = document.createElement('div');
-    el.className = 'dong-marker' + (count === 0 ? ' dong-empty' : '');
-    el.style.cssText = [
-      'display:inline-flex',
-      'flex-direction:column',
-      'align-items:center',
-      'justify-content:center',
-      'min-width:48px',
-      'padding:4px 8px',
-      'border-radius:12px',
-      'font-size:11px',
-      'font-weight:700',
-      'line-height:1.2',
-      'cursor:pointer',
-      'box-shadow:0 2px 6px rgba(0,0,0,0.2)',
-      'user-select:none',
-      count > 0
-        ? 'background:#1D4ED8;color:#fff;border:1px solid #1e3a8a;'
-        : 'background:transparent;color:#64748b;border:1.5px dashed #94a3b8;opacity:0.45;',
-    ].join(';');
+    // price-marker 스타일 그대로 사용, 집합부동산 색상 적용
+    el.className = 'price-marker jibhap-매매';
     el.setAttribute('data-dong', dongNm);
-    el.setAttribute('title', count > 0 ? dongNm + ' — 매물 ' + count + '건' : dongNm + ' — 매물 없음');
-    el.innerHTML =
-      '<span style="font-size:10px;opacity:0.9;">' + _escape(dongNm) + '</span>' +
-      (count > 0 ? '<span style="font-size:13px;">' + count + '</span>' : '');
+    el.setAttribute('title', dongNm + ' — 매물 ' + count + '건');
+    el.textContent = String(count);
     return el;
   };
 
