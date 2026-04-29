@@ -1,0 +1,41 @@
+# PropNet gitleaks 설정
+# 기본 룰셋 + 프로젝트 커스텀 룰
+
+[extend]
+# gitleaks 기본 룰 전부 포함 (generic-api-key, passwords, AWS, GCP 등 150+개)
+useDefault = true
+
+# ── 커스텀 룰: 기본 룰이 놓치는 프로젝트 특화 패턴 ──
+
+[[rules]]
+id = "python-dict-password"
+description = "Python dict with hardcoded password value"
+regex = '''['"]password['"]\s*:\s*['"][^'"]{4,}['"]'''
+keywords = ["password"]
+
+[[rules]]
+id = "environ-get-fallback-secret"
+description = "os.environ.get() with hardcoded fallback (non-empty, 6+ chars)"
+regex = '''environ\.get\(\s*['"][^'"]*(?:PASSWORD|SECRET|KEY|TOKEN|APIKEY|API_KEY)[^'"]*['"]\s*,\s*['"][^'"]{6,}['"]\s*\)'''
+keywords = ["environ"]
+
+[[rules]]
+id = "db-connection-string"
+description = "Database connection string with embedded password"
+regex = '''(?:postgresql|mysql|mongo(?:db)?|redis)://[^:]+:[^@]{4,}@'''
+keywords = ["://"]
+
+[[rules]]
+id = "korean-server-ip-with-creds"
+description = "Server IP with credentials in same block"
+regex = '''(?:175\.119\.224\.71|goldenrabbit\.biz).*(?:password|passwd|pwd)\s*[:=]\s*['"][^'"]+['"]'''
+keywords = ["175.119"]
+
+# ── 허용 목록 ──
+
+[allowlist]
+paths = [
+  '''\.gitleaks\.toml$''',
+  '''replacements\.txt$''',
+  '''\.gitignore$''',
+]
