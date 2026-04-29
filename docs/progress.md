@@ -3,6 +3,18 @@
 > 최종 업데이트: 2026-04-29
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
 
+## 2026-04-29: GitGuardian 시크릿 노출 대응 — gitleaks pre-commit hook 도입
+
+- [보안] GitGuardian 알림: batch_dong_local.py에 DB 비밀번호 + VWorld API 키 하드코딩 노출
+  - 코드에서 fallback 값 제거 → 빈 문자열로 교체
+  - git filter-repo로 전체 히스토리에서 시크릿 완전 삭제 + force push
+  - DB 비밀번호 즉시 변경 + 서비스 3개 재시작 검증
+- [보안] gitleaks pre-commit hook 설치 (근본 대책)
+  - `.gitleaks.toml`: 기본 150+ 룰 + 커스텀 4개 (dict password, environ.get fallback, DB conn string, server IP+creds)
+  - `.git/hooks/pre-commit`: 모든 커밋에서 gitleaks --staged 자동 실행
+  - 기존 SKILL.md Phase 3 수제 정규식의 한계 보완 (딕셔너리 할당, 환경변수 fallback 패턴 미탐지)
+- [보안] 원인 분석: pushupdate Phase 3-2 패턴이 `'password': value` 형식 미커버 + 비표준 API 키 prefix 미탐지
+
 ## 2026-04-29: 동별 좌표 클러스터링 — 데이터 로드 + 백엔드 API 구현
 
 - [데이터] complex_master 주소 정규화 53,900건 (시군구 약식표기→정식)
