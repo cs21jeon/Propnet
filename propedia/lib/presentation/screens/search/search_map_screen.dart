@@ -27,7 +27,7 @@ class _SearchMapScreenState extends ConsumerState<SearchMapScreen> {
 
   @override
   void dispose() {
-    ref.read(mapSearchProvider.notifier).resetState();
+    // 마지막 조회 위치를 유지하기 위해 resetState() 호출하지 않음
     super.dispose();
   }
 
@@ -148,12 +148,17 @@ class _SearchMapScreenState extends ConsumerState<SearchMapScreen> {
                             _isMapReady = true;
                             _mapError = null;
                           });
-                          // 현재 위치로 이동
-                          currentLocation.whenData((position) {
-                            if (position != null) {
-                              _moveToLocation(position.latitude, position.longitude);
-                            }
-                          });
+                          // 마지막 조회 위치가 있으면 그 위치로, 없으면 현재 위치로
+                          final lastState = ref.read(mapSearchProvider);
+                          if (lastState.selectedLat != null && lastState.selectedLng != null) {
+                            _moveToLocation(lastState.selectedLat!, lastState.selectedLng!);
+                          } else {
+                            currentLocation.whenData((position) {
+                              if (position != null) {
+                                _moveToLocation(position.latitude, position.longitude);
+                              }
+                            });
+                          }
                         },
                         onMapTap: _onMapTap,
                         center: LatLng(_defaultLat, _defaultLng),

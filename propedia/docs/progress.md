@@ -1,4 +1,19 @@
-업데이트 현황 (2026-04-19)
+업데이트 현황 (2026-04-29)
+
+## 2026-04-29: 집합건축물 대표지번 자동 전환 + 지도 뒤로가기 위치 유지
+
+- **집합건축물 대표지번 자동 전환** (서버 app_api.py `map_click_jibun`):
+  - 지도 클릭 시 complex_parcels DB에서 단지 매칭 → 부속지번이면 대표지번으로 jibun_info 자동 교체
+  - 앱/웹 코드 수정 없이 서버 API만으로 해결
+  - 예: 파크리오 신천동 20 클릭 → 신천동 17(대표지번)으로 조회
+  - `redirected_from` 필드로 원래 클릭 위치 정보 보존
+- **부속지번 일괄 등록 배치** (서버 scripts/batch_attached_jibun.py):
+  - 50세대 이상 29,913건 배치 실행 (건축물대장 API → complex_parcels 등록)
+  - 20-49세대 20,884건 크론 대기 (4/30 새벽 2시)
+- **지도 뒤로가기 위치 유지** (search_map_screen.dart):
+  - 조회 후 뒤로가기 시 마지막 조회 위치에 머무르도록 변경
+  - `dispose()`에서 `resetState()` 제거, `onMapCreated`에서 provider 저장 좌표 우선 복원
+- → 웹 search-map.html도 동일 수정 (sessionStorage 활용, 서버 직접 반영)
 
 ## 2026-04-19: 앱 PNU 파싱 버그 수정 + 지도 안내 문구 추가
 
