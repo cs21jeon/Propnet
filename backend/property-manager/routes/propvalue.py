@@ -118,10 +118,11 @@ def list_zones():
                 pass
 
     # 기본 숨김: 국토부 유형 + 행정동 이름만 있는 구역 (show_hidden=true로 해제)
+    # 행정동 패턴: 사당4동, 성내2동, 암사동 등 (한글+숫자?+동+숫자?)
     show_hidden = request.args.get('show_hidden', 'false').lower() == 'true'
     if not show_hidden:
         where_clauses.append("project_type != '국토부'")
-        where_clauses.append("zone_name !~ '^[가-힣]+동$'")
+        where_clauses.append("zone_name !~ '^[가-힣]+[0-9]*동[0-9]*$'")
 
     where = " AND ".join(where_clauses) if where_clauses else "1=1"
     sql = f"SELECT {cols} FROM redevelopment_zones WHERE {where} ORDER BY city, district, zone_name"
@@ -191,7 +192,7 @@ def stats():
         with get_db_connection() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-            hidden_filter = "WHERE project_type != '국토부' AND zone_name !~ '^[가-힣]+동$'"
+            hidden_filter = "WHERE project_type != '국토부' AND zone_name !~ '^[가-힣]+[0-9]*동[0-9]*$'"
 
             cur.execute(f"SELECT COUNT(*) as total FROM redevelopment_zones {hidden_filter}")
             total = cur.fetchone()['total']
