@@ -27,7 +27,10 @@
         .filter-area{padding:8px 12px;border-bottom:1px solid #f1f5f9}
         .filter-row{display:flex;gap:5px;margin-bottom:5px;flex-wrap:wrap}
         .filter-row:last-child{margin-bottom:0}
-        .filter-section-label{font-size:9px;font-weight:700;color:#94a3b8;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
+        .filter-section-label{font-size:9px;font-weight:700;color:#94a3b8;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:6px}
+        .filter-group-btns{display:inline-flex;gap:2px;margin-left:auto}
+        .filter-group-btns button{font-size:8px;padding:1px 5px;border:1px solid #cbd5e1;border-radius:3px;background:#fff;color:#94a3b8;cursor:pointer;font-family:inherit}
+        .filter-group-btns button:hover{background:#f1f5f9;color:#475569}
         .filter-select{flex:1;min-width:80px;padding:5px 6px;border:1px solid #e2e8f0;border-radius:6px;font-size:11px;background:white;color:#334155;font-family:inherit}
         .filter-btn{padding:4px 8px;border-radius:6px;font-size:10px;cursor:pointer;font-family:inherit;transition:all .15s;position:relative;white-space:nowrap}
         .filter-btn:hover{opacity:.85}
@@ -158,10 +161,17 @@
                     </div>
                     <select class="filter-select" id="filterDistrict" style="flex:0 0 90px" onchange="applyFilters()"><option value="">전체 구/군</option></select>
                 </div>
-                <div class="filter-section-label">종류</div>
+                <div class="filter-section-label">종류<div class="filter-group-btns"><button onclick="toggleAllTypes(true)">전체</button><button onclick="toggleAllTypes(false)">해제</button></div></div>
                 <div class="filter-row" id="typeFilters"></div>
-                <div class="filter-section-label" style="margin-top:4px">단계</div>
+                <div class="filter-section-label" style="margin-top:4px">단계<div class="filter-group-btns"><button onclick="toggleAllStages(true)">전체</button><button onclick="toggleAllStages(false)">해제</button></div></div>
                 <div class="filter-row" id="stageFilters"></div>
+                <div class="filter-section-label" style="margin-top:4px">특수</div>
+                <div class="filter-row">
+                    <button class="filter-btn type-btn" id="sinsoktongBtn" style="background:#fff;color:#e65100;border:2px dashed #e65100;font-size:10px" onclick="toggleSinsoktong()">
+                        <span style="font-size:10px">⧄</span> 신속통합기획
+                        <span class="cnt" id="sinsoktong-cnt"></span>
+                    </button>
+                </div>
             </div>
             <div class="stats-bar" id="statsBar"></div>
             <div class="detail-panel" id="detailPanel">
@@ -274,10 +284,17 @@
         return STAGE_TO_CAT[stage] || '초기';  // 매핑 안 되는 값도 초기로
     }
 
+    // 모아타운 추가
+    TYPE_COLORS['모아타운'] = '#D946EF'; // fuchsia
+    TYPE_FILTER_LIST.splice(TYPE_FILTER_LIST.findIndex(t => t.key === '_etc'), 0,
+        { key: '모아타운', label: '모아타운' });
+    MAIN_TYPES.add('모아타운');
+
     // === 상태 ===
     let map, allZones = [], filteredZones = [], markers = [], polygons = [], selectedZone = null;
     let activeTypes = new Set(TYPE_FILTER_LIST.map(t => t.key)); // 모든 종류 활성
     let activeStages = new Set(STAGE_FILTER_LIST.map(s => s.key)); // 모든 단계 활성
+    let showSinsoktong = false; // 신속통합기획 하이라이트 (기본 off)
     let debounceTimer = null;
     let lastZoomMode = null;
     const ZOOM_THRESHOLD = 6;
@@ -447,7 +464,8 @@
             const color = TYPE_COLORS[t.key] || TYPE_FALLBACK_COLOR;
             typesEl.innerHTML += `<div class="legend-item"><div class="legend-color" style="background:${color};opacity:.35;border-color:${color}"></div><span class="legend-label">${t.key}</span></div>`;
         });
-        typesEl.innerHTML += `<div class="legend-item"><div class="legend-color" style="background:${TYPE_FALLBACK_COLOR};opacity:.35"></div><span class="legend-label">기타 (도시개발/택지 등)</span></div>`;
+        typesEl.innerHTML += `<div class="legend-item"><div class="legend-color" style="background:${TYPE_FALLBACK_COLOR};opacity:.35"></div><span class="legend-label">기타 (도시개발 등)</span></div>`;
+        typesEl.innerHTML += `<div class="legend-item"><div class="legend-color" style="background:repeating-linear-gradient(45deg,#e65100,#e65100 2px,#ff8a50 2px,#ff8a50 4px);border-color:#e65100;border-style:dashed"></div><span class="legend-label">신속통합기획 (⧄ 버튼 ON 시)</span></div>`;
         // 단계: 테두리 사각형 (폴리곤 stroke와 동일)
         STAGE_FILTER_LIST.forEach(s => {
             const color = STAGE_COLORS[s.key];
@@ -552,6 +570,7 @@
     function updateFilterCounts() {
         const typeCounts = {};
         const stageCounts = {};
+        let sinsoktongCount = 0;
         TYPE_FILTER_LIST.forEach(t => typeCounts[t.key] = 0);
         STAGE_FILTER_LIST.forEach(s => stageCounts[s.key] = 0);
 
@@ -566,7 +585,11 @@
             // 단계 카운트
             const sc = stageCategory(z.stage);
             stageCounts[sc] = (stageCounts[sc] || 0) + 1;
+            // 신속통합기획 카운트
+            if (z.is_sinsoktong) sinsoktongCount++;
         });
+        const sinEl = document.getElementById('sinsoktong-cnt');
+        if (sinEl) sinEl.textContent = sinsoktongCount > 0 ? sinsoktongCount : '';
 
         TYPE_FILTER_LIST.forEach(t => {
             const el = document.getElementById('type-cnt-' + t.key);
@@ -634,12 +657,13 @@
             const pos = new kakao.maps.LatLng(z.center_lat, z.center_lon);
             const el = document.createElement('div');
 
+            const isSin = showSinsoktong && z.is_sinsoktong;
             if (mode === 'dot') {
                 // 줌아웃: 종류별 채움색 + 단계별 테두리색
                 const sc = stageCategory(z.stage);
                 const stColor = STAGE_COLORS[sc] || STAGE_COLORS['미확인'];
                 const borderStyle = sc === '미확인' ? `1.5px dashed ${stColor}` : `2px solid ${stColor}`;
-                el.style.cssText = `width:8px;height:8px;border-radius:50%;background:${color};border:${borderStyle};box-shadow:0 1px 3px rgba(0,0,0,.3);cursor:pointer`;
+                el.style.cssText = `width:${isSin?'12px':'8px'};height:${isSin?'12px':'8px'};border-radius:50%;background:${isSin?'#e65100':color};border:${borderStyle};box-shadow:0 1px 3px rgba(0,0,0,.3);cursor:pointer`;
                 el.onclick = () => { map.setLevel(5); map.setCenter(pos); };
             } else {
                 // 줌인: 종류별 배경색 + 단계별 테두리색 라벨
@@ -647,9 +671,10 @@
                 const stColor = STAGE_COLORS[sc] || STAGE_COLORS['미확인'];
                 const borderStyle = sc === '미확인' ? `1.5px dashed ${stColor}` : `2px solid ${stColor}`;
                 const opacity = sc === '미확인' ? '0.7' : '1';
-                el.style.cssText = `background:${color};color:white;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:600;white-space:nowrap;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.25);border:${borderStyle};opacity:${opacity}`;
+                const sinStyle = isSin ? 'background:repeating-linear-gradient(45deg,#e65100,#e65100 2px,#ff8a50 2px,#ff8a50 4px);' : `background:${color};`;
+                el.style.cssText = `${sinStyle}color:white;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:600;white-space:nowrap;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.25);border:${borderStyle};opacity:${opacity}`;
                 const maxLen = map.getLevel() <= 3 ? 18 : 8;
-                el.textContent = z.zone_name.length > maxLen ? z.zone_name.slice(0,maxLen)+'...' : z.zone_name;
+                el.textContent = (isSin ? '⧄ ' : '') + (z.zone_name.length > maxLen ? z.zone_name.slice(0,maxLen)+'...' : z.zone_name);
                 el.onclick = () => selectZone(z);
             }
             markers.push(new kakao.maps.CustomOverlay({ map, position: pos, content: el, yAnchor: 0.5 }));
@@ -685,21 +710,31 @@
             const fillOpacity = sc === '미확인' ? 0.1 : 0.3;
             const strokeOpacity = sc === '미확인' ? 0.5 : 0.9;
             const strokeStyle = sc === '미확인' ? 'shortdash' : 'solid';
+            const isSin = showSinsoktong && z.is_sinsoktong;
             geom.coordinates.forEach(ring => {
                 const path = ring.map(c => new kakao.maps.LatLng(c[1], c[0]));
                 const poly = new kakao.maps.Polygon({
                     map, path,
-                    strokeWeight: strokeWeight,
-                    strokeColor: strokeColor,
+                    strokeWeight: isSin ? Math.max(strokeWeight, 2.5) : strokeWeight,
+                    strokeColor: isSin ? '#e65100' : strokeColor,
                     strokeOpacity: strokeOpacity,
-                    strokeStyle: strokeStyle,
-                    fillColor: fillColor,
-                    fillOpacity: fillOpacity,
+                    strokeStyle: isSin ? 'shortdash' : strokeStyle,
+                    fillColor: isSin ? '#e65100' : fillColor,
+                    fillOpacity: isSin ? 0.15 : fillOpacity,
                 });
                 kakao.maps.event.addListener(poly, 'click', () => selectZone(z));
-                kakao.maps.event.addListener(poly, 'mouseover', () => poly.setOptions({ fillOpacity: fillOpacity + 0.2, strokeWeight: strokeWeight + 1 }));
-                kakao.maps.event.addListener(poly, 'mouseout', () => poly.setOptions({ fillOpacity: fillOpacity, strokeWeight: strokeWeight }));
+                kakao.maps.event.addListener(poly, 'mouseover', () => poly.setOptions({ fillOpacity: (isSin ? 0.35 : fillOpacity + 0.2), strokeWeight: (isSin ? Math.max(strokeWeight, 2.5) : strokeWeight) + 1 }));
+                kakao.maps.event.addListener(poly, 'mouseout', () => poly.setOptions({ fillOpacity: isSin ? 0.15 : fillOpacity, strokeWeight: isSin ? Math.max(strokeWeight, 2.5) : strokeWeight }));
                 polygons.push(poly);
+                // 신속통합기획: 빗금 오버레이 (대각선 줄무늬 효과)
+                if (isSin) {
+                    const hatch = new kakao.maps.Polygon({
+                        map, path,
+                        strokeWeight: 0, strokeOpacity: 0,
+                        fillColor: '#e65100', fillOpacity: 0.08,
+                    });
+                    polygons.push(hatch);
+                }
             });
         });
     }
@@ -785,6 +820,35 @@
     }
     function togglePanel() { const p=document.getElementById('sidePanel'),b=document.getElementById('panelToggle'); if(p.style.display==='none'){p.style.display='flex';b.innerHTML='&#9654;';b.classList.remove('collapsed')}else{p.style.display='none';b.innerHTML='&#9664;';b.classList.add('collapsed')} }
     function closeMobilePanel() { document.getElementById('sidePanel').classList.remove('expanded'); }
+
+    // === 전체 선택/해제 ===
+    function toggleAllTypes(on) {
+        if (on) TYPE_FILTER_LIST.forEach(t => activeTypes.add(t.key));
+        else activeTypes.clear();
+        updateTypeButtonStyles();
+        applyFilters();
+    }
+    function toggleAllStages(on) {
+        if (on) STAGE_FILTER_LIST.forEach(s => activeStages.add(s.key));
+        else activeStages.clear();
+        updateStageButtonStyles();
+        applyFilters();
+    }
+
+    // === 신속통합기획 토글 ===
+    function toggleSinsoktong() {
+        showSinsoktong = !showSinsoktong;
+        const btn = document.getElementById('sinsoktongBtn');
+        if (showSinsoktong) {
+            btn.style.background = '#e65100';
+            btn.style.color = '#fff';
+        } else {
+            btn.style.background = '#fff';
+            btn.style.color = '#e65100';
+        }
+        renderMarkers(true);
+        scheduleGeometryFetch();
+    }
     (function(){if(window.innerWidth>768)return;const p=document.getElementById('sidePanel');p.addEventListener('click',function(e){if(e.target===p||e.target.closest('.panel-header'))p.classList.toggle('expanded')})})();
     </script>
 </body>

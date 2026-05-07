@@ -73,13 +73,13 @@ def list_zones():
     query = request.args.get('q', '').strip()
 
     if fields_mode == 'minimal':
-        cols = "id, zone_name, zone_code, city, district, dong, project_type, stage, center_lat, center_lon, area_sqm, households, completion_date"
+        cols = "id, zone_name, zone_code, city, district, dong, project_type, stage, center_lat, center_lon, area_sqm, households, completion_date, source, is_sinsoktong"
     else:
         cols = """id, zone_name, zone_code, city, district, dong, project_type, stage,
                   area_sqm, households, floors_plan, developer,
                   union_approved, biz_approved, mgmt_approved,
                   construction_start, completion_date,
-                  center_lat, center_lon, source"""
+                  center_lat, center_lon, source, is_hidden, hidden_reason"""
     if include_geo:
         cols += ", geometry"
 
@@ -117,10 +117,11 @@ def list_zones():
             except (ValueError, TypeError):
                 pass
 
-    # 기본 숨김: 국토부 유형 + 행정동 이름만 있는 구역 (show_hidden=true로 해제)
+    # 기본 숨김: is_hidden 플래그 + 국토부 유형 + 행정동 이름만 있는 구역 (show_hidden=true로 해제)
     # 행정동 패턴: 사당4동, 성내2동, 암사동 등 (한글+숫자?+동+숫자?)
     show_hidden = request.args.get('show_hidden', 'false').lower() == 'true'
     if not show_hidden:
+        where_clauses.append("(is_hidden IS NOT TRUE)")
         where_clauses.append("project_type != '국토부'")
         where_clauses.append("zone_name !~ '^[가-힣]+[0-9]*동[0-9]*$'")
 
@@ -143,6 +144,8 @@ def list_zones():
                 for key in ('area_sqm', 'center_lat', 'center_lon'):
                     if zone.get(key) is not None:
                         zone[key] = float(zone[key])
+                # 신속통합기획 여부 플래그 (DB 컬럼 기반)
+                zone['is_sinsoktong'] = bool(zone.get('is_sinsoktong'))
                 # geometry 간소화: 좌표 수가 많은 폴리곤을 줄임
                 if include_geo and simplify and zone.get('geometry'):
                     zone['geometry'] = _simplify_geometry(zone['geometry'])
@@ -192,7 +195,7 @@ def stats():
         with get_db_connection() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-            hidden_filter = "WHERE project_type != '국토부' AND zone_name !~ '^[가-힣]+[0-9]*동[0-9]*$'"
+            hidden_filter = "WHERE (is_hidden IS NOT TRUE) AND project_type != '국토부' AND zone_name !~ '^[가-힣]+[0-9]*동[0-9]*$'"
 
             cur.execute(f"SELECT COUNT(*) as total FROM redevelopment_zones {hidden_filter}")
             total = cur.fetchone()['total']
