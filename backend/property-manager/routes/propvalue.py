@@ -73,13 +73,13 @@ def list_zones():
     query = request.args.get('q', '').strip()
 
     if fields_mode == 'minimal':
-        cols = "id, zone_name, zone_code, city, district, dong, project_type, stage, center_lat, center_lon, area_sqm, households, completion_date, source, is_sinsoktong"
+        cols = "id, zone_name, zone_code, city, district, dong, project_type, stage, stage_urban, center_lat, center_lon, area_sqm, households, completion_date, source, is_sinsoktong"
     else:
-        cols = """id, zone_name, zone_code, city, district, dong, project_type, stage,
+        cols = """id, zone_name, zone_code, city, district, dong, project_type, stage, stage_urban,
                   area_sqm, households, floors_plan, developer,
                   union_approved, biz_approved, mgmt_approved,
                   construction_start, completion_date,
-                  center_lat, center_lon, source, is_hidden, hidden_reason"""
+                  center_lat, center_lon, source, is_hidden, hidden_reason, is_sinsoktong"""
     if include_geo:
         cols += ", geometry"
 

@@ -44,6 +44,8 @@ tr.hidden-row td { background: #fff3f3; color: #999; }
   <select id="filterDistrict"><option value="">전체 구</option></select>
   <select id="filterType"><option value="">전체 유형</option></select>
   <select id="filterStage"><option value="">전체 단계</option></select>
+  <select id="filterStageUrban"><option value="">전체 추진단계(urban)</option></select>
+  <select id="filterSinsoktong"><option value="">신통 전체</option><option value="yes">신통만</option><option value="no">신통 제외</option></select>
   <input type="text" id="filterSearch" placeholder="구역명 검색...">
   <label><input type="checkbox" id="showHidden"> 숨김 포함</label>
   <button class="export-btn" onclick="exportCSV()">CSV 다운로드</button>
@@ -60,6 +62,8 @@ tr.hidden-row td { background: #fff3f3; color: #999; }
         <th data-col="zone_name">구역명</th>
         <th data-col="project_type">사업유형</th>
         <th data-col="stage">단계</th>
+        <th data-col="stage_urban">추진단계(urban)</th>
+        <th data-col="is_sinsoktong">신통</th>
         <th data-col="area_sqm">면적(㎡)</th>
         <th data-col="households">세대수</th>
         <th data-col="center_lat">위도</th>
@@ -103,6 +107,7 @@ function populateFilters() {
   const districts = [...new Set(allData.map(z => z.district))].sort();
   const types = [...new Set(allData.map(z => z.project_type))].sort();
   const stages = [...new Set(allData.map(z => z.stage).filter(Boolean))].sort();
+  const stagesUrban = [...new Set(allData.map(z => z.stage_urban).filter(Boolean))].sort();
 
   const dSel = document.getElementById('filterDistrict');
   dSel.innerHTML = '<option value="">전체 구</option>' + districts.map(d => `<option>${d}</option>`).join('');
@@ -112,12 +117,17 @@ function populateFilters() {
 
   const sSel = document.getElementById('filterStage');
   sSel.innerHTML = '<option value="">전체 단계</option><option value="__empty__">(비어있음)</option>' + stages.map(s => `<option>${s}</option>`).join('');
+
+  const suSel = document.getElementById('filterStageUrban');
+  suSel.innerHTML = '<option value="">전체 추진단계(urban)</option><option value="__empty__">(비어있음)</option>' + stagesUrban.map(s => `<option>${s}</option>`).join('');
 }
 
 function getFiltered() {
   const district = document.getElementById('filterDistrict').value;
   const type = document.getElementById('filterType').value;
   const stage = document.getElementById('filterStage').value;
+  const stageUrban = document.getElementById('filterStageUrban').value;
+  const sinsoktong = document.getElementById('filterSinsoktong').value;
   const search = document.getElementById('filterSearch').value.toLowerCase();
 
   return allData.filter(z => {
@@ -125,6 +135,10 @@ function getFiltered() {
     if (type && z.project_type !== type) return false;
     if (stage === '__empty__' && z.stage) return false;
     if (stage && stage !== '__empty__' && z.stage !== stage) return false;
+    if (stageUrban === '__empty__' && z.stage_urban) return false;
+    if (stageUrban && stageUrban !== '__empty__' && z.stage_urban !== stageUrban) return false;
+    if (sinsoktong === 'yes' && !z.is_sinsoktong) return false;
+    if (sinsoktong === 'no' && z.is_sinsoktong) return false;
     if (search && !z.zone_name.toLowerCase().includes(search)) return false;
     return true;
   });
@@ -146,8 +160,9 @@ function render() {
   const filtered = data.length;
   const hidden = allData.filter(z => z.is_hidden).length;
   const staged = data.filter(z => z.stage).length;
+  const stagedUrban = data.filter(z => z.stage_urban).length;
   document.getElementById('stats').innerHTML =
-    `전체: <span>${total}</span>건 | 필터: <span>${filtered}</span>건 | 숨김: <span>${hidden}</span>건 | stage 있음: <span>${staged}</span>건`;
+    `전체: <span>${total}</span>건 | 필터: <span>${filtered}</span>건 | 숨김: <span>${hidden}</span>건 | stage: <span>${staged}</span>건 | urban: <span>${stagedUrban}</span>건`;
 
   const tbody = document.getElementById('tbody');
   tbody.innerHTML = data.map(z => {
@@ -159,6 +174,8 @@ function render() {
       <td title="${z.zone_name}">${z.zone_name}</td>
       <td><span class="type-badge">${z.project_type || ''}</span></td>
       <td><span class="${stageCls}">${z.stage || '-'}</span></td>
+      <td>${z.stage_urban || '<span class="empty">-</span>'}</td>
+      <td>${z.is_sinsoktong ? '✓' : ''}</td>
       <td>${z.area_sqm ? Math.round(z.area_sqm).toLocaleString() : ''}</td>
       <td>${z.households || ''}</td>
       <td>${z.center_lat ? z.center_lat.toFixed(5) : ''}</td>
@@ -172,7 +189,7 @@ function render() {
 
 function exportCSV() {
   const data = getFiltered();
-  const cols = ['id','district','zone_name','project_type','stage','area_sqm','households','center_lat','center_lon','source','is_hidden','hidden_reason'];
+  const cols = ['id','district','zone_name','project_type','stage','stage_urban','is_sinsoktong','area_sqm','households','center_lat','center_lon','source','is_hidden','hidden_reason'];
   const header = cols.join(',');
   const rows = data.map(z => cols.map(c => {
     let v = z[c] ?? '';
@@ -197,7 +214,7 @@ document.querySelectorAll('th[data-col]').forEach(th => {
   });
 });
 
-['filterDistrict','filterType','filterStage'].forEach(id => {
+['filterDistrict','filterType','filterStage','filterStageUrban','filterSinsoktong'].forEach(id => {
   document.getElementById(id).addEventListener('change', render);
 });
 document.getElementById('filterSearch').addEventListener('input', render);

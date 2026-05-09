@@ -1,7 +1,16 @@
 # PropNet 통합 개발 진행 기록
 
-> 최종 업데이트: 2026-04-29
+> 최종 업데이트: 2026-05-09
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
+
+## 2026-05-09: PropValue 추진단계 데이터 품질 개선 — urban.seoul.go.kr 연동
+
+- [PropValue] ArcGIS PROPEL_CD → stage_urban 컬럼 신설, 2,656건 추진단계 raw 데이터 수집
+- [PropValue] stage_urban → stage 정규화 매핑 (9개 단계: 구역지정/추진위/안전진단/조합설립/사업시행/관리처분/착공/준공/해제)
+- [PropValue] 해제/준공 구역 숨김 처리, 해제 카테고리 지도 필터 추가
+- [PropValue] db-viewer에 추진단계(urban), 신통 컬럼/필터 추가
+- [PropValue] 주간 자동 동기화 cron 등록 (매주 월 06:00, sync_stage_urban.sh)
+- [Backend] propvalue API에 stage_urban, is_sinsoktong 필드 추가, stage 컬럼 TEXT 확장
 
 ## 2026-04-30: complex_parcels 데이터 활용 — DB 대체 + 단지명 표시 + 지번→단지 매칭
 
