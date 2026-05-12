@@ -1683,7 +1683,7 @@ def category_properties():
             else:
                 fields[k] = to_serializable(v)
 
-        records.append({"id": record_id, "fields": fields})
+        records.append({"id": record_id, "db_id": database_id, "fields": fields})
 
     return jsonify({
         "records": records,

@@ -459,7 +459,12 @@
             <div class="panel-header">
                 <div class="panel-logo" id="panelLogo">
                     <img src="/propmap/assets/logo/Propmap_transparent_full%20size.png" alt="PropMap" id="panelLogoImg">
-                    <span id="panelLogoText">PropMap 매물지도</span>
+                    <div style="display:flex;flex-direction:column;gap:4px;">
+                        <span id="panelLogoText">Propmap 매물지도</span>
+                        <a href="/app/" style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;font-size:11px;font-weight:600;color:#64748b;text-decoration:none;width:fit-content;transition:all 0.15s;" onmouseover="this.style.background='#e2e8f0';this.style.color='#136dec'" onmouseout="this.style.background='#f1f5f9';this.style.color='#64748b'">
+                            <span class="material-symbols-outlined" style="font-size:14px;">search</span>부동산백과
+                        </a>
+                    </div>
                 </div>
                 <div class="sheet-hint" id="sheetHint">
                     <span class="sheet-hint-count" id="sheetHintCount">0</span>
@@ -467,7 +472,6 @@
                     <span class="sheet-hint-arrow">▲</span>
                 </div>
                 <div class="panel-header-actions">
-                    <a href="/propmap/guide/" target="_blank" class="guide-link-btn" title="사용 가이드">?</a>
                     <div id="propmapAuthMount" class="auth-mount"></div>
                     <button class="panel-close" id="panelClose">&#10005;</button>
                 </div>
@@ -502,7 +506,7 @@
                     <span class="footer-sep">·</span>
                     <a href="https://propnet.kr/proptalk/" target="_blank">Proptalk</a>
                     <span class="footer-sep">·</span>
-                    <a href="https://propnet.kr/proppedia/landing/" target="_blank">Propedia</a>
+                    <a href="/app/">Proppedia</a>
                     <span class="footer-sep">·</span>
                     <a href="/propmap/guide/" target="_blank">가이드</a>
                 </div>

@@ -1,6 +1,34 @@
 # PropMap 개발 진행 기록
 
-> 최종 업데이트: 2026-04-29
+> 최종 업데이트: 2026-05-12
+
+## 2026-05-12: slug 페이지 데이터 격리 + 검색 UX 개선 + 구조 통일
+
+### agent별 데이터 격리
+- slug 페이지(goldenrabbit, propnet) iframe에 `?agent={slug}` 파라미터 추가
+- map.html `paramAgent` 기본값을 slug별로 하드코딩 (all → goldenrabbit/propnet)
+- 다른 부동산 마커/말풍선이 뜨지 않도록 완전 격리
+
+### 지도 초기 위치 수정
+- agent 전용 페이지에서 자동 위치추적(`navigator.permissions` watchPosition) 비활성화
+- API 응답의 agent 좌표가 우선 적용되도록 `_userLocationResolved` 경합 해결
+- 위치 동의 다이얼로그 HTML에 `hidden` 클래스 기본 추가 (깜빡임 방지)
+
+### 매물검색 UX 개선
+- 검색 결과: 소형 iframe(320px) → 메인 지도 하이라이트 + 카드 리스트
+- map.html에 `highlightSearchResults` / `clearSearchHighlight` postMessage 핸들러 추가
+- 검색 결과 마커만 표시, 나머지 숨김 + 결과 범위로 지도 자동 조정
+- 검색 폼 UI: 입력 필드 슬림화(11px), number 스피너 제거, placeholder 크기 통일, select 테두리 제거
+
+### 카테고리 매물 상세보기 수정
+- `category-properties` API 응답에 `db_id` 필드 추가
+- `renderPropertyCard`에서 `db_id` 추출 → `openPropertyDetail(recordId, dbId)` 전달
+
+### 페이지 구조 통일
+- propnet/index.html을 goldenrabbit 구조 기반으로 재구성 (카테고리 2행만 제거)
+- propnet/map.html을 통합 map.html 기반으로 교체 (paramAgent=propnet)
+- 3개 페이지(goldenrabbit.biz, /propmap/goldenrabbit, /propmap/propnet) 동일 구조 확보
+- 푸터: `margin-top: auto` 추가 (하단 고정) + 글씨 크기 propmap/ 통합 기준으로 통일
 
 ## 2026-04-29: 매물 상세보기 간소화 + 복수 경로 전수 반영
 

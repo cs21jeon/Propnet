@@ -568,6 +568,56 @@
         @media (max-width: 480px) {
             .search-overlay { max-width: calc(100% - 16px); }
         }
+        /* 개발지도 오버레이 토글 */
+        .devmap-btn {
+            position: absolute; bottom: 16px; left: 12px; z-index: 1000;
+            display: flex; align-items: center; gap: 5px;
+            padding: 7px 14px; border: none; border-radius: 8px;
+            background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            cursor: pointer; font-size: 12px; font-weight: 700; color: #334155;
+            font-family: 'Noto Sans KR', sans-serif; transition: all 0.2s;
+        }
+        .devmap-btn:hover { background: #f0f0f0; }
+        .devmap-btn.active { background: #7c3aed; color: white; }
+        .devmap-btn .devmap-icon {
+            width: 14px; height: 14px; border: 2px solid currentColor;
+            border-radius: 3px; position: relative;
+        }
+        .devmap-btn .devmap-icon::after {
+            content: ''; position: absolute; top: 1px; left: 1px; right: 1px; bottom: 1px;
+            background: repeating-linear-gradient(45deg, currentColor, currentColor 1px, transparent 1px, transparent 3px);
+            opacity: 0.5; border-radius: 1px;
+        }
+        .devmap-info-popup {
+            background: white; border-radius: 10px; padding: 12px 14px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15); min-width: 200px; max-width: 280px;
+            font-family: 'Noto Sans KR', sans-serif; position: relative;
+        }
+        .devmap-info-popup::after {
+            content: ''; position: absolute; bottom: -8px; left: 50%; margin-left: -6px;
+            border-left: 6px solid transparent; border-right: 6px solid transparent;
+            border-top: 8px solid white;
+        }
+        .devmap-info-popup .zone-name { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+        .devmap-info-popup .zone-meta { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px; }
+        .devmap-info-popup .zone-badge {
+            display: inline-flex; padding: 2px 8px; border-radius: 10px;
+            font-size: 10px; font-weight: 600;
+        }
+        .devmap-info-popup .zone-row { font-size: 11px; color: #64748b; margin-bottom: 2px; }
+        .devmap-info-popup .zone-link {
+            display: block; text-align: center; margin-top: 8px; padding: 6px;
+            background: #7c3aed; color: white; border-radius: 6px;
+            font-size: 11px; font-weight: 600; text-decoration: none; cursor: pointer;
+        }
+        .devmap-info-popup .zone-link:hover { background: #6d28d9; }
+        .devmap-info-close {
+            position: absolute; top: 6px; right: 8px; border: none; background: none;
+            cursor: pointer; font-size: 16px; color: #94a3b8; line-height: 1;
+        }
+        @media (max-width: 768px) {
+            .devmap-btn { bottom: 12px; left: 8px; padding: 6px 10px; font-size: 11px; }
+        }
     </style>
 </head>
 <body>
@@ -593,6 +643,11 @@
             </div>
         </div>
     </div>
+
+    <!-- 개발지도 오버레이 토글 -->
+    <button class="devmap-btn" id="devMapBtn" onclick="toggleDevMap()" title="정비구역 개발지도 표시">
+        <span class="devmap-icon"></span>개발지도
+    </button>
 
     <!-- 내 위치 버튼 -->
     <button class="my-loc-btn" id="myLocBtn" title="내 위치">
@@ -798,6 +853,8 @@
     }
 
     function isMarkerVisible(d) {
+        // 검색 하이라이트 모드: 검색 결과만 표시
+        if (window._searchHighlight) return !!window._searchHighlight[d.record_id];
         // 중개사무소 필터
         if (d.agent_slug && !filterState.agents[d.agent_slug]) return false;
         // 거래유형 필터
@@ -1212,6 +1269,32 @@
         if (msg.action === 'setLevel' && msg.level) {
             var map = window._kakaoMap;
             if (map) map.setLevel(msg.level);
+        }
+
+        // 검색 결과 하이라이트: 해당 record_id만 표시, 나머지 숨김
+        if (msg.action === 'highlightSearchResults' && msg.recordIds) {
+            var idSet = {};
+            msg.recordIds.forEach(function(id) { idSet[id] = true; });
+            window._searchHighlight = idSet;
+            applyFilters(); updateCounts();
+            // 검색 결과가 있으면 범위에 맞게 지도 조정
+            if (msg.recordIds.length > 0) {
+                var bounds = new kakao.maps.LatLngBounds();
+                var found = 0;
+                window._allOverlays.forEach(function(item) {
+                    if (idSet[item.data.record_id]) {
+                        bounds.extend(new kakao.maps.LatLng(item.data.lat, item.data.lon));
+                        found++;
+                    }
+                });
+                if (found > 0) window._kakaoMap.setBounds(bounds, 80, 80, 80, 80);
+            }
+        }
+
+        // 검색 하이라이트 해제: 원래 필터 상태로 복원
+        if (msg.action === 'clearSearchHighlight') {
+            delete window._searchHighlight;
+            applyFilters(); updateCounts();
         }
 
         if (msg.action === 'getMarkerCounts') {
@@ -1737,6 +1820,297 @@
                 }
             });
     });
+
+    /* ========================================
+     * 개발지도 오버레이 (PropValue 정비구역)
+     * ======================================== */
+    (function() {
+        'use strict';
+
+        // PropValue 색상 체계
+        var DV_TYPE_COLORS = {
+            '재건축':'#EC4899','재개발(주택정비형)':'#3B82F6','재개발(도시정비형)':'#6366F1',
+            '가로주택정비':'#10B981','소규모재건축':'#A855F7','도시재생':'#F59E0B',
+            '지구단위계획':'#64748B','재정비촉진':'#F97316','역세권':'#06B6D4',
+            '도시개발':'#8B5CF6','모아타운':'#D946EF','택지개발':'#78716C',
+            '도시계획시설':'#6B7280','시가지조성':'#737373'
+        };
+        var DV_STAGE_COLORS = {
+            '초기':'#22C55E','조합':'#3B82F6','사시':'#F59E0B','관처':'#EF4444',
+            '공사':'#8B5CF6','완료':'#1E293B','해제':'#DC2626','미확인':'#94a3b8'
+        };
+        var DV_STAGE_WEIGHT = {
+            '초기':1.5,'조합':2,'사시':2.5,'관처':3,'공사':3.5,'완료':3,'해제':1,'미확인':1.5
+        };
+        var DV_CAT_STAGES = {
+            '초기':['추진위전','추진위','추진위구성','추진위원회승인','추진위원회구성','추진위승인',
+                    '안전진단','안전진단(1차)','정비계획 수립','도시계획심의','심의',
+                    '구역지정','정비구역지정','구의지정','용역착수','주민공람',
+                    '조합창립총회','조합규약작성','조합원 모집신고',
+                    '후보지선정','후보지','신속통합기획','신통착수','신통 착수','신통통보','신통자문',
+                    '정비예정','재정비촉진','통심완료'],
+            '조합':['조합설립','조합설립인가','사업시행자지정','시행자지정(조합)','시행자지정(신탁)','신탁시행자지정(신탁)'],
+            '사시':['사업시행','사업시행인가','사업계획승인','인가 완료'],
+            '관처':['관리처분','관리처분인가','관리처분계획인가','지구단위계획수립/건축심의/교통심의'],
+            '공사':['착공','철거','분양'],
+            '완료':['준공','준공인가','이전고시','조합해산','조합청산'],
+            '해제':['해제']
+        };
+        var DV_STAGE_MAP = {};
+        Object.keys(DV_CAT_STAGES).forEach(function(cat) {
+            DV_CAT_STAGES[cat].forEach(function(s) { DV_STAGE_MAP[s] = cat; });
+        });
+        function dvStageCat(stage) { return stage ? (DV_STAGE_MAP[stage] || '미확인') : '미확인'; }
+        function dvTypeColor(t) { return DV_TYPE_COLORS[t] || '#94a3b8'; }
+        function escapeHtml(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+        // CSS badge 색상
+        var DV_TYPE_BADGE = {
+            '재건축':'background:#fce7f3;color:#9d174d','재개발(주택정비형)':'background:#dbeafe;color:#1e40af',
+            '재개발(도시정비형)':'background:#e0e7ff;color:#3730a3','가로주택정비':'background:#d1fae5;color:#065f46',
+            '소규모재건축':'background:#fae8ff;color:#86198f','도시재생':'background:#fef3c7;color:#92400e',
+            '지구단위계획':'background:#f1f5f9;color:#475569','재정비촉진':'background:#ffedd5;color:#9a3412',
+            '역세권':'background:#cffafe;color:#155e75','도시개발':'background:#f5f3ff;color:#5b21b6',
+            '모아타운':'background:#fae8ff;color:#86198f','택지개발':'background:#f5f5f4;color:#44403c',
+            '도시계획시설':'background:#f3f4f6;color:#374151','시가지조성':'background:#f5f5f5;color:#525252'
+        };
+        var DV_STAGE_BADGE = {
+            '초기':'border:2px solid #22C55E;color:#22C55E','조합':'border:2px solid #3B82F6;color:#3B82F6',
+            '사시':'border:2px solid #F59E0B;color:#F59E0B','관처':'border:2px solid #EF4444;color:#EF4444',
+            '공사':'border:2px solid #8B5CF6;color:#8B5CF6','완료':'border:2px solid #1E293B;color:#1E293B',
+            '해제':'border:2px solid #DC2626;color:#DC2626','미확인':'border:2px dashed #94a3b8;color:#94a3b8'
+        };
+
+        // 상태
+        var _dvEnabled = false;
+        var _dvZones = null; // 캐시
+        var _dvPolygons = [];
+        var _dvDots = [];
+        var _dvGeoCache = new Map();
+        var _dvGeoController = null;
+        var _dvGeoTimer = null;
+        var _dvInfoPopup = null;
+        var POLY_ZOOM = 7; // 이 레벨 이하에서 폴리곤 표시
+        var DOT_ZOOM = 7;  // 이 레벨 초과에서 dot 표시
+
+        window.toggleDevMap = function() {
+            _dvEnabled = !_dvEnabled;
+            var btn = document.getElementById('devMapBtn');
+            btn.classList.toggle('active', _dvEnabled);
+            if (_dvEnabled) {
+                if (_dvZones) { renderDevMap(); } else { loadDevMapData(); }
+            } else {
+                clearDevMap();
+            }
+        };
+
+        function loadDevMapData() {
+            var btn = document.getElementById('devMapBtn');
+            btn.textContent = '로딩...';
+            fetch('/api/propvalue/zones?fields=minimal')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    _dvZones = (data.zones || data || []).filter(function(z) {
+                        return z.center_lat && z.center_lon;
+                    });
+                    btn.innerHTML = '<span class="devmap-icon"></span>개발지도';
+                    renderDevMap();
+                })
+                .catch(function(err) {
+                    console.error('[devmap] 데이터 로드 실패:', err);
+                    btn.innerHTML = '<span class="devmap-icon"></span>개발지도';
+                    _dvEnabled = false;
+                    btn.classList.remove('active');
+                });
+        }
+
+        function renderDevMap() {
+            if (!_dvEnabled || !_dvZones) return;
+            var map = window._kakaoMap;
+            if (!map) return;
+            clearDevMap();
+
+            var level = map.getLevel();
+            var bounds = map.getBounds();
+            var sw = bounds.getSouthWest(), ne = bounds.getNorthEast();
+
+            // 뷰포트 내 구역만 렌더링
+            var visible = _dvZones.filter(function(z) {
+                return z.center_lat >= sw.getLat() && z.center_lat <= ne.getLat()
+                    && z.center_lon >= sw.getLng() && z.center_lon <= ne.getLng();
+            });
+
+            if (level > DOT_ZOOM) {
+                // 줌 아웃: dot 마커만
+                renderDevDots(visible, map);
+            } else {
+                // 줌 인: dot + 폴리곤 (지오메트리 fetch)
+                renderDevDots(visible, map);
+                fetchAndRenderPolygons(visible, map, level);
+            }
+        }
+
+        function renderDevDots(zones, map) {
+            zones.forEach(function(z) {
+                var sc = dvStageCat(z.stage);
+                var tc = dvTypeColor(z.project_type);
+                var level = map.getLevel();
+                var size = level <= DOT_ZOOM ? 10 : 8;
+                var el = document.createElement('div');
+                el.style.cssText = 'width:' + size + 'px;height:' + size + 'px;border-radius:50%;' +
+                    'background:' + tc + ';border:2px solid ' + (DV_STAGE_COLORS[sc] || '#94a3b8') + ';' +
+                    'cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.3);';
+                el.title = z.zone_name + ' (' + (z.project_type || '') + ')';
+                el.onclick = function(e) { e.stopPropagation(); showDevInfo(z, map); };
+
+                var overlay = new kakao.maps.CustomOverlay({
+                    position: new kakao.maps.LatLng(z.center_lat, z.center_lon),
+                    content: el, yAnchor: 0.5, xAnchor: 0.5, zIndex: 3, clickable: true
+                });
+                overlay.setMap(map);
+                _dvDots.push(overlay);
+            });
+        }
+
+        function fetchAndRenderPolygons(zones, map, level) {
+            // 캐시에 없는 구역 ID 수집
+            var uncachedIds = [];
+            zones.forEach(function(z) {
+                if (!_dvGeoCache.has(z.id)) uncachedIds.push(z.id);
+            });
+
+            // 캐시된 것 먼저 렌더
+            zones.forEach(function(z) {
+                if (_dvGeoCache.has(z.id)) {
+                    drawPolygon(z, _dvGeoCache.get(z.id), map);
+                }
+            });
+
+            if (uncachedIds.length === 0) return;
+
+            // 뷰포트 기반 지오메트리 fetch (debounce)
+            if (_dvGeoTimer) clearTimeout(_dvGeoTimer);
+            if (_dvGeoController) _dvGeoController.abort();
+
+            _dvGeoTimer = setTimeout(function() {
+                _dvGeoController = new AbortController();
+                var bounds = map.getBounds();
+                var sw = bounds.getSouthWest(), ne = bounds.getNorthEast();
+                var url = '/api/propvalue/zones?include_geometry=true&simplify=true' +
+                    '&bounds=' + sw.getLat() + ',' + sw.getLng() + ',' + ne.getLat() + ',' + ne.getLng();
+
+                fetch(url, { signal: _dvGeoController.signal })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        var fetched = data.zones || data || [];
+                        fetched.forEach(function(fz) {
+                            if (fz.geometry) {
+                                _dvGeoCache.set(fz.id, fz.geometry);
+                                // 해당 zone 정보 찾기
+                                var orig = _dvZones.find(function(z) { return z.id === fz.id; });
+                                if (orig && _dvEnabled) {
+                                    drawPolygon(orig, fz.geometry, map);
+                                }
+                            }
+                        });
+                    })
+                    .catch(function(err) {
+                        if (err.name !== 'AbortError') console.warn('[devmap] geometry fetch 실패:', err);
+                    });
+            }, 300);
+        }
+
+        function drawPolygon(zone, geometry, map) {
+            if (!geometry || !geometry.coordinates) return;
+            var sc = dvStageCat(zone.stage);
+            var tc = dvTypeColor(zone.project_type);
+
+            var coords = geometry.type === 'MultiPolygon' ? geometry.coordinates : [geometry.coordinates];
+            coords.forEach(function(polygon) {
+                polygon.forEach(function(ring) {
+                    var path = ring.map(function(c) {
+                        return new kakao.maps.LatLng(c[1], c[0]);
+                    });
+                    var poly = new kakao.maps.Polygon({
+                        map: map, path: path,
+                        strokeWeight: DV_STAGE_WEIGHT[sc] || 1.5,
+                        strokeColor: DV_STAGE_COLORS[sc] || '#94a3b8',
+                        strokeOpacity: sc === '미확인' ? 0.5 : 0.8,
+                        strokeStyle: sc === '미확인' ? 'shortdash' : 'solid',
+                        fillColor: tc,
+                        fillOpacity: 0.25,
+                        zIndex: 2
+                    });
+                    kakao.maps.event.addListener(poly, 'click', function() {
+                        showDevInfo(zone, map);
+                    });
+                    _dvPolygons.push(poly);
+                });
+            });
+        }
+
+        function showDevInfo(zone, map) {
+            closeDevInfo();
+            var sc = dvStageCat(zone.stage);
+            var typeBadge = DV_TYPE_BADGE[zone.project_type] || 'background:#f1f5f9;color:#64748b';
+            var stageBadge = DV_STAGE_BADGE[sc] || DV_STAGE_BADGE['미확인'];
+
+            var el = document.createElement('div');
+            el.className = 'devmap-info-popup';
+            var h = '<button class="devmap-info-close">&times;</button>';
+            h += '<div class="zone-name">' + escapeHtml(zone.zone_name) + '</div>';
+            h += '<div class="zone-meta">';
+            h += '<span class="zone-badge" style="' + typeBadge + '">' + escapeHtml(zone.project_type || '기타') + '</span>';
+            h += '<span class="zone-badge" style="background:transparent;' + stageBadge + '">' + escapeHtml(sc) + '</span>';
+            h += '</div>';
+            if (zone.district) h += '<div class="zone-row">' + escapeHtml(zone.city || '') + ' ' + escapeHtml(zone.district) + '</div>';
+            if (zone.households) h += '<div class="zone-row">세대수: ' + Number(zone.households).toLocaleString() + '</div>';
+            if (zone.area_sqm) h += '<div class="zone-row">면적: ' + Number(zone.area_sqm).toLocaleString() + '㎡</div>';
+            h += '<a class="zone-link" href="/propvalue/" target="_blank">PropValue에서 자세히 보기</a>';
+            el.innerHTML = h;
+
+            el.querySelector('.devmap-info-close').onclick = function(e) { e.stopPropagation(); closeDevInfo(); };
+
+            _dvInfoPopup = new kakao.maps.CustomOverlay({
+                position: new kakao.maps.LatLng(zone.center_lat, zone.center_lon),
+                content: el, yAnchor: 1.15, xAnchor: 0.5, zIndex: 20, clickable: true
+            });
+            _dvInfoPopup.setMap(map);
+        }
+
+        function closeDevInfo() {
+            if (_dvInfoPopup) { _dvInfoPopup.setMap(null); _dvInfoPopup = null; }
+        }
+
+        function clearDevMap() {
+            _dvPolygons.forEach(function(p) { p.setMap(null); });
+            _dvPolygons = [];
+            _dvDots.forEach(function(d) { d.setMap(null); });
+            _dvDots = [];
+            closeDevInfo();
+            if (_dvGeoTimer) clearTimeout(_dvGeoTimer);
+            if (_dvGeoController) _dvGeoController.abort();
+        }
+
+        // 지도 이동/줌 시 개발지도 다시 렌더
+        function onMapIdleDevMap() {
+            if (_dvEnabled && _dvZones) {
+                clearDevMap();
+                renderDevMap();
+            }
+        }
+
+        // kakao map ready 후 idle 이벤트 등록
+        function waitForMap() {
+            if (window._kakaoMap) {
+                kakao.maps.event.addListener(window._kakaoMap, 'idle', onMapIdleDevMap);
+            } else {
+                setTimeout(waitForMap, 200);
+            }
+        }
+        waitForMap();
+    })();
+
     </script>
     <!-- Week 3: 동 단위 클러스터 공통 모듈 -->
     <script src="/propmap/js/dong-cluster-renderer.js?v=20260429f"></script>
