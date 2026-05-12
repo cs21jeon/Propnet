@@ -1,7 +1,20 @@
 # PropNet 통합 개발 진행 기록
 
-> 최종 업데이트: 2026-05-09
+> 최종 업데이트: 2026-05-12
 > 크로스 서비스 변경 및 인프라/공통 작업을 기록합니다.
+
+## 2026-05-12: 공동주택 공시가격 2차 매칭 + 서버 백업 정리
+
+- [Propedia/공통] 공동주택 공시가격 동/호 매칭 개선 — 건물명이 동명인 단지(비바체하임 등) 대응
+  - hoNm에 하이픈이 있고 dongNm이 비숫자일 때, 하이픈 앞 숫자를 동번호로 추출하여 2차 매칭
+  - 수정 파일: `backend/property-manager/services/vworld_service.py`
+- [인프라] 서버 백업 파일 대량 정리 (3만줄+ 삭제)
+  - `backend/backup_deprecated_20260407/` 전체 삭제
+  - `frontend/public/_backup_links_*` 3개 디렉토리 삭제
+  - `frontend/public/*.bak*` 파일 삭제
+  - `chat_stt/server/backup_pre_*` 3개 디렉토리 삭제
+  - `backend/property-manager/routes/propsheet.py.bak2` 삭제
+- [인프라] nginx 설정 변경, daily_backup.sh 수정
 
 ## 2026-05-09: PropValue 추진단계 데이터 품질 개선 — urban.seoul.go.kr 연동
 
