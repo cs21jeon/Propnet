@@ -1,6 +1,22 @@
 # PropSheet 개발 진행 기록
 
-> 최종 업데이트: 2026-04-27
+> 최종 업데이트: 2026-05-19
+
+## 2026-05-19: PropSheet 검색 UX 개선 + 다중선택 확인 + formula 수정
+
+- 검색필드 선택: select 드롭다운 → autocomplete 검색 입력으로 교체
+  - 실시간 필드명 필터링, 키보드 ↑↓ 탐색, Enter 선택
+  - 선택된 필드 파란색 표시 + × 해제 버튼
+- 단일/다중 선택 필드 검색 시 옵션 색상이 실제 설정과 불일치 수정
+  - getOptionColor() 호출 시 colObj 누락 → getFieldInfo() 전달 추가 (검색 + 필터 패널)
+- 상세보기 다중선택(multi-select) 필드에 확인/초기화 버튼 추가
+  - 옵션 클릭은 로컬 pending → 확인 버튼으로 한 번에 서버 저장
+  - sticky footer (초기화 + 확인 버튼)
+- 단일부동산 formula 트리거에 COALESCE 적용 (DB 직접 수정)
+  - 실투자금, 실투자금(융자포함), 융자제외수익률(%), 융자포함수익률
+  - 융자/보증금/월세 NULL 시 0으로 계산 → 자동계산 정상 작동
+  - DB 39/56/105 모두 적용, 기존 레코드 재계산 (383+1+2건)
+- 수정: database_list.html/js/css, field_definitions(formula), DB 트리거 함수
 
 ## 2026-04-27: PropSheet 로딩 성능 최적화 (6단계)
 
