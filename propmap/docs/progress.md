@@ -1,6 +1,15 @@
 # PropMap 개발 진행 기록
 
-> 최종 업데이트: 2026-05-12
+> 최종 업데이트: 2026-05-20
+
+## 2026-05-20: /app/ → /proppedia/ 링크 경로 통합 수정
+
+- 모든 PropMap 페이지에서 부동산백과(Propedia) 링크를 `/app/` → `/proppedia/`로 변경
+  - `propmap/index.html` — 부동산백과 버튼 + 푸터 Proppedia 링크
+  - `propmap/goldenrabbit/index.html` — 건축물정보조회 메뉴
+  - `propmap/propnet/index.html` — 건축물정보조회 메뉴
+  - `index.html` (레거시 홈), `about.html`, `inquiry.html` — 사이드 메뉴
+- Propedia 랜딩페이지(`proppedia/index.html`) CTA 버튼 5곳도 동일 수정
 
 ## 2026-05-12: slug 페이지 데이터 격리 + 검색 UX 개선 + 구조 통일
 
